@@ -13,7 +13,7 @@ effects of climate and herbivory on the growth of northern shrub species and to 
 buffer against shrubification in northern Alaska.  
 
 # Project Objectives:
-1. Write R code to do a stratified subsampling of stem sections for sectioning, mounting and ring measurement. 
+1. Write R code for stratified random subsampling of stem sections for mounting and ring measurement. 
 2. Write R code to assess the relationship between measured browser variables and shrub characteristics. 
 3. Write R code to analyse dendroecological data
 
