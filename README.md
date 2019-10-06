@@ -1,6 +1,6 @@
 # Disentangle Project: Alaska
-Peter Frank
-Norwegian University of Science and Technology
+Peter Frank,
+Norwegian University of Science and Technology,
 Updated: 06/10/2019
 
 # Project Background
