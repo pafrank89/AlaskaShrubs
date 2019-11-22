@@ -3,126 +3,207 @@
 # peterfr@stud.ntnu.no
 # 2019-11-21
 
-#Construct a climate data file that can be merged to growth and browsing data
+# Construct a climate data file that can be merged to growth and browsing data
 
-
-
-# Finds all the files with extension "tif" in the RasterStack_TIFF Folder
-temp.files <- list.files(path= "~/Desktop/Masters Thesis/ClimateData/SNAP_Data/tas",
-                        pattern='tif', full.names=TRUE )
-
-precip.files = list.files(path= "~/Desktop/Masters Thesis/ClimateData/SNAP_Data/pr",
-                        pattern='tif', full.names=TRUE )
-
-temp.stack = stack(temp.files) 
-
-precip.stack = stack(precip.files)
-
-# Read in Shapefile for sample sites
-Sample_Sites = readOGR(dsn = "~/Desktop/Masters Thesis/Sample_Sites", layer = "Sample_Sites")
-
-data(wrld_simpl)
-
-# Establish geographic extent for Alaksa Study Area
-max.lat <- 75 
-min.lat <- 50 
-max.lon <- -125
-min.lon <- -170
-geographic.extent <- extent(x = c(min.lon, max.lon, min.lat, max.lat))
-
-# Plot the base map
-plot(wrld_simpl, 
-     xlim = c(min.lon, max.lon),
-     ylim = c(min.lat, max.lat),
-     axes = TRUE, 
-     col = "grey95")
-
-plot(Sample_Sites, col = "blue", pch = 3, cex = 0.75)
-
-#Extract Climate Data for sample sites
-temp_extract = extract(temp.stack, Sample_Sites) 
-
-write.csv(temp_extract, file = "~/Desktop/temp_extract.csv")
-
-precip_extract = extract(precip.stack, Sample_Sites) 
-
-write.csv(precip_extract, file = "~/Desktop/precip_extract.csv")
-
-
-
-##### ARCTIC DENDRO NETWORK #####
-
-# Construct a climate data file that can be merged to growth
-# and browsing data
-
-# Notes -------------------------------------------------------------------
-
-
-# Data source
+# Data sources
+# http://data.snap.uaf.edu/data/Base/AK_CAN_2km/historical/CRU_TS/
 # https://catalogue.ceda.ac.uk/uuid/10d3e3640f004c578403419aac167d82
 # https://crudata.uea.ac.uk/cru/data/hrg/cru_ts_4.03/
 
-# Preparations ------------------------------------------------------------
 
-rm(list=ls())
-setwd("H:/Trondheim/ARCTIC-ALPINE SHRUBS/A Data_Templates/FILLED/ArcticShrubs")
-getwd()
+#Packages
+install.packages("sp")
+install.packages("raster")
+install.packages("rgdal")
+install.packages("ncdf4")
+install.packages("reshape2")
+install.packages("RColorBrewer")
+install.packages("latticeExtra")
+install.packages("rasterVis")
+install.packages("purrr")
 
-
-### Load packages
-# install.packages("raster", lib="C:/RpackagesQuebec")
-library(sp, lib="C:/RpackagesQuebec")
-library(raster, lib="C:/RpackagesQuebec")
-# install.packages("ncdf4", lib="C:/RpackagesQuebec")
-library(ncdf4, lib="C:/RpackagesQuebec")
-
-library(reshape2, lib="C:/RpackagesQuebec")
-
-
-
-# Read data ---------------------------------------------------------------
-
-
-# shrub coordinates for which climate data need to be retrieved:
-coordinates<-read.csv(file = "sitecoordinates.csv",
-                      header = TRUE,
-                      dec = ".")
-coordinates$X<-NULL
-colnames(coordinates)[colnames(coordinates)=="Latitude"] <- "lat"
-colnames(coordinates)[colnames(coordinates)=="Longitude"] <- "lon"
-row.names(coordinates) <- coordinates$Shrub_ID
-coordinates[1] <- NULL
-
-str(coordinates)
-
-# temperature data from ceda
-# tmp<-read.table(gzfile("cru_ts4.03.1901.2018.tmp.dat.gz"))
-# tmpnc<-read.table(gzfile("cru_ts4.03.1901.2018.tmp.dat.nc.gz"))
-# tmpstn<-read.table(gzfile("cru_ts4.03.1901.2018.tmp.stn.gz"))
-# Couldn't download these versions without losing metadata;
-
-# => a new file downloaded from http://wps-web1.ceda.ac.uk/submit/form?proc_id=Subsetter
-
-# csv formats are extremely clumsy...
-
-# stuggled with this for a while until I realized that there are code and even an R
-# package avaiable for reading this data!
-# https://www.benjaminbell.co.uk/2018/01/getting-climate-data.html
-
-# actually best nc format IS given here after all:
-# https://catalogue.ceda.ac.uk/uuid/10d3e3640f004c578403419aac167d82
-# this is nc file, can be unzipped with 7-zip. 
+library(sp)
+library(raster)
+library(rgdal)
+library(ncdf4)
+library(reshape2)
+library(RColorBrewer)
+library(latticeExtra)
+library(rasterVis)
+library(purrr)
 
 
+# EXTRACT SNAP DATA ####
 
-# CLIMATE -----------------------------------------------------------------
+#Sets the ShrubID column as the row names
+row.names(coordinates_NAD83) = coordinates_NAD83$ShrubID
+
+#Deletes the extra ShrubID column
+coordinates_NAD83[1] = NULL
+
+# 1. Temperature -------------------------------------------------------------
+
+# Finds all the files with extension "tif" in the RasterStack_TIFF Folder
+snap.tmp.files <- list.files(path= "E:/MastersThesis/ClimateData/SNAP/tas_AK_CAN_2km_CRU_TS40_historical",
+                         pattern='tif', full.names=TRUE )
+
+# Create a raster stack of all tiff files 
+snap.tmp = stack(snap.tmp.files) 
+
+
+# plot an example day:
+plot(snap.tmp$tas_mean_C_CRU_TS40_historical_01_1901)
+
+# check that you sample points match:
+points(coordinates_NAD83, pch=16)
+
+# Extract climate data from the RasterBrick as a data.frame
+snap.tmp.shrubs <- data.frame(extract(snap.tmp, coordinates_NAD83, ncol=2))
+
+# Add shrub id names
+row.names(snap.tmp.shrubs) <- row.names(coordinates_NAD83)
+
+# Lets also change the column names to be a bit easier to work with:
+# name them using the convention: year followed by month: 
+# 1. create two vector objects containing the years and months. 
+years <- 1901:2015
+month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+# 2. rename the columns of our data.frame
+names(snap.tmp.shrubs) <- paste(rep(years, each=12), rep(month, times=113), sep="_")
+
+View(snap.tmp.shrubs)
+
+# Modify data to long format wth columns for shrb, year, month and temp
+snap.tmp.shrubs$Shrub_ID<-rownames(snap.tmp.shrubs)
+rownames(snap.tmp.shrubs)<-NULL
+snap.tmp.shrubsM<-melt(snap.tmp.shrubs)
+colnames(snap.tmp.shrubsM)[colnames(snap.tmp.shrubsM)=="variable"] <- "year_month"
+colnames(snap.tmp.shrubsM)[colnames(snap.tmp.shrubsM)=="value"] <- "tmp"
+snap.tmp.shrubsM$year<-substr(snap.tmp.shrubsM$year_month, 0, 4)
+snap.tmp.shrubsM$month <- substr(snap.tmp.shrubsM$year_month, 6, 9)
 
 
 
-# * Temperature -------------------------------------------------------------
+
+# 2. Precipitation -------------------------------------------------------------
+
+# Finds all the files with extension "tif" in the RasterStack_TIFF Folder
+snap.pre.files = list.files(path= "E:/MastersThesis/ClimateData/SNAP/pr_AK_CAN_2km_CRU_TS40_historical",
+                          pattern='tif', full.names=TRUE )
+
+# Create a raster stack of all tiff files 
+snap.pre = stack(snap.pre.files)
+
+
+# plot an example day:
+plot(snap.pre$pr_total_mm_CRU_TS40_historical_01_1901)
+
+# check that you sample points match:
+points(coordinates_NAD83, pch=16)
+
+# Extract climate data from the RasterBrick as a data.frame
+snap.pre.shrubs <- data.frame(extract(snap.pre, coordinates_NAD83, ncol=2))
+
+# Add shrub id names
+row.names(snap.pre.shrubs) <- row.names(coordinates_NAD83)
+
+# Lets also change the column names to be a bit easier to work with:
+# name them using the convention: year followed by month: 
+# 1. create two vector objects containing the years and months. 
+years <- 1901:2015
+month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+# 2. rename the columns of our data.frame
+names(snap.pre.shrubs) <- paste(rep(years, each=12), rep(month, times=113), sep="_")
+
+View(snap.pre.shrubs)
+
+# Modify data to long format wth columns for shrb, year, month and temp
+snap.pre.shrubs$Shrub_ID<-rownames(snap.pre.shrubs)
+rownames(snap.pre.shrubs)<-NULL
+snap.pre.shrubsM<-melt(snap.pre.shrubs)
+colnames(snap.pre.shrubsM)[colnames(snap.pre.shrubsM)=="variable"] <- "year_month"
+colnames(snap.pre.shrubsM)[colnames(snap.pre.shrubsM)=="value"] <- "pre"
+snap.pre.shrubsM$year<-substr(snap.pre.shrubsM$year_month, 0, 4)
+snap.pre.shrubsM$month <- substr(snap.pre.shrubsM$year_month, 6, 9)
+
+
+
+# 3. Merge all climate data --------------------------------------------------
+
+snap.climate<-merge(snap.tmp.shrubsM, snap.pre.shrubsM)
+
+str(snap.climate)
+
+# 4. Calculate yearly climate variables ----------------------------------------------
+
+# create shrub_ID_year varable
+snap.climate$Shrub_ID_year <- do.call(paste, c(snap.climate[c("Shrub_ID", "year")], sep = "_"))
+
+# Calculate the following variables
+
+      # 1. Mean summer temperature June-August (pity that don't know growth period lenght...)
+      # 2. Yearly mean temperature
+      # 3. Mean min summer temperature June-August
+      # 4. Mean max summer temperature June-August
+      # 5. Precipitation sum June-August
+      # 6. Precipitation sum October-March (for snow)
+      # 7. Yearly frost day sums
+      # 8. Mean PET June-August
+      # 9. Yearly wet day sums
+
+# extract right months
+snap.climatesummer<-snap.climate[snap.climate$month=="Jun"|snap.climate$month=="Jul"|snap.climate$month=="Aug",]
+snap.climatewinter<-snap.climate[snap.climate$month=="Oct"|snap.climate$month=="Nov"|snap.climate$month=="Dec"|snap.climate$month=="Jan"|snap.climate$month=="Feb"|snap.climate$month=="Mar",]
+
+snap.summ.temp<-tapply(snap.climatesummer$tmp,list(snap.climatesummer$Shrub_ID_year),mean)
+snap.temp<-tapply(snap.climate$tmp,list(snap.climate$Shrub_ID_year),mean)
+snap.summ.rain<-tapply(snap.climatesummer$pre,list(snap.climatesummer$Shrub_ID_year),sum)
+snap.wint.rain<-tapply(snap.climatewinter$pre,list(snap.climatewinter$Shrub_ID_year),sum)
+
+
+snap.summ.temp<-data.frame(snap.summ.temp)
+Shrub_ID_year <- rownames(snap.summ.temp)
+rownames(snap.summ.temp) <- NULL
+snap.summ.temp <- cbind(Shrub_ID_year,snap.summ.temp)
+
+snap.temp<-data.frame(snap.temp)
+Shrub_ID_year <- rownames(snap.temp)
+rownames(snap.temp) <- NULL
+snap.temp <- cbind(Shrub_ID_year,snap.temp)
+
+snap.summ.rain<-data.frame(snap.summ.rain)
+Shrub_ID_year <- rownames(snap.summ.rain)
+rownames(snap.summ.rain) <- NULL
+snap.summ.rain <- cbind(Shrub_ID_year,snap.summ.rain)
+
+snap.wint.rain<-data.frame(snap.wint.rain)
+Shrub_ID_year <- rownames(snap.wint.rain)
+rownames(snap.wint.rain) <- NULL
+snap.wint.rain <- cbind(Shrub_ID_year,snap.wint.rain)
+
+
+snap.climateAnnual<-merge(snap.summ.temp, snap.temp)
+snap.climateAnnual<-merge(snap.climateAnnual, snap.summ.rain)
+snap.climateAnnual<-merge(snap.climateAnnual, snap.wint.rain)
+
+write.csv(climateAnnual, "E:/MastersThesis/AK_SNAP_ClimateAnnual.csv")
+
+
+
+
+
+# EXTRACT CLIMATE RESEARCH UNIT TIME SERIES (CRU-TS) DATA ####
+
+#Sets the ShrubID column as the row names
+row.names(coordinates) = coordinates$ShrubID
+
+#Deletes the extra ShrubID column
+coordinates[1] = NULL
+
+# 1. Temperature -------------------------------------------------------------
 
 # this is big data, read from separate folder:
-setwd("T:/vm/inh/botanisk/Bruker/Kata/ArcticShurbsClimate")
+setwd("E:/MastersThesis/ClimateData")
 getwd()
 
 nc.temp <- nc_open("cru_ts4.03.1901.2018.tmp.dat.nc")
@@ -131,19 +212,22 @@ print(nc.temp)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on tmp data:
-tmp <- brick("T:/vm/inh/botanisk/Bruker/Kata/ArcticShurbsClimate/cru_ts4.03.1901.2018.tmp.dat.nc", varname="tmp")
+tmp <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.tmp.dat.nc", varname="tmp")
 tmp
+
+# Check the coordinate system of the cru-ts data
+crs(tmp)
 
 # plot an example day:
 plot(tmp$X1901.01.16)
 
 # we can also play with smaller areas:
-uk.area <- extent(-12, 4, 48, 64)
-uk <- crop(tmp, uk.area)
-plot(uk$X1901.01.16)
+ak.area <- extent(-155, -145, 65, 70) 
+ak.tmp <- crop(tmp, ak.area)
+plot(ak.tmp$X1901.01.16)
 
 # check that you sample points match:
-plot(tmp$X1901.01.16)
+plot(ak$X1901.01.16)
 points(coordinates, pch=16)
 
 # Extract climate data from the RasterBrick as a data.frame
@@ -158,7 +242,8 @@ years <- 1901:2018
 month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 # 2. rename the columns of our data.frame
 names(tmp.shrubs) <- paste(rep(years, each=12), rep(month, times=116), sep="_")
-# View(tmp.shrubs)
+
+View(tmp.shrubs)
 
 # Modify data to long format wth columns for shrb, year, month and temp
 tmp.shrubs$Shrub_ID<-rownames(tmp.shrubs)
@@ -170,9 +255,7 @@ tmp.shrubsM$year<-substr(tmp.shrubsM$year_month, 0, 4)
 tmp.shrubsM$month <- substr(tmp.shrubsM$year_month, 6, 9)
 
 
-
-
-# * Max Temperature -------------------------------------------------------------
+# 2.1 Max Temperature -------------------------------------------------------------
 
 
 nc.tempmax <- nc_open("cru_ts4.03.1901.2018.tmx.dat.nc")
@@ -181,16 +264,16 @@ print(nc.tempmax)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on tmx data:
-tmx <- brick("T:/vm/inh/botanisk/Bruker/Kata/ArcticShurbsClimate/cru_ts4.03.1901.2018.tmx.dat.nc", varname="tmx")
+tmx <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.tmx.dat.nc", varname="tmx")
 tmx
 
 # plot an example day:
 plot(tmx$X1901.01.16)
 
 # we can also play with smaller areas:
-uk.area <- extent(-12, 4, 48, 64)
-uk <- crop(tmx, uk.area)
-plot(uk$X1901.01.16)
+ak.area <- extent(-155, -145, 65, 70) 
+ak.tmx <- crop(tmx, ak.area)
+plot(ak.tmx$X1901.01.16)
 
 # check that you sample points match:
 plot(tmx$X1901.01.16)
@@ -220,7 +303,7 @@ tmx.shrubsM$year<-substr(tmx.shrubsM$year_month, 0, 4)
 tmx.shrubsM$month <- substr(tmx.shrubsM$year_month, 6, 9)
 
 
-# * Min Temperature -------------------------------------------------------------
+# 2.2 Min Temperature -------------------------------------------------------------
 
 
 nc.tempmin <- nc_open("cru_ts4.03.1901.2018.tmn.dat.nc")
@@ -229,16 +312,16 @@ print(nc.tempmin)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on tmn data:
-tmn <- brick("T:/vm/inh/botanisk/Bruker/Kata/ArcticShurbsClimate/cru_ts4.03.1901.2018.tmn.dat.nc", varname="tmn")
+tmn <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.tmn.dat.nc", varname="tmn")
 tmn
 
 # plot an example day:
 plot(tmn$X1901.01.16)
 
 # we can also play with smaller areas:
-uk.area <- extent(-12, 4, 48, 64)
-uk <- crop(tmn, uk.area)
-plot(uk$X1901.01.16)
+ak.area <- extent(-155, -145, 65, 70) 
+ak.tmn <- crop(tmn, ak.area)
+plot(ak.tmn$X1901.01.16)
 
 # check that you sample points match:
 plot(tmn$X1901.01.16)
@@ -268,7 +351,7 @@ tmn.shrubsM$year<-substr(tmn.shrubsM$year_month, 0, 4)
 tmn.shrubsM$month <- substr(tmn.shrubsM$year_month, 6, 9)
 
 
-# * Precipitation -------------------------------------------------------------
+# 3. Precipitation -------------------------------------------------------------
 
 
 nc.rain <- nc_open("cru_ts4.03.1901.2018.pre.dat.nc")
@@ -277,16 +360,16 @@ print(nc.rain)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on pre data:
-pre <- brick("T:/vm/inh/botanisk/Bruker/Kata/ArcticShurbsClimate/cru_ts4.03.1901.2018.pre.dat.nc", varname="pre")
+pre <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.pre.dat.nc", varname="pre")
 pre
 
 # plot an example day:
 plot(pre$X1901.01.16)
 
 # we can also play with smaller areas:
-uk.area <- extent(-12, 4, 48, 64)
-uk <- crop(pre, uk.area)
-plot(uk$X1901.01.16)
+ak.area <- extent(-155, -145, 65, 70) 
+ak.pre <- crop(pre, ak.area)
+plot(ak.pre$X1901.01.16)
 
 # check that you sample points match:
 plot(pre$X1901.01.16)
@@ -316,7 +399,7 @@ pre.shrubsM$year<-substr(pre.shrubsM$year_month, 0, 4)
 pre.shrubsM$month <- substr(pre.shrubsM$year_month, 6, 9)
 
 
-# * Frost -------------------------------------------------------------
+# 4. Frost -------------------------------------------------------------
 
 
 nc.frost <- nc_open("cru_ts4.03.1901.2018.frs.dat.nc")
@@ -325,16 +408,16 @@ print(nc.frost)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on frs data:
-frs <- brick("T:/vm/inh/botanisk/Bruker/Kata/ArcticShurbsClimate/cru_ts4.03.1901.2018.frs.dat.nc", varname="frs")
+frs <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.frs.dat.nc", varname="frs")
 frs
 
 # plot an example day:
 plot(frs$X1901.01.16)
 
 # we can also play with smaller areas:
-uk.area <- extent(-12, 4, 48, 64)
-uk <- crop(frs, uk.area)
-plot(uk$X1901.01.16)
+ak.area <- extent(-155, -145, 65, 70) 
+ak.frs <- crop(frs, ak.area)
+plot(ak.frs$X1901.01.16)
 
 # check that you sample points match:
 plot(frs$X1901.01.16)
@@ -364,7 +447,7 @@ frs.shrubsM$year<-substr(frs.shrubsM$year_month, 0, 4)
 frs.shrubsM$month <- substr(frs.shrubsM$year_month, 6, 9)
 
 
-# * Potential evapotranspiration -------------------------------------------------------------
+# 5. Potential evapotranspiration -------------------------------------------------------------
 
 
 nc.pet <- nc_open("cru_ts4.03.1901.2018.pet.dat.nc")
@@ -373,16 +456,16 @@ print(nc.pet)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on pet data:
-pet <- brick("T:/vm/inh/botanisk/Bruker/Kata/ArcticShurbsClimate/cru_ts4.03.1901.2018.pet.dat.nc", varname="pet")
+pet <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.pet.dat.nc", varname="pet")
 pet
 
 # plot an example day:
 plot(pet$X1901.01.16)
 
 # we can also play with smaller areas:
-uk.area <- extent(-12, 4, 48, 64)
-uk <- crop(pet, uk.area)
-plot(uk$X1901.01.16)
+ak.area <- extent(-155, -145, 65, 70) 
+ak.pet <- crop(pet, ak.area)
+plot(ak.pet$X1901.01.16)
 
 # check that you sample points match:
 plot(pet$X1901.01.16)
@@ -412,7 +495,7 @@ pet.shrubsM$year<-substr(pet.shrubsM$year_month, 0, 4)
 pet.shrubsM$month <- substr(pet.shrubsM$year_month, 6, 9)
 
 
-# * Wet -------------------------------------------------------------
+# 6. Wet Day Frequency -------------------------------------------------------------
 
 
 nc.wet <- nc_open("cru_ts4.03.1901.2018.wet.dat.nc")
@@ -421,16 +504,16 @@ print(nc.wet)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on wet data:
-wet <- brick("T:/vm/inh/botanisk/Bruker/Kata/ArcticShurbsClimate/cru_ts4.03.1901.2018.wet.dat.nc", varname="wet")
+wet <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.wet.dat.nc", varname="wet")
 wet
 
 # plot an example day:
 plot(wet$X1901.01.16)
 
 # we can also play with smaller areas:
-uk.area <- extent(-12, 4, 48, 64)
-uk <- crop(wet, uk.area)
-plot(uk$X1901.01.16)
+ak.area <- extent(-155, -145, 65, 70) 
+ak.wet <- crop(wet, ak.area)
+plot(ak.wet$X1901.01.16)
 
 # check that you sample points match:
 plot(wet$X1901.01.16)
@@ -460,7 +543,7 @@ wet.shrubsM$year<-substr(wet.shrubsM$year_month, 0, 4)
 wet.shrubsM$month <- substr(wet.shrubsM$year_month, 6, 9)
 
 
-# * Merge all climate data --------------------------------------------------
+# 7. Merge all climate data --------------------------------------------------
 
 climate<-merge(tmp.shrubsM, tmx.shrubsM)
 climate<-merge(climate, tmn.shrubsM)
@@ -470,21 +553,22 @@ climate<-merge(climate, pet.shrubsM)
 climate<-merge(climate, wet.shrubsM)
 str(climate)
 
-# * Calculate yearly climate variables ----------------------------------------------
+# 8. Calculate yearly climate variables ----------------------------------------------
 
 # create shrub_ID_year varable
 climate$Shrub_ID_year <- do.call(paste, c(climate[c("Shrub_ID", "year")], sep = "_"))
 
-# Calculate
-# 1. Mean summer temperature June-August (pity that don't know growth period lenght...)
-# 2. Yearly mean temperature
-# 3. Mean min summer temperature June-August
-# 4. Mean max summer temperature June-August
-# 5. Precipitation sum June-August
-# 6. Precipitation sum October-March (for snow)
-# 7. Yearly frost day sums
-# 8. Mean PET June-August
-# 9. Yearly wet day sums
+# Calculate the following variables
+
+    # 1. Mean summer temperature June-August (pity that don't know growth period lenght...)
+    # 2. Yearly mean temperature
+    # 3. Mean min summer temperature June-August
+    # 4. Mean max summer temperature June-August
+    # 5. Precipitation sum June-August
+    # 6. Precipitation sum October-March (for snow)
+    # 7. Yearly frost day sums
+    # 8. Mean PET June-August
+    # 9. Yearly wet day sums
 
 # extract right months
 climatesummer<-climate[climate$month=="Jun"|climate$month=="Jul"|climate$month=="Aug",]
@@ -555,30 +639,11 @@ climateAnnual<-merge(climateAnnual, wet)
 climateAnnual<-merge(climateAnnual, frost)
 climateAnnual<-merge(climateAnnual, summ.rain)
 
-write.csv(climateAnnual, "H:/Trondheim/ARCTIC-ALPINE SHRUBS/A Data_Templates/FILLED/A_COMBININGALL/climateAnnual.csv")
+write.csv(climateAnnual, "E:/MastersThesis/AK_ClimateAnnual.csv")
 
-
-# NPP ----------------------------------------------------
-
-library(sp, lib="C:/RpackagesQuebec")
-library(raster, lib="C:/RpackagesQuebec")
-library(RColorBrewer, lib="C:/RpackagesQuebec")
-library(latticeExtra, lib="C:/RpackagesQuebec")
-library(rasterVis, lib="C:/RpackagesQuebec")
-library(rgdal, lib="C:/RpackagesQuebec")
-library(purrr, lib="C:/RpackagesQuebec")
-
-# Data of productivity (NPP, July 2016) g/m2/day
-proddat<-raster('MOD17A2_M_PSN_2016-07-01_rgb_3600x1800.FLOAT.tiff')
-coordinatesnpp$NPP_July2016<-extract(proddat,coordinates)
-
-write.csv(coordinatesnpp, "H:/Trondheim/ARCTIC-ALPINE SHRUBS/A Data_Templates/FILLED/A_COMBININGALL/Productivity.csv")
 
 
 # MAP ---------------------------------------------------------------------
-
-library(rgdal)
-library(raster)
 
 # Polar projection
 polarproj<-'+proj=laea +lat_0=90 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0 '
@@ -601,3 +666,5 @@ noreco_shppp<-spTransform(noreco_shp,CRS=crs(polarproj))
 # Plot (play around with scaling to zoom in if required...)
 plot(noreco_shppp) #High res country outlines plot very slow...
 points(coord_pp,col=2,pch=16)
+
+
