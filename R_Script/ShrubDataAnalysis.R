@@ -3,6 +3,12 @@
 # peterfr@stud.ntnu.no
 # 2019-10-06
 
+library(tidyverse)
+library(dlpr)
+library(ggplot2)
+library(GGally)
+library(reshape2)
+
 #### PAIRS PLOTS FOR COLINEARITY AMONG VARIABLES ####
 #This code will assess trends and relationships in the dataset
 
@@ -68,7 +74,6 @@ DP_Data %>%
   scale_x_continuous (name = "Shrub Height (cm)") +
   scale_y_continuous (name = "Frequency") +
   theme_bw()
-
 
 
 
