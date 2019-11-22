@@ -1,4 +1,4 @@
-# Master's Thesis Shrub Data Subsample
+# Shrub Data Subsample
 # Peter Frank 
 # peterfr@stud.ntnu.no
 # 2019-10-06
@@ -12,4 +12,4 @@ library(splitstackshape)
 
 StratShrubData = stratified(ShrubData, c("SiteID", "Species"), size = 2)
 
-write.csv(StratShrubData, file = "StratShrubData")
+write.csv(StratShrubData, file = "AKShrub_SubSampleData")
