@@ -9,7 +9,7 @@
 # http://data.snap.uaf.edu/data/Base/AK_CAN_2km/historical/CRU_TS/
 # https://catalogue.ceda.ac.uk/uuid/10d3e3640f004c578403419aac167d82
 # https://crudata.uea.ac.uk/cru/data/hrg/cru_ts_4.03/
-
+ 
 
 #Packages
 install.packages("sp")
@@ -44,7 +44,7 @@ coordinates_NAD83[1] = NULL
 # 1. Temperature -------------------------------------------------------------
 
 # Finds all the files with extension "tif" in the RasterStack_TIFF Folder
-snap.tmp.files <- list.files(path= "E:/MastersThesis/ClimateData/SNAP/tas_AK_CAN_2km_CRU_TS40_historical",
+snap.tmp.files <- list.files(path= "/Volumes/PF_HD/MastersThesis/ClimateData/SNAP/tas_AK_CAN_2km_CRU_TS40_historical",
                          pattern='tif', full.names=TRUE )
 
 # Create a raster stack of all tiff files 
@@ -71,7 +71,7 @@ month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
 # 2. rename the columns of our data.frame
 names(snap.tmp.shrubs) <- paste(rep(years, each=12), rep(month, times=113), sep="_")
 
-View(snap.tmp.shrubs)
+#View(snap.tmp.shrubs)
 
 # Modify data to long format wth columns for shrb, year, month and temp
 snap.tmp.shrubs$Shrub_ID<-rownames(snap.tmp.shrubs)
@@ -88,7 +88,7 @@ snap.tmp.shrubsM$month <- substr(snap.tmp.shrubsM$year_month, 6, 9)
 # 2. Precipitation -------------------------------------------------------------
 
 # Finds all the files with extension "tif" in the RasterStack_TIFF Folder
-snap.pre.files = list.files(path= "E:/MastersThesis/ClimateData/SNAP/pr_AK_CAN_2km_CRU_TS40_historical",
+snap.pre.files = list.files(path= "/Volumes/PF_HD/MastersThesis/ClimateData/SNAP/pr_AK_CAN_2km_CRU_TS40_historical",
                           pattern='tif', full.names=TRUE )
 
 # Create a raster stack of all tiff files 
@@ -113,9 +113,17 @@ row.names(snap.pre.shrubs) <- row.names(coordinates_NAD83)
 years <- 1901:2015
 month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 # 2. rename the columns of our data.frame
+
+###EDIT###
+#The code below renames the columns starting in 1901 and going to sequentially through the months 
+#starting in January to December for each year up to 2015 ex. 1901-Jan, 1901-Feb, 1901-Mar ect...
+#The SNAP data is structured by month, so it starts with all the January values between 1901 and 2015
+#ex. 1901-Jan, 1902-Jan, 1903-Jan, ect... The code below must be adjusted to accomidate this new structure
+
 names(snap.pre.shrubs) <- paste(rep(years, each=12), rep(month, times=113), sep="_")
 
-View(snap.pre.shrubs)
+
+#View(snap.pre.shrubs)
 
 # Modify data to long format wth columns for shrb, year, month and temp
 snap.pre.shrubs$Shrub_ID<-rownames(snap.pre.shrubs)
@@ -186,9 +194,8 @@ snap.climateAnnual<-merge(snap.summ.temp, snap.temp)
 snap.climateAnnual<-merge(snap.climateAnnual, snap.summ.rain)
 snap.climateAnnual<-merge(snap.climateAnnual, snap.wint.rain)
 
-write.csv(climateAnnual, "E:/MastersThesis/AK_SNAP_ClimateAnnual.csv")
 
-
+write.csv(snap.climateAnnual, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/AK_SNAP_ClimateAnnual.csv")
 
 
 
@@ -203,7 +210,7 @@ coordinates[1] = NULL
 # 1. Temperature -------------------------------------------------------------
 
 # this is big data, read from separate folder:
-setwd("E:/MastersThesis/ClimateData")
+setwd("/Volumes/PF_HD/MastersThesis/ClimateData")
 getwd()
 
 nc.temp <- nc_open("cru_ts4.03.1901.2018.tmp.dat.nc")
@@ -212,7 +219,7 @@ print(nc.temp)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on tmp data:
-tmp <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.tmp.dat.nc", varname="tmp")
+tmp <- brick("/Volumes/PF_HD/MastersThesis/ClimateData/cru_ts4.03.1901.2018.tmp.dat.nc", varname="tmp")
 tmp
 
 # Check the coordinate system of the cru-ts data
@@ -232,6 +239,7 @@ points(coordinates, pch=16)
 
 # Extract climate data from the RasterBrick as a data.frame
 tmp.shrubs <- data.frame(extract(tmp, coordinates, ncol=2))
+
 # Add shrub id names
 row.names(tmp.shrubs) <- row.names(coordinates)
 
@@ -264,7 +272,7 @@ print(nc.tempmax)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on tmx data:
-tmx <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.tmx.dat.nc", varname="tmx")
+tmx <- brick("/Volumes/PF_HD/MastersThesis/ClimateData/cru_ts4.03.1901.2018.tmx.dat.nc", varname="tmx")
 tmx
 
 # plot an example day:
@@ -281,6 +289,7 @@ points(coordinates, pch=16)
 
 # Extract climate data from the RasterBrick as a data.frame
 tmx.shrubs <- data.frame(extract(tmx, coordinates, ncol=2))
+
 # Add shrub id names
 row.names(tmx.shrubs) <- row.names(coordinates)
 
@@ -312,7 +321,7 @@ print(nc.tempmin)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on tmn data:
-tmn <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.tmn.dat.nc", varname="tmn")
+tmn <- brick("/Volumes/PF_HD/MastersThesis/ClimateData/cru_ts4.03.1901.2018.tmn.dat.nc", varname="tmn")
 tmn
 
 # plot an example day:
@@ -329,6 +338,7 @@ points(coordinates, pch=16)
 
 # Extract climate data from the RasterBrick as a data.frame
 tmn.shrubs <- data.frame(extract(tmn, coordinates, ncol=2))
+
 # Add shrub id names
 row.names(tmn.shrubs) <- row.names(coordinates)
 
@@ -360,7 +370,7 @@ print(nc.rain)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on pre data:
-pre <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.pre.dat.nc", varname="pre")
+pre <- brick("/Volumes/PF_HD/MastersThesis/ClimateData/cru_ts4.03.1901.2018.pre.dat.nc", varname="pre")
 pre
 
 # plot an example day:
@@ -377,6 +387,7 @@ points(coordinates, pch=16)
 
 # Extract climate data from the RasterBrick as a data.frame
 pre.shrubs <- data.frame(extract(pre, coordinates, ncol=2))
+
 # Add shrub id names
 row.names(pre.shrubs) <- row.names(coordinates)
 
@@ -385,8 +396,10 @@ row.names(pre.shrubs) <- row.names(coordinates)
 # 1. create two vector objects containing the years and months. 
 years <- 1901:2018
 month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
 # 2. rename the columns of our data.frame
 names(pre.shrubs) <- paste(rep(years, each=12), rep(month, times=116), sep="_")
+
 # View(pre.shrubs)
 
 # Modify data to long format wth columns for shrub, year, month and rain
@@ -401,14 +414,13 @@ pre.shrubsM$month <- substr(pre.shrubsM$year_month, 6, 9)
 
 # 4. Frost -------------------------------------------------------------
 
-
 nc.frost <- nc_open("cru_ts4.03.1901.2018.frs.dat.nc")
 print(nc.frost)
 # 2 variables: float frs which is frost & stn which is stations.
 # 3 dimensions: lat, lon and time
 
 # We only want to work on frs data:
-frs <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.frs.dat.nc", varname="frs")
+frs <- brick("/Volumes/PF_HD/MastersThesis/ClimateData/cru_ts4.03.1901.2018.frs.dat.nc", varname="frs")
 frs
 
 # plot an example day:
@@ -425,6 +437,7 @@ points(coordinates, pch=16)
 
 # Extract climate data from the RasterBrick as a data.frame
 frs.shrubs <- data.frame(extract(frs, coordinates, ncol=2))
+
 # Add shrub id names
 row.names(frs.shrubs) <- row.names(coordinates)
 
@@ -433,8 +446,10 @@ row.names(frs.shrubs) <- row.names(coordinates)
 # 1. create two vector objects containing the years and months. 
 years <- 1901:2018
 month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
 # 2. rename the columns of our data.frame
 names(frs.shrubs) <- paste(rep(years, each=12), rep(month, times=116), sep="_")
+
 # View(frs.shrubs)
 
 # Modify data to long format wth columns for shrub, year, month and frost
@@ -449,14 +464,13 @@ frs.shrubsM$month <- substr(frs.shrubsM$year_month, 6, 9)
 
 # 5. Potential evapotranspiration -------------------------------------------------------------
 
-
 nc.pet <- nc_open("cru_ts4.03.1901.2018.pet.dat.nc")
 print(nc.pet)
 # 2 variables: float pet which is pet & stn which is stations.
 # 3 dimensions: lat, lon and time
 
 # We only want to work on pet data:
-pet <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.pet.dat.nc", varname="pet")
+pet <- brick("/Volumes/PF_HD/MastersThesis/ClimateData/cru_ts4.03.1901.2018.pet.dat.nc", varname="pet")
 pet
 
 # plot an example day:
@@ -473,6 +487,7 @@ points(coordinates, pch=16)
 
 # Extract climate data from the RasterBrick as a data.frame
 pet.shrubs <- data.frame(extract(pet, coordinates, ncol=2))
+
 # Add shrub id names
 row.names(pet.shrubs) <- row.names(coordinates)
 
@@ -504,7 +519,7 @@ print(nc.wet)
 # 3 dimensions: lat, lon and time
 
 # We only want to work on wet data:
-wet <- brick("E:/MastersThesis/ClimateData/cru_ts4.03.1901.2018.wet.dat.nc", varname="wet")
+wet <- brick("/Volumes/PF_HD/MastersThesis/ClimateData/cru_ts4.03.1901.2018.wet.dat.nc", varname="wet")
 wet
 
 # plot an example day:
@@ -521,6 +536,7 @@ points(coordinates, pch=16)
 
 # Extract climate data from the RasterBrick as a data.frame
 wet.shrubs <- data.frame(extract(wet, coordinates, ncol=2))
+
 # Add shrub id names
 row.names(wet.shrubs) <- row.names(coordinates)
 
@@ -639,9 +655,8 @@ climateAnnual<-merge(climateAnnual, wet)
 climateAnnual<-merge(climateAnnual, frost)
 climateAnnual<-merge(climateAnnual, summ.rain)
 
-write.csv(climateAnnual, "E:/MastersThesis/AK_ClimateAnnual.csv")
 
-
+write.csv(climateAnnual, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/AK_ClimateAnnual.csv")
 
 # MAP ---------------------------------------------------------------------
 
