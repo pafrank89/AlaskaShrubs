@@ -1,7 +1,6 @@
 # Disentangle Project: Alaska
 Peter Frank,
 Norwegian University of Science and Technology,
-Updated: 06/10/2019
 
 # Project Background
 Tundra and boreal plant communities are changing rapidly in the early stages of the Anthropocene. In interior Alaska, one of 
