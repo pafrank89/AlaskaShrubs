@@ -321,9 +321,6 @@ colnames(bai_rwl_all)[colnames(bai_rwl_all)=="MeanRadii_melt$RingWidth"] <- "Rin
 
 #Joins the ring width and bai data to the shrub data using the ShrubID as the key 
 SubSample_join = join(bai_rwl_all, AKShrub_SubSampleData, by='ShrubID', type='left', match='all')
-        
-#### 9. HERBIVORE DATA ####
 
-colnames(Herbivore_Data)[colnames(Herbivore_Data)=="X1"] <- "GMU"
+write.csv(SubSample_join, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_BAI.csv")
 
-herbivore_melt<-melt(Herbivore_Data, id="GMU", na.rm = TRUE)
