@@ -252,8 +252,7 @@ MeanDiam = select (MeanDiam, -c (0,2))
 #### 4. CALCULATE BAI ####
 
 #Use the bai.out tool from dplR to calculate the basal area increment going from 
-#the bark to the pith. For now we will use the standard diamater calculation which is
-#the sum of all ring width measurments x2. 
+#the bark to the pith. 
 
 bai_all <- bai.out(rwl = mean_rwl_all, diam = MeanDiam)
 
@@ -320,7 +319,9 @@ bai_rwl_all = bai_rwl_all[,c(2,3,1,4)]
 colnames(bai_rwl_all)[colnames(bai_rwl_all)=="MeanRadii_melt$RingWidth"] <- "RingWidth"
 
 #Joins the ring width and bai data to the shrub data using the ShrubID as the key 
-SubSample_join = join(bai_rwl_all, AKShrub_SubSampleData, by='ShrubID', type='left', match='all')
+bai_rwl_age = join(bai_rwl_all, Shrub_Age, by='ShrubID', type='left', match='all')
+
+SubSample_join = join(bai_rwl_age, AKShrub_SubSampleData, by='ShrubID', type='left', match='all')
 
 write.csv(SubSample_join, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_BAI.csv")
 
