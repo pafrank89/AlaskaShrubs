@@ -15,7 +15,7 @@ library(plyr)
 #BAI Calculation using measured ring widths (mm) from Image J.
 #Ring widths are listed from the bark to the pith, so the function bai.out in the dplR package will be used.
 
-#### 1. CALCULATE THE MEAN OF THE 4 MEASURED RADII ####
+# 1. CALCULATE THE MEAN OF THE 4 MEASURED RADII ####
 
 #Calculates mean ring width per year from the  4 measured radii
 MeanRadii = aggregate(x = BaseChronology,
@@ -30,7 +30,7 @@ MeanRadii = select (MeanRadii, -c (2))
 
 colnames(MeanRadii)[colnames(MeanRadii)=="Group.1"] <- "ShrubID"
 
-#### 2. TRANSPOSE MEAN RING WIDTH DATA ####
+# 2. TRANSPOSE MEAN RING WIDTH DATA ####
 
 #Transposes the data into the format reqired for the bai.out function
 mean_rwl_all = as.data.frame (t(MeanRadii))
@@ -44,7 +44,7 @@ mean_rwl_all = as.data.frame (t(MeanRadii))
     mean_rwl_all = mean_rwl_all[-c(1, 2), ]
 
 
-      #### 2.1. SUBSET RW DATA BY SPECIES ####
+      # 2.1. SUBSET RW DATA BY SPECIES ####
     
 #Creates a new data frames from the full dataset based on species
 
@@ -58,7 +58,7 @@ mean_rwl_SALIX = data.frame(mean_rwl_all %>% dplyr:: select (grep("SA", names(me
     
     #mean_rwl_SAGL = data.frame(mean_rwl_all %>% dplyr:: select (grep("SAGL", names(mean_rwl_all))), check.names = FALSE)
 
-      #### 2.2. SUBSET RW DATA BY SITE ####
+      # 2.2. SUBSET RW DATA BY SITE ####
                 
 #Creates a new data frames from the full dataset based on the site number
 
@@ -108,7 +108,7 @@ mean_rwl_268 = data.frame(mean_rwl_all %>% dplyr:: select (grep("268", names(mea
 
 mean_rwl_282 = data.frame(mean_rwl_all %>% dplyr:: select (grep("282", names(mean_rwl_all))), check.names = FALSE)
 
-      #### 2.3. SUBSET RW DATA BY SITE & SPECIES ####
+      # 2.3. SUBSET RW DATA BY SITE & SPECIES ####
 
 #Creates a new data frames from the BENA dataset based on the site number 
 mean_rwl_60_BENA = data.frame(mean_rwl_BENA %>% dplyr:: select (grep("60", names(mean_rwl_BENA))), check.names = FALSE)
@@ -204,22 +204,25 @@ mean_rwl_268_SALIX = data.frame(mean_rwl_SALIX %>% dplyr:: select (grep("268", n
 
 mean_rwl_282_SALIX = data.frame(mean_rwl_SALIX %>% dplyr:: select (grep("282", names(mean_rwl_SALIX))), check.names = FALSE)
 
-#### 3. CREATE RWL FILES ####
+# 3. CREATE RWL FILES ####
+
+#Remove rows that only have NA values 
+mean_rwl_147_BENA = mean_rwl_147_BENA[rowSums(is.na(mean_rwl_147_BENA)) != ncol(mean_rwl_147_BENA), ]
 
 #Create a temporary csv file from the mean ring width legnth data,
 #Then uses the csv2rwl function to convert to a rwl file usable in dplR
 tmpName <- tempfile()
     
-write.csv( mean_rwl_all,file = tmpName)
+write.csv( mean_rwl_147_BENA,file = tmpName)
     
-mean_rwl_all = csv2rwl(tmpName)
+mean_rwl_147_BENA = csv2rwl(tmpName)
 
 
-#### 4. CREATE DIAM FILES ####
+# 4. CREATE DIAM FILES ####
 
 #Calculates mean legnth of each of the 4 radii
 MeanDiam = aggregate(x = BaseDiameter,
-                      by = list(BaseChronology$ShrubID),
+                      by = list(BaseDiameter$ShrubID),
                       FUN = mean,
                       na.rm = TRUE)
 
@@ -249,27 +252,20 @@ MeanDiam = cbind(rwlNames, MeanDiam)
 MeanDiam = select (MeanDiam, -c (0,2))
 
 
-#### 4. CALCULATE BAI ####
+# 5. CALCULATE BAI ####
 
 #Use the bai.out tool from dplR to calculate the basal area increment going from 
 #the bark to the pith. 
 
 bai_all <- bai.out(rwl = mean_rwl_all, diam = MeanDiam)
 
-
-      #### 4.1. CREATE CRHONOLOGIES ####
-
-      crn_BENA <- chron(bai_BENA)
       
-      plot(crn_BENA, add.spline=TRUE, nyrs=15)
-      
-      
-#### 5. TRANSPOSE BAI DATA ####
+# 6. TRANSPOSE BAI DATA ####
 
 #Transposes the data into a format which can be melted and joined back to the shrub data
 bai_all_t = data.frame (t(bai_all))
 
-#### 6. ADD SHRUB-ID AND RENAME COLUMNS  ####
+# 7. ADD SHRUB-ID AND RENAME COLUMNS  ####
 
 #Sorts the shrub data in ascending order, not numerical (with the whole # e.g. 60 & up), but sequential (starting with the first digit e.g. 102 & up)
 SortedShrubData = AKShrub_SubSampleData %>% arrange(ShrubID)
@@ -287,7 +283,7 @@ bai_all_f = setNames(cbind(rownames(bai_all_f), bai_all_f, row.names = NULL),
 #Removes the Shrub ID column which was added during the BAI calculation
 bai_all_f$Shrub.ID = NULL
 
-#### 7. MELT BIA DATA AND RW DATA  ####
+# 8. MELT BIA DATA AND RW DATA  ####
 
 #Melts the BAI data, ignoring all NA values
 bai_all_melt = melt(bai_all_f, id="ShrubID", na.rm = TRUE)
@@ -307,7 +303,7 @@ colnames(MeanRadii_melt)[colnames(MeanRadii_melt)=="variable"] <- "Year"
 colnames(MeanRadii_melt)[colnames(MeanRadii_melt)=="value"] <- "RingWidth"
 
 
-#### 8. JOIN SHRUB DATA TO THE MELTED BAI AND RW DATA  ####
+# 9. JOIN SHRUB DATA TO THE MELTED BAI AND RW DATA  ####
 
 #Adds the melted ring width data to the melted bai data
 bai_rwl_all = cbind(MeanRadii_melt$RingWidth, bai_all_melt)
@@ -322,6 +318,10 @@ colnames(bai_rwl_all)[colnames(bai_rwl_all)=="MeanRadii_melt$RingWidth"] <- "Rin
 bai_rwl_age = join(bai_rwl_all, Shrub_Age, by='ShrubID', type='left', match='all')
 
 SubSample_join = join(bai_rwl_age, AKShrub_SubSampleData, by='ShrubID', type='left', match='all')
+
+str(SubSample_join)
+
+SubSample_join$Year = as.numeric(as.character(SubSample_join$Year))
 
 write.csv(SubSample_join, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_BAI.csv")
 
