@@ -13,8 +13,8 @@ library(reshape2)
 #This code will assess trends and relationships in the dataset
 
 #Subsets the Shrub dataset to retain only the necessary fields 
-PairsData = subset(ShrubData, select = c("StemLength", "VertHeight", "StemDiameter", "CanopyCover", 
-                                         "PropMooseBrowse", "PropHareBrowse","PropPtarmaginBrowse",
+PairsData = subset(ShrubData, select = c("StemLength", "VertHeight", "CanopyCover", 
+                                         "PropMoose", "PropHare","PropPtarmagin",
                                          "Y_Cord", "Elevation", "Aspect", "Slope", "Y_Cord"))
 
 #Establishes parameters which will be applied to each plot in the pairs diagram
@@ -44,7 +44,7 @@ ggplot(data = SectionData,
            y = Prop_TwigsBrowsed)) + 
   geom_smooth(method=lm) + 
   geom_point(size = 2) +
-  xlab("Elevation (m)") + ylab("Proportion of Twigs Browsed")
+  xlab("Elevation") + ylab("Proportion of Twigs Browsed")
 
 
 #### HEIGHT ~ BROWSING INTENSITY DENSITY PLOT ####
