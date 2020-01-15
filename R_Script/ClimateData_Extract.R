@@ -68,19 +68,27 @@ row.names(snap.tmp.shrubs) <- row.names(coordinates_NAD83)
 # 1. create two vector objects containing the years and months. 
 years <- 1901:2015
 month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+#Create a combined vector from month and year 
+#The SNAP data is structured by month, so it starts with all the January values between 1901 and 2015
+#ex. 1901-Jan, 1902-Jan, 1903-Jan, ect.
+eg = expand.grid(years,month)
+monyr = paste(eg$Var2, eg$Var1, sep = '-')
+
 # 2. rename the columns of our data.frame
-names(snap.tmp.shrubs) <- paste(rep(years, each=12), rep(month, times=113), sep="_")
+names(snap.tmp.shrubs) <- paste(monyr)
 
 #View(snap.tmp.shrubs)
 
 # Modify data to long format wth columns for shrb, year, month and temp
 snap.tmp.shrubs$Shrub_ID<-rownames(snap.tmp.shrubs)
+
 rownames(snap.tmp.shrubs)<-NULL
 snap.tmp.shrubsM<-melt(snap.tmp.shrubs)
 colnames(snap.tmp.shrubsM)[colnames(snap.tmp.shrubsM)=="variable"] <- "year_month"
 colnames(snap.tmp.shrubsM)[colnames(snap.tmp.shrubsM)=="value"] <- "tmp"
-snap.tmp.shrubsM$year<-substr(snap.tmp.shrubsM$year_month, 0, 4)
-snap.tmp.shrubsM$month <- substr(snap.tmp.shrubsM$year_month, 6, 9)
+snap.tmp.shrubsM$year<-substr(snap.tmp.shrubsM$year_month, 0, 3)
+snap.tmp.shrubsM$month <- substr(snap.tmp.shrubsM$year_month, 5, 9)
 
 
 
@@ -112,16 +120,16 @@ row.names(snap.pre.shrubs) <- row.names(coordinates_NAD83)
 # 1. create two vector objects containing the years and months. 
 years <- 1901:2015
 month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+#Create a combined vector from month and year 
+#The SNAP data is structured by month, so it starts with all the January values between 1901 and 2015
+#ex. 1901-Jan, 1902-Jan, 1903-Jan, ect.
+eg = expand.grid(years,month)
+monyr = paste(eg$Var2, eg$Var1, sep = '-')
+
 # 2. rename the columns of our data.frame
 
-###EDIT###
-#The code below renames the columns starting in 1901 and going to sequentially through the months 
-#starting in January to December for each year up to 2015 ex. 1901-Jan, 1901-Feb, 1901-Mar ect...
-#The SNAP data is structured by month, so it starts with all the January values between 1901 and 2015
-#ex. 1901-Jan, 1902-Jan, 1903-Jan, ect... The code below must be adjusted to accomidate this new structure
-
-names(snap.pre.shrubs) <- paste(rep(years, each=12), rep(month, times=113), sep="_")
-
+names(snap.pre.shrubs) <- paste(monyr)
 
 #View(snap.pre.shrubs)
 
@@ -131,8 +139,8 @@ rownames(snap.pre.shrubs)<-NULL
 snap.pre.shrubsM<-melt(snap.pre.shrubs)
 colnames(snap.pre.shrubsM)[colnames(snap.pre.shrubsM)=="variable"] <- "year_month"
 colnames(snap.pre.shrubsM)[colnames(snap.pre.shrubsM)=="value"] <- "pre"
-snap.pre.shrubsM$year<-substr(snap.pre.shrubsM$year_month, 0, 4)
-snap.pre.shrubsM$month <- substr(snap.pre.shrubsM$year_month, 6, 9)
+snap.pre.shrubsM$year<-substr(snap.pre.shrubsM$year_month, 0, 3)
+snap.pre.shrubsM$month <- substr(snap.pre.shrubsM$year_month, 5, 9)
 
 
 
