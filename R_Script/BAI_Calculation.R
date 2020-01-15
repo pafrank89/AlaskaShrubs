@@ -6,11 +6,21 @@
 install.packages("dplR")
 install.packages("reshape2")
 install.packages('plyr')
+install.packages('gam')
+install.packages('foreach')
+install.packages('nlme')
+install.packages('lme4')
 
 library(dplR)
 library(dplyr)
 library(reshape2)
 library(plyr)
+library(gam)
+library(foreach)
+library(ggplot2)
+library(nlme)
+library(lme4)
+
 
 #BAI Calculation using measured ring widths (mm) from Image J.
 #Ring widths are listed from the bark to the pith, so the function bai.out in the dplR package will be used.
@@ -318,9 +328,13 @@ bai_rw_all = bai_rw_all[,c(2,3,1,4)]
 #Renames the added column 
 colnames(bai_rw_all)[colnames(bai_rw_all)=="rw_mean_melt$RingWidth"] <- "RingWidth"
 
-#Joins the ring width and bai data to the shrub data using the ShrubID as the key 
+#Joins the ring width and bai data to the shrub age using the ShrubID as the key 
 bai_rw_age = join(bai_rw_all, age, by='ShrubID', type='left', match='all')
 
+#Creates an Age Column which is the year - the date of stem establishment
+shrub_data_join$Age <- shrub_data_join$Year - shrub_data_join$Estab
+
+# Joins the ring width and bai data to the shrub data using the ShrubID as the key 
 shrub_data_join = join(bai_rw_age, shrub_data_ss, by='ShrubID', type='left', match='all')
 
 str(shrub_data_join)
@@ -328,4 +342,110 @@ str(shrub_data_join)
 shrub_data_join$Year = as.numeric(as.character(shrub_data_join$Year))
 
 write.csv(shrub_data_join, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_BAI.csv")
+
+
+# 11. PLOT BAI VS AGE ####
+
+#Subsets the data by species
+shrub_data_join_bena = subset(shrub_data_join, Species == "BENA", select = ShrubID : Species)
+
+  #Removes all age values less than 5 years 
+  shrub_data_join_bena_5 = filter(shrub_data_join_bena, Age > 5)
+
+shrub_data_join_salix = subset(shrub_data_join, grepl("^SA", shrub_data_join$Species), select = ShrubID : Species)
+
+  #Removes all age values less than 5 years 
+  shrub_data_join_salix_5 = filter(shrub_data_join_salix, Age > 5)
+
+    #shrub_data_join_sapu = subset(shrub_data_join, Species == "SAPU", select = ShrubID : Species)
+    #shrub_data_join_sabe = subset(shrub_data_join, Species == "SABE", select = ShrubID : Species)
+    #shrub_data_join_sagl = subset(shrub_data_join, Species == "SAGL", select = ShrubID : Species)
+
+#Plots BAI as a function of age on a single graph
+par(mfrow=c(1,1))
+    
+plot(BAI ~ Age, data = shrub_data_join,
+      col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93))
+    
+abline(v=5)    
+
+#Plots BAI as a function of age on two graphs by genus
+par(mfrow=c(1,1))
+
+plot(BAI ~ Age, data = shrub_data_join_bena_5,
+     col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Betula")
+
+#abline(v=5)
+
+plot(BAI ~ Age, data = shrub_data_join_salix_5,
+     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix")
+
+#abline(v=5)
+
+#Plots BAI as a function of age on four graphs by species
+par(mfrow=c(2,2))
+
+plot(BAI ~ Age, data = shrub_data_join_bena,
+     col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Betula nana")
+ 
+plot(BAI ~ Age, data = shrub_data_join_sapu,
+     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix pulchra")
+
+abline(v=5)
+
+plot(BAI ~ Age, data = shrub_data_join_sabe,
+     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix bebbiana")
+
+abline(v=5)
+
+plot(BAI ~ Age, data = shrub_data_join_sagl,
+     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix glauca")
+
+abline(v=5)
+
+#Fit models to data in order to develop a growth curve
+
+    #Linear Model
+    #lmBena = lme (BAI ~ Age, random =~ 1 | ShrubID/Section, data = shrub_data_join_bena) 
+    #summary(lmBena)
+    #plot (lmBena)
+    
+    #ggplot(shrub_data_join_bena, aes(x = Age, y = BAI)) + geom_point() + stat_smooth(method = "lm", size = 1)
+    
+#Logistic Model***********
+lmeBena_log = lme (log(BAI) ~ log(Age), random =~ 1 | ShrubID/Section, data = shrub_data_join_bena_5)  
+summary(lmeBena_log)
+plot (lmeBena_log)
+
+lmBena_log = lm (log(BAI) ~ log(Age), data = shrub_data_join_bena_5)  
+summary(lmBena_log)
+plot (lmBena_log)
+
+ggplot(shrub_data_join_bena_5, aes(x = log(Age), y = log(BAI))) + geom_point() + stat_smooth(method = "lm", size = 1)
+
+
+lmeSalix_log = lme (log(BAI) ~ Age, random =~ 1 | ShrubID/Section, data = shrub_data_join_salix_5)  
+summary(lmeSalix_log)
+plot (lmeSalix_log)
+
+lmSalix_log = lm (log(BAI) ~ log(Age), data = shrub_data_join_salix_5)  
+summary(lmSalix_log)
+plot (lmSalix_log)
+
+ggplot(shrub_data_join_salix_5, aes(x = Age, y = log(BAI))) + geom_point() + stat_smooth(method = "lm", size = 1)
+    
+    #Generalized Addative Model
+    #gamBena = gam(BAI ~ Age + s(Section), data = shrub_data_join_bena)
+    #summary(gamBena)
+    #plot(gamBena)
+    
+    
+
+
+
+
+
+
+
+
 

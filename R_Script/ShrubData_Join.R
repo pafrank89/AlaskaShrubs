@@ -25,11 +25,4 @@ ShrubCCH_Data$GMU_year <- do.call(paste, c(ShrubCCH_Data[c("GMU", "Year")], sep 
 ShrubCCH_Data = join(ShrubCCH_Data, MooseDensity_Data, by='GMU_year', type='left', match='all')
 
 
-#We need to make year a numeric field and plot against BAI
-str(ShrubCCH_Data)
-
-#Creates an Age Column which is the year - the date of stem establishment
-ShrubCCH_Data$Age <- ShrubCCH_Data$Year - ShrubCCH_Data$StemEstablishment
-
-
 write.csv(ShrubCCH_Data, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_CCH.csv")
