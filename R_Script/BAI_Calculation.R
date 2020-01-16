@@ -10,6 +10,9 @@ install.packages('gam')
 install.packages('foreach')
 install.packages('nlme')
 install.packages('lme4')
+install.packages('aomisc')
+install.packages('lmerTest') 
+install.packages("MuMIn")
 
 library(dplR)
 library(dplyr)
@@ -20,6 +23,10 @@ library(foreach)
 library(ggplot2)
 library(nlme)
 library(lme4)
+library(lmtest)
+library(lmerTest)
+library(MuMIn)
+library(aomisc)
 
 
 #BAI Calculation using measured ring widths (mm) from Image J.
@@ -38,7 +45,7 @@ rw_mean = select (rw_mean, -c (2))
 
 #Changes the column name output from the aggregate function to ShrubID
 
-colnames(rw_mean)[colnames(rw_mean)=="Group.1"] <- "ShrubID"
+colnames(rw_mean)[colnames(rw_mean)=="Group.1"] = "ShrubID"
 
 # 2. TRANSPOSE MEAN RING WIDTH DATA ####
 
@@ -220,7 +227,7 @@ rw_mean_t = rw_mean_t[rowSums(is.na(rw_mean_t)) != ncol(rw_mean_t), ]
 
 #Create a temporary csv file from the mean ring width legnth data,
 #Then uses the csv2rwl function to convert to a rwl file usable in dplR
-tmpName <- tempfile()
+tmpName = tempfile()
     
 write.csv( rw_mean_t,file = tmpName)
     
@@ -239,7 +246,7 @@ diam_mean = aggregate(x = diam,
 diam_mean = select (diam_mean, -c (2))
 
 #Changes the column name output from the aggregate function to ShrubID
-colnames(diam_mean)[colnames(diam_mean)=="Group.1"] <- "ShrubID"
+colnames(diam_mean)[colnames(diam_mean)=="Group.1"] = "ShrubID"
 
 #Multiplies the averaged radii values by 2 to get the diameter of the stem - the bark
 diam_mean$diam = diam_mean$Radius * 2
@@ -260,16 +267,16 @@ diam_mean = cbind(rw_shrubID, diam_mean)
 
 diam_mean = select (diam_mean, -c (0,2))
 
-colnames(diam_mean)[colnames(diam_mean)=="rw_shrubID"] <- "ShrubID"
+colnames(diam_mean)[colnames(diam_mean)=="rw_shrubID"] = "ShrubID"
 
 # 5. CALCULATE BAI ####
 
 #Use the bai.out tool from dplR to calculate the basal area increment going from 
 #the bark to the pith. 
 
-bai <- bai.out(rwl = rw_mean_t, diam = diam_mean)
+bai = bai.out(rwl = rw_mean_t, diam = diam_mean)
 
-  #bai_no_diam <- bai.out(rwl = rw_mean_t) 
+  #bai_no_diam = bai.out(rwl = rw_mean_t) 
   #After talks with Kata on 01/15/2020 I've decided to specify a diam for each shrub. The diam file is the mean radius for 
   #each shrub (including the pith) x2. If a diam is not specified the bai.out calculation will sum all the increments from
   #the rwl file and multiply it by 2. In my data this would not include the pit in the overall diameter, therefore we will
@@ -303,8 +310,8 @@ bai$Shrub.ID = NULL
 bai_melt = melt(bai, id="ShrubID", na.rm = TRUE)
 
 #Changes the field names of the melted data set to Year and BAI
-colnames(bai_melt)[colnames(bai_melt)=="variable"] <- "Year"
-colnames(bai_melt)[colnames(bai_melt)=="value"] <- "BAI"
+colnames(bai_melt)[colnames(bai_melt)=="variable"] = "Year"
+colnames(bai_melt)[colnames(bai_melt)=="value"] = "BAI"
 
 #Removes 2019 from the ring width data prior to melting
 rw_mean$`2019` = NULL
@@ -313,8 +320,8 @@ rw_mean$`2019` = NULL
 rw_mean_melt = melt(rw_mean, id = "ShrubID", na.rm = TRUE)
 
 #Changes the field names of the melted data set to Year and BAI
-colnames(rw_mean_melt)[colnames(rw_mean_melt)=="variable"] <- "Year"
-colnames(rw_mean_melt)[colnames(rw_mean_melt)=="value"] <- "RingWidth"
+colnames(rw_mean_melt)[colnames(rw_mean_melt)=="variable"] = "Year"
+colnames(rw_mean_melt)[colnames(rw_mean_melt)=="value"] = "RingWidth"
 
 
 # 10. JOIN SHRUB DATA TO THE MELTED BAI AND RW DATA  ####
@@ -326,126 +333,223 @@ bai_rw_all = cbind(rw_mean_melt$RingWidth, bai_melt)
 bai_rw_all = bai_rw_all[,c(2,3,1,4)]
 
 #Renames the added column 
-colnames(bai_rw_all)[colnames(bai_rw_all)=="rw_mean_melt$RingWidth"] <- "RingWidth"
+colnames(bai_rw_all)[colnames(bai_rw_all)=="rw_mean_melt$RingWidth"] = "RingWidth"
 
 #Joins the ring width and bai data to the shrub age using the ShrubID as the key 
 bai_rw_age = join(bai_rw_all, age, by='ShrubID', type='left', match='all')
 
-#Creates an Age Column which is the year - the date of stem establishment
-shrub_data_join$Age <- shrub_data_join$Year - shrub_data_join$Estab
-
 # Joins the ring width and bai data to the shrub data using the ShrubID as the key 
-shrub_data_join = join(bai_rw_age, shrub_data_ss, by='ShrubID', type='left', match='all')
+sd_join = join(bai_rw_age, shrub_data_ss, by='ShrubID', type='left', match='all')
 
-str(shrub_data_join)
+str(sd_join)
 
-shrub_data_join$Year = as.numeric(as.character(shrub_data_join$Year))
+#Creates an Age Column which is the year - the date of stem establishment
 
-write.csv(shrub_data_join, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_BAI.csv")
+  #Year column must be made numeric first
+  sd_join$Year = as.numeric(as.character(sd_join$Year))
+
+sd_join$Age = sd_join$Year - sd_join$Estab
+
+write.csv(sd_join, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_BAI.csv")
 
 
-# 11. PLOT BAI VS AGE ####
+# 11. SUBSET DATA BY GENUS & SPECIES ####
 
 #Subsets the data by species
-shrub_data_join_bena = subset(shrub_data_join, Species == "BENA", select = ShrubID : Species)
+sd_bena = subset(sd_join, Species == "BENA")# select = ShrubID : Species)
 
-  #Removes all age values less than 5 years 
-  shrub_data_join_bena_5 = filter(shrub_data_join_bena, Age > 5)
+sd_salix = subset(sd_join, grepl("^SA", sd_join$Species)) #, select = ShrubID : Species)
 
-shrub_data_join_salix = subset(shrub_data_join, grepl("^SA", shrub_data_join$Species), select = ShrubID : Species)
+#Removes all age values less than 5 years 
+sd_bena5 = filter(sd_bena, Age > 5)
 
-  #Removes all age values less than 5 years 
-  shrub_data_join_salix_5 = filter(shrub_data_join_salix, Age > 5)
+sd_salix5 = filter(sd_salix, Age > 5)
 
-    #shrub_data_join_sapu = subset(shrub_data_join, Species == "SAPU", select = ShrubID : Species)
-    #shrub_data_join_sabe = subset(shrub_data_join, Species == "SABE", select = ShrubID : Species)
-    #shrub_data_join_sagl = subset(shrub_data_join, Species == "SAGL", select = ShrubID : Species)
+#Other Potential Subsets
+  #sd_bena5_255 = subset(sd_bena5, Section == 20)
+  #sd_sapu = subset(sd_join, Species == "SAPU", select = ShrubID : Species)
+  #sd_join_sabe = subset(sd_join, Species == "SABE", select = ShrubID : Species)
+  #sd_sagl = subset(sd_join, Species == "SAGL", select = ShrubID : Species)
+
+# 11. PLOT BAI VS AGE ####
 
 #Plots BAI as a function of age on a single graph
 par(mfrow=c(1,1))
     
-plot(BAI ~ Age, data = shrub_data_join,
-      col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93))
+plot(BAI ~ Age, data = sd_join,
+      col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 95))
     
-abline(v=5)    
-
 #Plots BAI as a function of age on two graphs by genus
-par(mfrow=c(1,1))
+par(mfrow=c(1,2))
 
-plot(BAI ~ Age, data = shrub_data_join_bena_5,
-     col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Betula")
+plot(BAI ~ Age, data = sd_bena5,
+     col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 50), main = "Betula")
 
-#abline(v=5)
-
-plot(BAI ~ Age, data = shrub_data_join_salix_5,
-     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix")
-
-#abline(v=5)
+plot(BAI ~ Age, data = sd_salix5,
+     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 90), main = "Salix")
 
 #Plots BAI as a function of age on four graphs by species
 par(mfrow=c(2,2))
 
-plot(BAI ~ Age, data = shrub_data_join_bena,
+plot(BAI ~ Age, data = sd_bena5,
      col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Betula nana")
  
-plot(BAI ~ Age, data = shrub_data_join_sapu,
+plot(BAI ~ Age, data = sd_sapu5,
      col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix pulchra")
 
-abline(v=5)
-
-plot(BAI ~ Age, data = shrub_data_join_sabe,
+plot(BAI ~ Age, data = sd_sabe5,
      col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix bebbiana")
 
-abline(v=5)
-
-plot(BAI ~ Age, data = shrub_data_join_sagl,
+plot(BAI ~ Age, data = sd_sagl5,
      col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix glauca")
 
-abline(v=5)
-
-#Fit models to data in order to develop a growth curve
-
-    #Linear Model
-    #lmBena = lme (BAI ~ Age, random =~ 1 | ShrubID/Section, data = shrub_data_join_bena) 
-    #summary(lmBena)
-    #plot (lmBena)
+#Check the distributions of age and BAI data on a histogram
+#Note that both age and BAI are not normally distributed, the distribution is right skewed toward small BAI or young individuals.
+par(mfrow=c(2,2))
     
-    #ggplot(shrub_data_join_bena, aes(x = Age, y = BAI)) + geom_point() + stat_smooth(method = "lm", size = 1)
+hist(sd_bena5$Age, xlab = "Ring Age (years)", main = "Betula nana Age Distribution")
+hist(sd_bena5$BAI, xlab = "Basal Area Increment", main = "Betula nana BAI Distribution")
+
+hist(sd_salix5$Age, xlab = "Ring Age (years)", main = "Salix spp. Age Distribution")
+hist(sd_salix5$BAI, xlab = "Basal Area Increment", main = "Salix spp. BAI Distribution")
+
+# 12. CREATE LINEAR REGRESSION MODELS ####
+lmBena = lm(BAI ~ Age, data = sd_bena5)
+lmSalix = lm(BAI ~ Age, data = sd_salix5)
+
+#Generate the Summary Statistic
+summary(lmBena)
+summary(lmSalix)
+
+#Model assumption testing show us that we have very strong right skew in the data
+
+    #Plot Risiduals vs Fitter and Normal Q-Q for Betula
+    par(mfrow=c(2,2))
+    plot (lmBena)
     
-#Logistic Model***********
-lmeBena_log = lme (log(BAI) ~ log(Age), random =~ 1 | ShrubID/Section, data = shrub_data_join_bena_5)  
-summary(lmeBena_log)
-plot (lmeBena_log)
-
-lmBena_log = lm (log(BAI) ~ log(Age), data = shrub_data_join_bena_5)  
-summary(lmBena_log)
-plot (lmBena_log)
-
-ggplot(shrub_data_join_bena_5, aes(x = log(Age), y = log(BAI))) + geom_point() + stat_smooth(method = "lm", size = 1)
-
-
-lmeSalix_log = lme (log(BAI) ~ Age, random =~ 1 | ShrubID/Section, data = shrub_data_join_salix_5)  
-summary(lmeSalix_log)
-plot (lmeSalix_log)
-
-lmSalix_log = lm (log(BAI) ~ log(Age), data = shrub_data_join_salix_5)  
-summary(lmSalix_log)
-plot (lmSalix_log)
-
-ggplot(shrub_data_join_salix_5, aes(x = Age, y = log(BAI))) + geom_point() + stat_smooth(method = "lm", size = 1)
+    #Plot Risiduals vs Fitter and Normal Q-Q for Salix
+    par(mfrow=c(2,2))
+    plot (lmSalix)
     
-    #Generalized Addative Model
-    #gamBena = gam(BAI ~ Age + s(Section), data = shrub_data_join_bena)
-    #summary(gamBena)
-    #plot(gamBena)
+    #Run a Durbin Watson test to check for autocorrelation in the residuals (closer to 2 = better)
+    dwtest(lmBena)
+    dwtest(lmSalix)
+
+# 13. CREATE LINEAR MIXED EFFECTS MODELS ####
+    
+#Create a linear mixed effects model which models BAI as a function of age
+#The mixed effects model is used becuase it allows us to model the fixed effects of BAI and age
+#while accounting for the random effects of the individual shrub and the section. The random effects
+#allow for the possibility that our covariates have effects that vary from unit (section, shrub) to unit.
+#We are also log transforming both BAI and age to reslove 
+  
+#Betula nana linear mixed effects model 
+lmeBena = lme (log(BAI) ~ log(Age), random =~ 1 | ShrubID/Section, data = sd_bena5)    
+
+# Summarizes the linear mixed effects model
+summary(lmeBena)
+r.squaredGLMM(lmeBena)
+summary (lmerTest::lmer (log(BAI) ~ log(Age) + (1 | ShrubID/Section), data = sd_bena5))
+
+# Plots the the Residuals vs Fitted graph and Normal Q-Q Plot for the lme
+plot (lmeBena)
+qqnorm (lmeBena)
+
+#Plots the log transformed data and generates a the linear model 
+ggplot(sd_bena5, aes(x = log(Age), y = log(BAI))) + geom_point() + stat_smooth(method = "lm", size = 1)
+
+#------------------------------------------------------------------------------------------------------#
+
+#Salix spp linear mixed effects model 
+lmeSalix = lme (log(BAI) ~ log(Age), random =~ 1 | ShrubID/Section, data = sd_salix5)  
+
+# Summarizes the linear mixed effects model
+summary(lmeSalix)
+r.squaredGLMM(lmeSalix)
+summary (lmerTest::lmer (log(BAI) ~ log(Age) + (1 | ShrubID/Section), data = sd_salix5))
+
+# Plots the the Residuals vs Fitted graph and Normal Q-Q Plot for the lme
+plot (lmeSalix)
+qqnorm(lmeSalix)
+
+#Plots the log transformed data and generates a the linear model 
+ggplot(sd_salix5, aes(x = log(Age), y = log(BAI))) + geom_point() + stat_smooth(method = "lm", size = 1)
     
     
+# 14. EXTRACT RESIDUALS FROM LINEAR MIXED EFFECTS MODEL ####
+
+#Extract the residuals from the linear model: his is variation that can be expected to be explained by something else than age.
+resBena = residuals(lmeBena)
+
+resSalix = residuals(lmeSalix)
+
+#Combine residuals with the original data.
+sd_bena_res = cbind(sd_bena5,resBena) 
+
+  colnames(sd_bena_res)[colnames(sd_bena_res)=="resBena"] = "lmeBena"
+
+sd_salix_res = cbind(sd_salix5,resSalix)
+
+  colnames(sd_salix_res)[colnames(sd_salix_res)=="resSalix"] = "lmeSalix"
+
+
+# 15. CONVERT RESIDUALS TO BAI SCALE ####
+
+#Subtract the reidual values from the original BAI 
+sd_bena_res$BAI_tran = sd_bena_res$BAI - sd_bena_res$lmeBena
+
+sd_salix_res$BAI_tran = sd_salix_res$BAI - sd_salix_res$lmeSalix
+
+#Determine the coefficients of the lme
+coef_bena=coefficients(lmeBena)
+
+coef_salix=coefficients(lmeSalix)
+
+#Covert the coef matrix into a dataframe
+coef_bena=data.frame(coef_bena)
+
+coef_salix=data.frame(coef_salix)
+
+#Creates a new data frame for the intercept values 
+
+intercept_bena = coef_bena[1,1]
+
+intercept_salix = coef_salix[1,1]
+
+# Subreacts the transformed residuals from the difference in the transformed residuals and the intercept
+
+sd_bena_res$BAI_tran = sd_bena_res$BAI_tran - (sd_bena_res$BAI_tran - intercept_bena)
+
+sd_salix_res$BAI_tran = sd_salix_res$BAI_tran - (sd_salix_res$BAI_tran - intercept_salix)
+
+#Adds the transformed residuals to the original residuals
+
+sd_bena_res$BAI_tran = sd_bena_res$BAI_tran + sd_bena_res$lmeBena
+
+sd_salix_res$BAI_tran = sd_salix_res$BAI_tran + sd_salix_res$lmeSalix
+
+# Takes te mean of the BAI 
+
+mean_BAI_bena =mean(sd_bena_res[,"BAI"])
+
+mean_BAI_salix =mean(sd_salix_res[,"BAI"])
+
+# Adds the transformed residuals to the mean BAI
+
+sd_bena_res$BAI_tran = sd_bena_res$BAI_tran + mean_BAI_bena
+
+sd_salix_res$BAI_tran = sd_salix_res$BAI_tran + mean_BAI_salix
+
+#Plots the back transformed residuals (BAI_tran) as a function of age on two graphs by genus
+par(mfrow=c(1,2))
+
+plot(BAI_tran ~ Age, data = sd_bena_res,
+     col = "black", pch = 1, ylab = "ln Basal Area Increment", xlab = "Ring Age (years)", main = "Betula") # ylim=c(0, 50),
 
 
 
-
-
-
+plot(BAI_tran ~ Age, data = sd_salix_res,
+     col = "blue", pch = 1, ylab = "ln Basal Area Increment", xlab = "Ring Age (years)",  main = "Salix") # ylim=c(0, 90),
 
 
 
