@@ -75,8 +75,6 @@ DP_Data %>%
   scale_y_continuous (name = "Frequency") +
   theme_bw()
 
-
-
 #### LINEAR REGRESSION: BROWSING ~ SHRUB HEIGHT ####
 
 lmHeightMoose = lm(ShrubData$PropMooseBrowse ~ ShrubData$VertHeight) 

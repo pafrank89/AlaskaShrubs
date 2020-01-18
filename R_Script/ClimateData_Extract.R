@@ -33,7 +33,7 @@ library(rasterVis)
 library(purrr)
 
 
-# EXTRACT SNAP DATA ####
+# EXTRACT SNAP & IEM DATA ####
 
 #Sets the ShrubID column as the row names
 row.names(coordinates_NAD83) = coordinates_NAD83$ShrubID
@@ -47,21 +47,42 @@ coordinates_NAD83[1] = NULL
 snap.tmp.files <- list.files(path= "/Volumes/PF_HD/MastersThesis/ClimateData/SNAP/tas_AK_CAN_2km_CRU_TS40_historical",
                          pattern='tif', full.names=TRUE )
 
+iem.tmp.files <- list.files(path= "/Volumes/PF_HD/MastersThesis/ClimateData/SNAP/tas_mean_C_iem_cru_TS40_1901_2015",
+                             pattern='tif', full.names=TRUE )
+
+
 # Create a raster stack of all tiff files 
 snap.tmp = stack(snap.tmp.files) 
 
+iem.tmp = stack(iem.tmp.files) 
 
 # plot an example day:
 plot(snap.tmp$tas_mean_C_CRU_TS40_historical_01_1901)
 
+plot(iem.tmp$tas_mean_C_CRU_TS40_historical_01_1901)
+
 # check that you sample points match:
-points(coordinates_NAD83, pch=16)
+points(coordinates_NAD83, pch=16, col = "Blue")
+
+# we can also play with smaller areas:
+ak.area <- extent(-50000, 400000, 1600000, 2200000) 
+ak.snap.tmp <- crop(snap.tmp, ak.area)
+plot(ak.snap.tmp$tas_mean_C_CRU_TS40_historical_01_1901)
+points(coordinates_NAD83, pch=16, col = "Blue")
+
+ak.iem.tmp <- crop(iem.tmp, ak.area)
+plot(ak.iem.tmp$tas_mean_C_CRU_TS40_historical_01_1901)
+points(coordinates_NAD83, pch=16, col = "Blue")
 
 # Extract climate data from the RasterBrick as a data.frame
 snap.tmp.shrubs <- data.frame(extract(snap.tmp, coordinates_NAD83, ncol=2))
 
+iem.tmp.shrubs <- data.frame(extract(iem.tmp, coordinates_NAD83, ncol=2))
+
 # Add shrub id names
 row.names(snap.tmp.shrubs) <- row.names(coordinates_NAD83)
+
+row.names(iem.tmp.shrubs) <- row.names(coordinates_NAD83)
 
 # Lets also change the column names to be a bit easier to work with:
 # name them using the convention: year followed by month: 
@@ -73,23 +94,33 @@ month <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
 #The SNAP data is structured by month, so it starts with all the January values between 1901 and 2015
 #ex. 1901-Jan, 1902-Jan, 1903-Jan, ect.
 eg = expand.grid(years,month)
-monyr = paste(eg$Var2, eg$Var1, sep = '-')
+monyr = paste(eg$Var2, eg$Var1, sep = '_')
 
 # 2. rename the columns of our data.frame
 names(snap.tmp.shrubs) <- paste(monyr)
+names(iem.tmp.shrubs) <- paste(monyr)
 
 #View(snap.tmp.shrubs)
 
-# Modify data to long format wth columns for shrb, year, month and temp
+# Modify data to long format wth columns for shrb, year, month and temp for snap data
 snap.tmp.shrubs$Shrub_ID<-rownames(snap.tmp.shrubs)
 
 rownames(snap.tmp.shrubs)<-NULL
 snap.tmp.shrubsM<-melt(snap.tmp.shrubs)
 colnames(snap.tmp.shrubsM)[colnames(snap.tmp.shrubsM)=="variable"] <- "year_month"
 colnames(snap.tmp.shrubsM)[colnames(snap.tmp.shrubsM)=="value"] <- "tmp"
-snap.tmp.shrubsM$year<-substr(snap.tmp.shrubsM$year_month, 0, 3)
-snap.tmp.shrubsM$month <- substr(snap.tmp.shrubsM$year_month, 5, 9)
+snap.tmp.shrubsM$year<-substr(snap.tmp.shrubsM$year_month, 5, 9)
+snap.tmp.shrubsM$month <- substr(snap.tmp.shrubsM$year_month, 0, 3)
 
+# Modify data to long format wth columns for shrb, year, month and temp for iem data
+iem.tmp.shrubs$Shrub_ID<-rownames(iem.tmp.shrubs)
+
+rownames(iem.tmp.shrubs)<-NULL
+iem.tmp.shrubsM<-melt(iem.tmp.shrubs)
+colnames(iem.tmp.shrubsM)[colnames(iem.tmp.shrubsM)=="variable"] <- "year_month"
+colnames(iem.tmp.shrubsM)[colnames(iem.tmp.shrubsM)=="value"] <- "tmp"
+iem.tmp.shrubsM$year<-substr(iem.tmp.shrubsM$year_month, 5, 9)
+iem.tmp.shrubsM$month <- substr(iem.tmp.shrubsM$year_month, 0, 3)
 
 
 
@@ -99,12 +130,18 @@ snap.tmp.shrubsM$month <- substr(snap.tmp.shrubsM$year_month, 5, 9)
 snap.pre.files = list.files(path= "/Volumes/PF_HD/MastersThesis/ClimateData/SNAP/pr_AK_CAN_2km_CRU_TS40_historical",
                           pattern='tif', full.names=TRUE )
 
+iem.pre.files = list.files(path= "/Volumes/PF_HD/MastersThesis/ClimateData/SNAP/pr_total_mm_iem_cru_TS40_1901_2015",
+                            pattern='tif', full.names=TRUE )
+
 # Create a raster stack of all tiff files 
 snap.pre = stack(snap.pre.files)
 
+iem.pre = stack(iem.pre.files)
 
 # plot an example day:
 plot(snap.pre$pr_total_mm_CRU_TS40_historical_01_1901)
+
+plot(iem.pre$pr_total_mm_CRU_TS40_historical_01_1901)
 
 # check that you sample points match:
 points(coordinates_NAD83, pch=16)
@@ -112,8 +149,12 @@ points(coordinates_NAD83, pch=16)
 # Extract climate data from the RasterBrick as a data.frame
 snap.pre.shrubs <- data.frame(extract(snap.pre, coordinates_NAD83, ncol=2))
 
+iem.pre.shrubs <- data.frame(extract(iem.pre, coordinates_NAD83, ncol=2))
+
 # Add shrub id names
 row.names(snap.pre.shrubs) <- row.names(coordinates_NAD83)
+
+row.names(iem.pre.shrubs) <- row.names(coordinates_NAD83)
 
 # Lets also change the column names to be a bit easier to work with:
 # name them using the convention: year followed by month: 
@@ -131,29 +172,47 @@ monyr = paste(eg$Var2, eg$Var1, sep = '-')
 
 names(snap.pre.shrubs) <- paste(monyr)
 
+names(iem.pre.shrubs) <- paste(monyr)
+
 #View(snap.pre.shrubs)
 
-# Modify data to long format wth columns for shrb, year, month and temp
+# Modify data to long format wth columns for shrb, year, month and precip for snap data
 snap.pre.shrubs$Shrub_ID<-rownames(snap.pre.shrubs)
 rownames(snap.pre.shrubs)<-NULL
 snap.pre.shrubsM<-melt(snap.pre.shrubs)
 colnames(snap.pre.shrubsM)[colnames(snap.pre.shrubsM)=="variable"] <- "year_month"
 colnames(snap.pre.shrubsM)[colnames(snap.pre.shrubsM)=="value"] <- "pre"
-snap.pre.shrubsM$year<-substr(snap.pre.shrubsM$year_month, 0, 3)
-snap.pre.shrubsM$month <- substr(snap.pre.shrubsM$year_month, 5, 9)
+snap.pre.shrubsM$year<-substr(snap.pre.shrubsM$year_month, 5, 9)
+snap.pre.shrubsM$month <- substr(snap.pre.shrubsM$year_month, 0, 3)
+
+# Modify data to long format wth columns for shrb, year, month and precip for iem data
+iem.pre.shrubs$Shrub_ID<-rownames(iem.pre.shrubs)
+rownames(iem.pre.shrubs)<-NULL
+iem.pre.shrubsM<-melt(iem.pre.shrubs)
+colnames(iem.pre.shrubsM)[colnames(iem.pre.shrubsM)=="variable"] <- "year_month"
+colnames(iem.pre.shrubsM)[colnames(iem.pre.shrubsM)=="value"] <- "pre"
+iem.pre.shrubsM$year<-substr(iem.pre.shrubsM$year_month, 5, 9)
+iem.pre.shrubsM$month <- substr(iem.pre.shrubsM$year_month, 0, 3)
 
 
 
-# 3. Merge all climate data --------------------------------------------------
+# 3. Merge SNAP & IEM climate data --------------------------------------------------
 
 snap.climate<-merge(snap.tmp.shrubsM, snap.pre.shrubsM)
 
 str(snap.climate)
 
+iem.climate<-merge(iem.tmp.shrubsM, iem.pre.shrubsM)
+
+str(iem.climate)
+
+
 # 4. Calculate yearly climate variables ----------------------------------------------
 
 # create shrub_ID_year varable
 snap.climate$Shrub_ID_year <- do.call(paste, c(snap.climate[c("Shrub_ID", "year")], sep = "_"))
+
+iem.climate$Shrub_ID_year <- do.call(paste, c(snap.climate[c("Shrub_ID", "year")], sep = "_"))
 
 # Calculate the following variables
 
@@ -171,12 +230,22 @@ snap.climate$Shrub_ID_year <- do.call(paste, c(snap.climate[c("Shrub_ID", "year"
 snap.climatesummer<-snap.climate[snap.climate$month=="Jun"|snap.climate$month=="Jul"|snap.climate$month=="Aug",]
 snap.climatewinter<-snap.climate[snap.climate$month=="Oct"|snap.climate$month=="Nov"|snap.climate$month=="Dec"|snap.climate$month=="Jan"|snap.climate$month=="Feb"|snap.climate$month=="Mar",]
 
+iem.climatesummer<-iem.climate[iem.climate$month=="Jun"|iem.climate$month=="Jul"|iem.climate$month=="Aug",]
+iem.climatewinter<-iem.climate[iem.climate$month=="Oct"|iem.climate$month=="Nov"|iem.climate$month=="Dec"|iem.climate$month=="Jan"|iem.climate$month=="Feb"|iem.climate$month=="Mar",]
+
+#Calculate the annual values
 snap.summ.temp<-tapply(snap.climatesummer$tmp,list(snap.climatesummer$Shrub_ID_year),mean)
 snap.temp<-tapply(snap.climate$tmp,list(snap.climate$Shrub_ID_year),mean)
 snap.summ.rain<-tapply(snap.climatesummer$pre,list(snap.climatesummer$Shrub_ID_year),sum)
 snap.wint.rain<-tapply(snap.climatewinter$pre,list(snap.climatewinter$Shrub_ID_year),sum)
 
 
+iem.summ.temp<-tapply(iem.climatesummer$tmp,list(iem.climatesummer$Shrub_ID_year),mean)
+iem.temp<-tapply(iem.climate$tmp,list(iem.climate$Shrub_ID_year),mean)
+iem.summ.rain<-tapply(iem.climatesummer$pre,list(iem.climatesummer$Shrub_ID_year),sum)
+iem.wint.rain<-tapply(iem.climatewinter$pre,list(iem.climatewinter$Shrub_ID_year),sum)
+
+#Change the row names to Shrub_ID_Year for the newly created yearly climate data 
 snap.summ.temp<-data.frame(snap.summ.temp)
 Shrub_ID_year <- rownames(snap.summ.temp)
 rownames(snap.summ.temp) <- NULL
@@ -197,14 +266,41 @@ Shrub_ID_year <- rownames(snap.wint.rain)
 rownames(snap.wint.rain) <- NULL
 snap.wint.rain <- cbind(Shrub_ID_year,snap.wint.rain)
 
-
+#Merge the four yearly climate variables together
 snap.climateAnnual<-merge(snap.summ.temp, snap.temp)
 snap.climateAnnual<-merge(snap.climateAnnual, snap.summ.rain)
 snap.climateAnnual<-merge(snap.climateAnnual, snap.wint.rain)
 
+#Change the row names to Shrub_ID_Year for the newly created yearly climate data 
+iem.summ.temp<-data.frame(iem.summ.temp)
+Shrub_ID_year <- rownames(iem.summ.temp)
+rownames(iem.summ.temp) <- NULL
+iem.summ.temp <- cbind(Shrub_ID_year,iem.summ.temp)
 
-write.csv(snap.climateAnnual, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/AK_SNAP_ClimateAnnual.csv")
+iem.temp<-data.frame(iem.temp)
+Shrub_ID_year <- rownames(iem.temp)
+rownames(iem.temp) <- NULL
+iem.temp <- cbind(Shrub_ID_year,iem.temp)
 
+iem.summ.rain<-data.frame(iem.summ.rain)
+Shrub_ID_year <- rownames(iem.summ.rain)
+rownames(iem.summ.rain) <- NULL
+iem.summ.rain <- cbind(Shrub_ID_year,iem.summ.rain)
+
+iem.wint.rain<-data.frame(iem.wint.rain)
+Shrub_ID_year <- rownames(iem.wint.rain)
+rownames(iem.wint.rain) <- NULL
+iem.wint.rain <- cbind(Shrub_ID_year,iem.wint.rain)
+
+#Merge the four yearly climate variables together
+iem.climateAnnual<-merge(iem.summ.temp, iem.temp)
+iem.climateAnnual<-merge(iem.climateAnnual, iem.summ.rain)
+iem.climateAnnual<-merge(iem.climateAnnual, iem.wint.rain)
+
+
+write.csv(snap.climateAnnual, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/SNAP_ClimateAnnual.csv")
+
+write.csv(iem.climateAnnual, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/IEM_ClimateAnnual.csv")
 
 
 # EXTRACT CLIMATE RESEARCH UNIT TIME SERIES (CRU-TS) DATA ####
@@ -234,6 +330,7 @@ tmp
 crs(tmp)
 
 # plot an example day:
+par(mfrow=c(1,1))
 plot(tmp$X1901.01.16)
 
 # we can also play with smaller areas:
@@ -242,7 +339,7 @@ ak.tmp <- crop(tmp, ak.area)
 plot(ak.tmp$X1901.01.16)
 
 # check that you sample points match:
-plot(ak$X1901.01.16)
+plot(ak.tmp$X1901.01.16)
 points(coordinates, pch=16)
 
 # Extract climate data from the RasterBrick as a data.frame
@@ -520,7 +617,6 @@ pet.shrubsM$month <- substr(pet.shrubsM$year_month, 6, 9)
 
 # 6. Wet Day Frequency -------------------------------------------------------------
 
-
 nc.wet <- nc_open("cru_ts4.03.1901.2018.wet.dat.nc")
 print(nc.wet)
 # 2 variables: float wet which is wet & stn which is stations.
@@ -664,30 +760,6 @@ climateAnnual<-merge(climateAnnual, frost)
 climateAnnual<-merge(climateAnnual, summ.rain)
 
 
-write.csv(climateAnnual, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/AK_ClimateAnnual.csv")
-
-# MAP ---------------------------------------------------------------------
-
-# Polar projection
-polarproj<-'+proj=laea +lat_0=90 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0 '
-# Make the coordinates as spatial points
-coord_sp<-SpatialPoints(coordinates,proj4string = CRS('+proj=longlat + datum=WGS1984'))
-# Project to polar projection
-coord_pp<-project(coord_sp@coords,polarproj)
-
-# Country outlines
-noreco_countries <- c('NO', 'SE', 'FI','RU','CA','IS','GL','SJ','MN','JP') 
-noreco_shp1 <- do.call("bind", lapply(noreco_countries, function(x)  raster::getData('GADM', country=x, level=0)))
-# Only Alaska from USA #had to add raster::getData due to error in reading the argument US
-us<-raster::getData('GADM',country='US',level=1)
-alaska<-us[us$NAME_1=='Alaska',]
-# Bind
-noreco_shp<-bind(noreco_shp1,alaska)
-# Project
-noreco_shppp<-spTransform(noreco_shp,CRS=crs(polarproj))
-
-# Plot (play around with scaling to zoom in if required...)
-plot(noreco_shppp) #High res country outlines plot very slow...
-points(coord_pp,col=2,pch=16)
+write.csv(climateAnnual, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/CRU_ClimateAnnual.csv")
 
 

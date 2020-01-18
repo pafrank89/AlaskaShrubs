@@ -13,6 +13,7 @@ install.packages('lme4')
 install.packages('aomisc')
 install.packages('lmerTest') 
 install.packages("MuMIn")
+install.packages("modelr")
 
 library(dplR)
 library(dplyr)
@@ -27,7 +28,7 @@ library(lmtest)
 library(lmerTest)
 library(MuMIn)
 library(aomisc)
-
+library(modelr)
 
 #BAI Calculation using measured ring widths (mm) from Image J.
 #Ring widths are listed from the bark to the pith, so the function bai.out in the dplR package will be used.
@@ -404,7 +405,7 @@ plot(BAI ~ Age, data = sd_sagl5,
      col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix glauca")
 
 #Check the distributions of age and BAI data on a histogram
-#Note that both age and BAI are not normally distributed, the distribution is right skewed toward small BAI or young individuals.
+#Note that both age and BAI are not normally distributed, the distribution is right (positive) skewed toward small BAI or young individuals.
 par(mfrow=c(2,2))
     
 hist(sd_bena5$Age, xlab = "Ring Age (years)", main = "Betula nana Age Distribution")
@@ -414,8 +415,8 @@ hist(sd_salix5$Age, xlab = "Ring Age (years)", main = "Salix spp. Age Distributi
 hist(sd_salix5$BAI, xlab = "Basal Area Increment", main = "Salix spp. BAI Distribution")
 
 # 12. CREATE LINEAR REGRESSION MODELS ####
-lmBena = lm(BAI ~ Age, data = sd_bena5)
-lmSalix = lm(BAI ~ Age, data = sd_salix5)
+lmBena = lm(log(BAI) ~ log(Age), data = sd_bena5)
+lmSalix = lm(log(BAI) ~ log(Age), data = sd_salix5)
 
 #Generate the Summary Statistic
 summary(lmBena)
@@ -444,12 +445,12 @@ summary(lmSalix)
 #We are also log transforming both BAI and age to reslove 
   
 #Betula nana linear mixed effects model 
-lmeBena = lme (log(BAI) ~ log(Age), random =~ 1 | ShrubID/Section, data = sd_bena5)    
+lmeBena = lme (log(BAI) ~ log(Age), random =~ 1 | Section/ShrubID, data = sd_bena5)    
 
 # Summarizes the linear mixed effects model
 summary(lmeBena)
 r.squaredGLMM(lmeBena)
-summary (lmerTest::lmer (log(BAI) ~ log(Age) + (1 | ShrubID/Section), data = sd_bena5))
+summary (lmerTest::lmer (log(BAI) ~ log(Age) + (1 | Section/ShrubID), data = sd_bena5))
 
 # Plots the the Residuals vs Fitted graph and Normal Q-Q Plot for the lme
 plot (lmeBena)
@@ -461,12 +462,12 @@ ggplot(sd_bena5, aes(x = log(Age), y = log(BAI))) + geom_point() + stat_smooth(m
 #------------------------------------------------------------------------------------------------------#
 
 #Salix spp linear mixed effects model 
-lmeSalix = lme (log(BAI) ~ log(Age), random =~ 1 | ShrubID/Section, data = sd_salix5)  
+lmeSalix = lme (log(BAI) ~ log(Age), random =~ 1 | Section/ShrubID, data = sd_salix5)  
 
 # Summarizes the linear mixed effects model
 summary(lmeSalix)
 r.squaredGLMM(lmeSalix)
-summary (lmerTest::lmer (log(BAI) ~ log(Age) + (1 | ShrubID/Section), data = sd_salix5))
+summary (lmerTest::lmer (log(BAI) ~ log(Age) + (1 | Section/ShrubID), data = sd_salix5))
 
 # Plots the the Residuals vs Fitted graph and Normal Q-Q Plot for the lme
 plot (lmeSalix)
@@ -479,54 +480,67 @@ ggplot(sd_salix5, aes(x = log(Age), y = log(BAI))) + geom_point() + stat_smooth(
 # 14. EXTRACT RESIDUALS FROM LINEAR MIXED EFFECTS MODEL ####
 
 #Extract the residuals from the linear model: his is variation that can be expected to be explained by something else than age.
-resBena = residuals(lmeBena)
 
-resSalix = residuals(lmeSalix)
+sd_bena_res = add_residuals(sd_bena5, lmBena)
 
-#Combine residuals with the original data.
-sd_bena_res = cbind(sd_bena5,resBena) 
+sd_salix_res = add_residuals(sd_salix5, lmSalix)
 
-  colnames(sd_bena_res)[colnames(sd_bena_res)=="resBena"] = "lmeBena"
+#resBena = residuals(lmeBena)
+#sd_bena_res = cbind(sd_bena5,resBena) 
+#resSalix = residuals(lmeSalix)
+#sd_salix_res = cbind(sd_salix5,resSalix)
 
-sd_salix_res = cbind(sd_salix5,resSalix)
+#Transform residuals back into BAI scale from the log scale
 
-  colnames(sd_salix_res)[colnames(sd_salix_res)=="resSalix"] = "lmeSalix"
+sd_bena_res$resid_t = exp(1)^(sd_bena_res$resid)
+
+sd_salix_res$resid_t = exp(1)^(sd_salix_res$resid)
 
 
 # 15. CONVERT RESIDUALS TO BAI SCALE ####
 
 #Subtract the reidual values from the original BAI 
-sd_bena_res$BAI_tran = sd_bena_res$BAI - sd_bena_res$lmeBena
+sd_bena_res$BAI_bt = sd_bena_res$BAI - sd_bena_res$resid
 
-sd_salix_res$BAI_tran = sd_salix_res$BAI - sd_salix_res$lmeSalix
+sd_salix_res$BAI_bt = sd_salix_res$BAI - sd_salix_res$resid
 
 #Determine the coefficients of the lme
-coef_bena=coefficients(lmeBena)
+coef_bena=coefficients(lmBena)
 
-coef_salix=coefficients(lmeSalix)
+coef_salix=coefficients(lmSalix)
 
-#Covert the coef matrix into a dataframe
-coef_bena=data.frame(coef_bena)
+#Covert the coef string into a dataframe
+coef_bena = data.frame(coef_bena)
 
-coef_salix=data.frame(coef_salix)
+coef_salix = data.frame(coef_salix)
 
-#Creates a new data frame for the intercept values 
+JoinID_Bena = row.names(coef_bena)
+JoinID_Salix = row.names(coef_salix)
 
-intercept_bena = coef_bena[1,1]
+coef_bena$JoinID = JoinID_Bena
+coef_salix$JoinID = JoinID_Salix
 
-intercept_salix = coef_salix[1,1]
+#Adds the unique IDs generated during the coeficient calculation to the sd dataframe prior to join
+sd_bena_res$JoinID = paste(sd_bena_res$Section, "/", sd_bena_res$ShrubID, sep = "")
+
+sd_salix_res$JoinID = paste(sd_salix_res$Section, "/", sd_salix_res$ShrubID, sep = "")
+
+#Joins the data created in coefficients to the sd dataset
+sd_bena_res = merge(sd_bena_res, coef_bena, by = "JoinID", all = TRUE)
+
+sd_salix_res = merge(sd_salix_res, coef_salix, by = "JoinID", all = TRUE)
 
 # Subreacts the transformed residuals from the difference in the transformed residuals and the intercept
 
-sd_bena_res$BAI_tran = sd_bena_res$BAI_tran - (sd_bena_res$BAI_tran - intercept_bena)
+sd_bena_res$BAI_bt = sd_bena_res$BAI_bt - (sd_bena_res$BAI_bt - sd_bena_res$X.Intercept.)
 
-sd_salix_res$BAI_tran = sd_salix_res$BAI_tran - (sd_salix_res$BAI_tran - intercept_salix)
+sd_salix_res$BAI_bt = sd_salix_res$BAI_bt - (sd_salix_res$BAI_bt - sd_salix_res$X.Intercept.)
 
 #Adds the transformed residuals to the original residuals
 
-sd_bena_res$BAI_tran = sd_bena_res$BAI_tran + sd_bena_res$lmeBena
+sd_bena_res$BAI_bt = sd_bena_res$BAI_bt + sd_bena_res$lme
 
-sd_salix_res$BAI_tran = sd_salix_res$BAI_tran + sd_salix_res$lmeSalix
+sd_salix_res$BAI_bt = sd_salix_res$BAI_bt + sd_salix_res$lme
 
 # Takes te mean of the BAI 
 
@@ -536,20 +550,22 @@ mean_BAI_salix =mean(sd_salix_res[,"BAI"])
 
 # Adds the transformed residuals to the mean BAI
 
-sd_bena_res$BAI_tran = sd_bena_res$BAI_tran + mean_BAI_bena
+sd_bena_res$BAI_bt = sd_bena_res$BAI_bt + mean_BAI_bena
 
-sd_salix_res$BAI_tran = sd_salix_res$BAI_tran + mean_BAI_salix
+sd_salix_res$BAI_bt = sd_salix_res$BAI_bt + mean_BAI_salix
 
-#Plots the back transformed residuals (BAI_tran) as a function of age on two graphs by genus
+#Plots the back transformed residuals (BAI_bt) as a function of age on two graphs by genus
 par(mfrow=c(1,2))
 
-plot(BAI_tran ~ Age, data = sd_bena_res,
+plot(BAI_bt ~ Age, data = sd_bena_res,
      col = "black", pch = 1, ylab = "ln Basal Area Increment", xlab = "Ring Age (years)", main = "Betula") # ylim=c(0, 50),
 
-
-
-plot(BAI_tran ~ Age, data = sd_salix_res,
+plot(BAI_bt ~ Age, data = sd_salix_res,
      col = "blue", pch = 1, ylab = "ln Basal Area Increment", xlab = "Ring Age (years)",  main = "Salix") # ylim=c(0, 90),
+
+#Combine the two species back into one dataset
+
+sd_final = rbind(sd_bena_res, sd_salix_res)
 
 
 
