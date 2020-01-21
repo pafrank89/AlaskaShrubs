@@ -54,6 +54,8 @@ ggplot(data = SectionData,
 #Select only pertinent columns from the larger ShrubData file 
 SD_BiBrowse = select(ShrubData, "ShrubID", "StemLength", "VertHeight", "BinaryMoose", "BinaryHare", "BinaryPtarmagin")
 
+subset (sd_final_cch, select = c("resid_t", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", "summ.temp", "temp", "summ.min", "summ.max", "summ.rain", "wint.rain", "pet", "wet", "frost", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
+
 #Specify the data frame as a table prior to the melt function
 SD_BiBrowseTable= as.data.table(SD_BiBrowse)
 
