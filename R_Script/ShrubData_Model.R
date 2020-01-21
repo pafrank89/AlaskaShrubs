@@ -167,7 +167,25 @@ HerbiPlot = subset (Section_Data, select = c("PropMoose", "MooseFeces", "AvgMoos
 #Creates a correlation matrix using the variables specified above
 chart.Correlation(HerbiPlot, histogram = TRUE, method = c("spearman"))
 
-# 6. DEVELOP MIXED EFFECTS MODELS ####
+plot(HerbiPlot$PropMoose ~ HerbiPlot$`2015MooseDensity`)
+
+plot(HerbiPlot$MooseFeces ~ HerbiPlot$`2015MooseDensity`)
+
+# 6. PLOT ENVIRONEMNTAL VARIABLES ALONG Y-CORD #### 
+
+par(mfrow=c(5,1), omi=c(0.5,0.3,0,0), plt=c(0.1,0.9,0,0.7)) 
+
+plot(Section_Data$Elevation ~ Section_Data$Y_Cord, type = "l", xaxt='n', main="Elevation", ylab = "Meters")
+plot(Section_Data$iem.temp ~ Section_Data$Y_Cord, type = "l", xaxt='n', main="IEM Temperature", ylab = "°C")
+plot(Section_Data$temp ~ Section_Data$Y_Cord, type = "l", xaxt='n', main="CRU-TS Temperature", ylab = "°C")
+plot(Section_Data$iem.summ.rain ~ Section_Data$Y_Cord, type = "l", xaxt='n', main="IEM Summer Precipitation", ylab = "mm")
+plot(Section_Data$summ.rain ~ Section_Data$Y_Cord, type = "l", main="CRU-TS Summer Precipitation", ylab = "mm", xlab = "Latitude")
+
+plot(Section_Data$PropMoose ~ Section_Data$Y_Cord, type = "l")
+plot(Section_Data$PropHare ~ Section_Data$Y_Cord, type = "l")
+plot(Section_Data$PropPtarmagin ~ Section_Data$Y_Cord, type = "l")
+
+# 7. DEVELOP MIXED EFFECTS MODELS ####
 
 #Model Structure
 #lme(fixed, data, random, correlation, weights, subset, method,
