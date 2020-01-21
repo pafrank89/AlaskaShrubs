@@ -351,7 +351,7 @@ str(sd_join)
 
 sd_join$Age = sd_join$Year - sd_join$Estab
 
-write.csv(sd_join, "/Users/peterfrank/Desktop/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_BAI.csv")
+write.csv(sd_join, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_BAI.csv")
 
 
 # 11. SUBSET DATA BY GENUS & SPECIES ####
@@ -485,87 +485,15 @@ sd_bena_res = add_residuals(sd_bena5, lmBena)
 
 sd_salix_res = add_residuals(sd_salix5, lmSalix)
 
-#resBena = residuals(lmeBena)
-#sd_bena_res = cbind(sd_bena5,resBena) 
-#resSalix = residuals(lmeSalix)
-#sd_salix_res = cbind(sd_salix5,resSalix)
-
 #Transform residuals back into BAI scale from the log scale
 
 sd_bena_res$resid_t = exp(1)^(sd_bena_res$resid)
 
 sd_salix_res$resid_t = exp(1)^(sd_salix_res$resid)
 
-
-# 15. CONVERT RESIDUALS TO BAI SCALE ####
-
-#Subtract the reidual values from the original BAI 
-sd_bena_res$BAI_bt = sd_bena_res$BAI - sd_bena_res$resid
-
-sd_salix_res$BAI_bt = sd_salix_res$BAI - sd_salix_res$resid
-
-#Determine the coefficients of the lme
-coef_bena=coefficients(lmBena)
-
-coef_salix=coefficients(lmSalix)
-
-#Covert the coef string into a dataframe
-coef_bena = data.frame(coef_bena)
-
-coef_salix = data.frame(coef_salix)
-
-JoinID_Bena = row.names(coef_bena)
-JoinID_Salix = row.names(coef_salix)
-
-coef_bena$JoinID = JoinID_Bena
-coef_salix$JoinID = JoinID_Salix
-
-#Adds the unique IDs generated during the coeficient calculation to the sd dataframe prior to join
-sd_bena_res$JoinID = paste(sd_bena_res$Section, "/", sd_bena_res$ShrubID, sep = "")
-
-sd_salix_res$JoinID = paste(sd_salix_res$Section, "/", sd_salix_res$ShrubID, sep = "")
-
-#Joins the data created in coefficients to the sd dataset
-sd_bena_res = merge(sd_bena_res, coef_bena, by = "JoinID", all = TRUE)
-
-sd_salix_res = merge(sd_salix_res, coef_salix, by = "JoinID", all = TRUE)
-
-# Subreacts the transformed residuals from the difference in the transformed residuals and the intercept
-
-sd_bena_res$BAI_bt = sd_bena_res$BAI_bt - (sd_bena_res$BAI_bt - sd_bena_res$X.Intercept.)
-
-sd_salix_res$BAI_bt = sd_salix_res$BAI_bt - (sd_salix_res$BAI_bt - sd_salix_res$X.Intercept.)
-
-#Adds the transformed residuals to the original residuals
-
-sd_bena_res$BAI_bt = sd_bena_res$BAI_bt + sd_bena_res$lme
-
-sd_salix_res$BAI_bt = sd_salix_res$BAI_bt + sd_salix_res$lme
-
-# Takes te mean of the BAI 
-
-mean_BAI_bena =mean(sd_bena_res[,"BAI"])
-
-mean_BAI_salix =mean(sd_salix_res[,"BAI"])
-
-# Adds the transformed residuals to the mean BAI
-
-sd_bena_res$BAI_bt = sd_bena_res$BAI_bt + mean_BAI_bena
-
-sd_salix_res$BAI_bt = sd_salix_res$BAI_bt + mean_BAI_salix
-
-#Plots the back transformed residuals (BAI_bt) as a function of age on two graphs by genus
-par(mfrow=c(1,2))
-
-plot(BAI_bt ~ Age, data = sd_bena_res,
-     col = "black", pch = 1, ylab = "ln Basal Area Increment", xlab = "Ring Age (years)", main = "Betula") # ylim=c(0, 50),
-
-plot(BAI_bt ~ Age, data = sd_salix_res,
-     col = "blue", pch = 1, ylab = "ln Basal Area Increment", xlab = "Ring Age (years)",  main = "Salix") # ylim=c(0, 90),
-
 #Combine the two species back into one dataset
 
-sd_final = rbind(sd_bena_res, sd_salix_res)
+sd_all = rbind(sd_bena_res, sd_salix_res)
 
 
 
