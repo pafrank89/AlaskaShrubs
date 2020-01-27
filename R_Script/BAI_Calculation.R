@@ -389,6 +389,24 @@ plot(BAI ~ Age, data = sd_bena5,
 plot(BAI ~ Age, data = sd_salix5,
      col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 90), main = "Salix")
 
+#Plots BAI as a function of age on two graphs by genus in log-log scale
+par(mfrow=c(1,2))
+
+plot(log(BAI) ~ log(Age), data = sd_bena5,
+     col = "black", pch = 1, ylab = "ln Basal Area Increment", xlab = "ln Ring Age") #, main = "Betula")
+
+abline (lmBena, col = "red")
+
+summary(lmBena)
+
+plot(log(BAI) ~ log(Age), data = sd_salix5,
+     col = "blue", pch = 1, ylab = "ln Basal Area Increment", xlab = "ln Ring Age") #, main = "Salix")
+
+abline (lmSalix,  col = "red")
+
+summary(lmSalix)
+
+
 #Plots BAI as a function of age on four graphs by species
 par(mfrow=c(2,2))
 
