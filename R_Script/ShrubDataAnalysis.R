@@ -16,10 +16,12 @@ library(corrplot)
 library(RColorBrewer)
 library(gamlss)
 
+
+
 # 1. CORRELATION MATRICIES ####
 
 # Check for correlations between variables
-CorPlot = subset (sd_final_cch, select = c("BAI", "resid", "iem.summ.temp", "iem.temp", "iem.summ.rain", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "PropPtarmagin", "Elevation", "Slope", "Y_Cord", "DistToRoad"))
+CorPlot = subset (sd_final_cch, select = c("Age", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "PropPtarmagin", "PropMoose_S", "PropHare_S", "PropPtarmagin_S"))
 
 #Creates a correlation matrix using the variables specified above
 chart.Correlation(CorPlot, histogram = TRUE, method = c("spearman"))
@@ -31,16 +33,16 @@ corrplot(sd_final_cchCorr , type="upper", order="hclust",
          col=brewer.pal(n=9, name="RdYlBu"))
 
 #All
-#("resid_t", "MooseDensity", "HareIndex", "PropMoose", "PropHare", iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", summ.temp", "temp", "summ.min", "summ.max", "summ.rain", "wint.rain", "pet", "wet", "frost", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad")
+#("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", summ.temp", "temp", "summ.min", "summ.max", "summ.rain", "wint.rain", "pet", "wet", "frost", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad")
 
 #Browsing Variables 
-#("resid_t", "MooseDensity", "HareIndex", "PropMoose", "PropHare")
+#("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare")
 
 #IEM Climate and BAI correlations
-#(resid_t",iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain")
+#(resid",iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain")
 
 #CRU Climate and BAI correlations
-#("resid_t", summ.temp", "temp", "summ.min", "summ.max", "summ.rain", "wint.rain", "pet", "wet", "frost")
+#("resid", summ.temp", "temp", "summ.min", "summ.max", "summ.rain", "wint.rain", "pet", "wet", "frost")
 
 #Age and BAI correlations
 #("resid", "resid_t", "BAI", "Age")
@@ -74,12 +76,12 @@ chart.Correlation(CorPlot_salix, histogram = TRUE, method = c("spearman"))
 
 # 3. BOX PLOTS ####
 #Plot BAI as a function of soil texture
-plot(resid_t ~ factor(SoilText), data = sd_final_cch, notch = TRUE,varwidth = TRUE,
+plot(resid ~ factor(SoilText), data = sd_final_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2,
      pch = 1, ylab = "Basal Area Increment", xlab = "")
 
 #plot BAI as a function of soil moisture
-plot(resid_t ~ factor(SoilMoist), data = sd_final_cch, notch = TRUE,varwidth = TRUE,
+plot(resid ~ factor(SoilMoist), data = sd_final_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2,
      pch = 1, ylab = "Basal Area Increment", xlab = "")
 
@@ -195,7 +197,7 @@ DP_Data %>%
   scale_y_continuous (name = "Frequency") +
   theme_bw()
 
-# 7. BROWSING DATA~ ENVIRONMENTAL COVARIATES ####
+# 7. BROWSING DATA ~ ENVIRONMENTAL COVARIATES ####
 # Assess the relationship beteween browsing data and other variables across the 23 sampled sections
 
 ggplot(data = SectionData, 
@@ -228,18 +230,102 @@ plot(HerbiPlot$MooseFeces ~ HerbiPlot$`2015MooseDensity`)
 
 # 9. PLOT ENVIRONEMNTAL VARIABLES ALONG Y-CORD #### 
 
-par(mfrow=c(5,1), omi=c(0.5,0.3,0,0), plt=c(0.1,0.9,0,0.7)) 
+par(mfrow=c(6,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) 
 
-plot(Section_Data$Elevation ~ Section_Data$Y_Cord, type = "l", xaxt='n', main="Elevation", ylab = "Meters")
-plot(Section_Data$iem.temp ~ Section_Data$Y_Cord, type = "l", xaxt='n', main="IEM Temperature", ylab = "°C")
-plot(Section_Data$temp ~ Section_Data$Y_Cord, type = "l", xaxt='n', main="CRU-TS Temperature", ylab = "°C")
-plot(Section_Data$iem.summ.rain ~ Section_Data$Y_Cord, type = "l", xaxt='n', main="IEM Summer Precipitation", ylab = "mm")
-plot(Section_Data$summ.rain ~ Section_Data$Y_Cord, type = "l", main="CRU-TS Summer Precipitation", ylab = "mm", xlab = "Latitude")
+#par(mfrow=c(1,1))
 
-plot(Section_Data$PropMoose ~ Section_Data$Y_Cord, type = "l")
-plot(Section_Data$PropHare ~ Section_Data$Y_Cord, type = "l")
-plot(Section_Data$PropPtarmagin ~ Section_Data$Y_Cord, type = "l")
+plot(Section_Data$PropMoose ~ Section_Data$Y_Cord, 
+     type = "b", pch = 1, col = "green", lty = 1,
+     xaxt='n', frame.plot = FALSE,
+     ylab = "% Twigs 
+     Browsed", xlab = "")
 
+lines(Section_Data$Y_Cord, Section_Data$PropHare, type = "b", pch = 1, col = "red", lty = 2)
+lines(Section_Data$Y_Cord, Section_Data$PropPtarmagin, type = "b", pch = 1, col = "blue", lty = 3)
+
+legend("topleft", legend=c("Moose", "Hare", "Ptarmagin"),
+       col=c("green", "red", "blue"), lty=1:3, cex=0.8, bty = "n")
+
+mtext("Browsing Pressure", side= 3, line = -1, adj = 1, padj = 0, cex=0.6)
+
+    #plot(Section_Data$PropHare ~ Section_Data$Y_Cord, 
+         #type = "b", pch = 1, col = "green", lty = 1,
+         #xaxt='n', frame.plot = FALSE,
+         #ylab = "% Twigs", xlab = "")
+
+    #plot(Section_Data$PropPtarmagin ~ Section_Data$Y_Cord, 
+         #type = "b", pch = 1, col = "green", lty = 1,
+         #xaxt='n', frame.plot = FALSE,
+         #ylab = "% Twigs", xlab = "")
+    
+plot(Section_Data$CanopyCover ~ Section_Data$Y_Cord,
+     type = "b", pch = 1, col = "forest green", 
+     xaxt='n', frame.plot = FALSE,
+     ylab = "%", xlab = "")
+
+#mtext("Canopy Cover", side= 4, line = 1, cex=0.6)
+
+mtext("Canopy Cover", side= 3, line = -3, adj = 1, cex=0.6)
+
+plot(Section_Data$StemHeight ~ Section_Data$Y_Cord,
+     type = "b", pch = 1, col = "forest green", 
+     xaxt='n', frame.plot = FALSE,
+     ylab = "cm", xlab = "")
+
+mtext("Canopy Height", side= 3, line = -2.5, adj = 1, padj = 0, cex=0.6)
+
+plot(Section_Data$iem.summ.rain ~ Section_Data$Y_Cord,
+     type = "b", pch = 1, col = "dark blue", 
+     xaxt='n', frame.plot = FALSE,
+     ylab = "mm", xlab = "")
+
+mtext("Mean Summer Precipitation", side= 3, line = -1.25, adj = 1, padj = 0, cex=0.6)
+
+plot(Section_Data$iem.summ.temp ~ Section_Data$Y_Cord,
+     type = "b", pch = 1, col = "red", 
+     xaxt='n', frame.plot = FALSE,
+     ylab = "°C", xlab = "")
+
+mtext("Mean Summer Temperature", side= 3, line = -2, adj = 1, padj = 0, cex=0.6)
+
+plot(Section_Data$Elevation ~ Section_Data$Y_Cord,
+     type = "b", pch = 1, col = "black", 
+     frame.plot = FALSE,
+     ylab = "m", xlab = "Latitude")
+
+mtext("Elevation", side= 3, line = -.5, adj = 1, padj = 0, cex=0.6)
+mtext("Latitude", side= 1, line = 3, cex=0.7)
+
+# 10. PLOT BAI TREND OVER TIME ####
+
+sd_BAI_bena_agg = aggregate((x = sd_bena_res),
+                            by = list(sd_bena_res$Year),
+                            FUN = mean,
+                            na.rm = TRUE)
+
+
+
+sd_BAI_salix_agg = aggregate((x = sd_salix_res),
+                             by = list(sd_salix_res$Year),
+                             FUN = mean,
+                             na.rm = TRUE)
+
+
+
+sd_BAI_agg = aggregate((x = sd_all),
+                       by = list(sd_all$Year),
+                       FUN = mean,
+                       na.rm = TRUE)
+
+par(mfrow=c(1,1), omi=c(0.5,0.3,0,0), plt=c(0.1,0.9,0,0.7)) 
+
+plot(sd_BAI_bena_agg$BAI ~ sd_BAI_bena_agg$Year, type = "l", xaxt='n', main="Betula", ylab = "BAI", xlim = c(1987, 2015))
+
+plot(sd_BAI_salix_agg$BAI ~ sd_BAI_salix_agg$Year, type = "l", xaxt='n', main="Salix", ylab = "BAI", xlim = c(1987, 2015))
+
+plot(sd_BAI_agg$BAI ~ sd_BAI_agg$Year, type = "l", xlab = "Year", ylab = "BAI", xlim = c(1987, 2015))
+
+plot(HareCycle$HareIndex ~ HareCycle$Year, type = "l", main="Snowshow Hare Population Index", xlab = "Year", ylab = "Hare Index", xlim = c(1987, 2015))
 
 
 
