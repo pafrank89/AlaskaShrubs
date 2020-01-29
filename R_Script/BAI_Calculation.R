@@ -357,9 +357,9 @@ write.csv(sd_join, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/Ala
 # 11. SUBSET DATA BY GENUS & SPECIES ####
 
 #Subsets the data by species
-sd_bena = subset(sd_join, Species == "BENA")# select = ShrubID : Species)
+sd_bena = subset(sd_join, Species == "BENA")
 
-sd_salix = subset(sd_join, grepl("^SA", sd_join$Species)) #, select = ShrubID : Species)
+sd_salix = subset(sd_join, grepl("^SA", sd_join$Species)) 
 
 #Removes all age values less than 5 years 
 sd_bena5 = filter(sd_bena, Age > 5)
@@ -372,7 +372,7 @@ sd_salix5 = filter(sd_salix, Age > 5)
   #sd_join_sabe = subset(sd_join, Species == "SABE", select = ShrubID : Species)
   #sd_sagl = subset(sd_join, Species == "SAGL", select = ShrubID : Species)
 
-# 11. PLOT BAI VS AGE ####
+# 12. PLOT BAI VS AGE ####
 
 #Plots BAI as a function of age on a single graph
 par(mfrow=c(1,1))
@@ -432,7 +432,7 @@ hist(sd_bena5$BAI, xlab = "Basal Area Increment", main = "Betula nana BAI Distri
 hist(sd_salix5$Age, xlab = "Ring Age (years)", main = "Salix spp. Age Distribution")
 hist(sd_salix5$BAI, xlab = "Basal Area Increment", main = "Salix spp. BAI Distribution")
 
-# 12. CREATE LINEAR REGRESSION MODELS ####
+# 13. CREATE LINEAR REGRESSION MODELS ####
 lmBena = lm(log(BAI) ~ log(Age), data = sd_bena5)
 lmSalix = lm(log(BAI) ~ log(Age), data = sd_salix5)
 
@@ -454,7 +454,7 @@ summary(lmSalix)
     dwtest(lmBena)
     dwtest(lmSalix)
 
-# 13. CREATE LINEAR MIXED EFFECTS MODELS ####
+# 14. CREATE LINEAR MIXED EFFECTS MODELS ####
     
 #Create a linear mixed effects model which models BAI as a function of age
 #The mixed effects model is used becuase it allows us to model the fixed effects of BAI and age
@@ -495,7 +495,7 @@ qqnorm(lmeSalix)
 ggplot(sd_salix5, aes(x = log(Age), y = log(BAI))) + geom_point() + stat_smooth(method = "lm", size = 1)
     
     
-# 14. EXTRACT RESIDUALS FROM LINEAR MIXED EFFECTS MODEL ####
+# 15. EXTRACT RESIDUALS FROM LINEAR MIXED EFFECTS MODEL ####
 
 #Extract the residuals from the linear model: his is variation that can be expected to be explained by something else than age.
 
@@ -505,9 +505,9 @@ sd_salix_res = add_residuals(sd_salix5, lmSalix)
 
 #Transform residuals back into BAI scale from the log scale
 
-sd_bena_res$resid_t = exp(1)^(sd_bena_res$resid)
+#sd_bena_res$resid_t = exp(1)^(sd_bena_res$resid)
 
-sd_salix_res$resid_t = exp(1)^(sd_salix_res$resid)
+#sd_salix_res$resid_t = exp(1)^(sd_salix_res$resid)
 
 #Combine the two species back into one dataset
 

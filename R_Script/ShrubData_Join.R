@@ -7,7 +7,7 @@
 #into a final dataset ready for alanysis
 
 #Creates a field in the shrub chronology data "Shrub_ID_Year" which can be used to join to the climate data
-sd_all$Shrub_ID_year <- do.call(paste, c(sd_final[c("ShrubID", "Year")], sep = "_"))
+sd_all$Shrub_ID_year <- do.call(paste, c(sd_all[c("ShrubID", "Year")], sep = "_"))
 
 #Joins the climate and shrub chronology data together
 sd_all_cc = join(sd_all, iem.climateAnnual, by='Shrub_ID_year', type='left', match='all')
@@ -29,6 +29,14 @@ sd_all_cch = join(sd_all_cch, MooseDensity, by='GMU_year', type='left', match='a
 #Subset the data to remove records which are outside the range of climatic or herbivore temporal data
 sd_final_cch = filter(sd_all_cch, Year >= 1987)
 sd_final_cch = filter(sd_final_cch, Year <= 2015)
+
+#Create a new column for Genus
+sd_final_cch$Genus = ifelse(sd_final_cch$Species == "BENA", "Betula",
+                            ifelse(sd_final_cch$Species == "SAPU", "Salix",
+                                   ifelse(sd_final_cch$Species == "SAGL", "Salix",
+                                          ifelse(sd_final_cch$Species == "SABE", "Salix",
+                                                 NA))))
+
 
 write.csv(sd_final_cch, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_CCH.csv")
 
