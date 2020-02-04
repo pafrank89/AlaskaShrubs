@@ -1,473 +1,883 @@
 # Modeling the effects of Climate and Herbivory on Shrub Growth
 # Peter Frank 
 # peterfr@stud.ntnu.no
-# 2019-11-23
+# 2020-02-03
 
-install.packages("lme4")           
-install.packages("nlme") 
-install.packages("gamlss")
-install.packages("ggplot2")
+# Our objective is to test the following four hypotheses:
 
-library(lme4)
-library(nlme)
-library(gamlss)
-library(regclass)
-library(tidyverse)
-library(caret)
-library(dplR)
-library(reshape2)
-library(dplyr)
-library(ggplot2)
-library(PerformanceAnalytics)
-library(corrplot)
-library(RColorBrewer)
-  
-# DEVELOP MIXED EFFECTS MODELS ####
+  #H1 - Increased temperature and precipitation will have a positive effect on radial growth 
+  #H2 - Increased herbivore density will have a negative effect on radial growth 
+  #H3 - Shrub growth positivly effected by the interactive effects of herbivory and temperature 
+  #H4 - The effects of herbivory will be less evident in well defended Betula species when compared to more palatable Salix species
 
-# Assess the range and mean values for the residual BAI response variable so you can interperet the effect size
+# This code will utilize forward model selection based on liklihood ratio tests to determine the optimal mixed effects model to descripe the variance in 
+# the detrended BAI data (resid). This process will begin by fitting a climate model and expanding upon that model to include herbivory factors.
+# We utilize this apporach because our a priori expectation is that shrub growth is driven primarily by climatic variables. 
 
+# 1. ASSESS VARIANCE IN THE RESPONSE VARIABLE ####
+
+# Assess the residual BAI response variable so you can interperet the effect size
+
+#All Data
 mean(sd_final_cch$resid) # = 0.1251182
 min(sd_final_cch$resid) # = -3.69711
 max(sd_final_cch$resid) # = 4.042966
 
-hist(sd_final_cch$resid, xlab = "Residuals", main = "")
+hist(sd_final_cch$resid, xlab = "Residuals", main = "All Data")
+
+#Betula
+mean(sd_bena_cch$resid) # = 0.1398543
+min(sd_bena_cch$resid) # = -3.6971
+max(sd_bena_cch$resid) # = 4.042966
+
+hist(sd_bena_cch$resid, xlab = "Residuals", main = "Betula")
+
+#Salix
+mean(sd_salix_cch$resid) # = 0.09951921
+min(sd_salix_cch$resid) # = -3.6971
+max(sd_salix_cch$resid) # = 3.935671
+
+hist(sd_salix_cch$resid, xlab = "Residuals", main = "Salix")
+
+# Assess the range of resid values across sites, to show the need for random effects
+boxplot(sd_final_cch$resid ~ sd_final_cch$Section, 
+        xlab = "Site", ylab = "Residuals", main = "All Data")
+
+boxplot(sd_bena_cch$resid ~ sd_bena_cch$Section, 
+        xlab = "Site", ylab = "Residuals", main = "Betula")
+
+boxplot(sd_salix_cch$resid ~ sd_salix_cch$Section, 
+        xlab = "Site", ylab = "Residuals", main = "Salix")
 
 # Review the fixed effects which will be used in the models and insure no NA values are present 
 summary(sd_final_cch)
+
+summary(sd_bena_cch)
+
+summary(sd_salix_cch)
 
 # Model Variables Key
 
 str(sd_final_cch)
 
+str(sd_bena_cch)
+
+str(sd_salix_cch)
+
 #Dependent/Response Variable:
-  # resid
+# resid
 
 #Random Effects:
-  # ~1 | Section/Shrub ID
-  # This indicates that shrub is nested within section
+# ~1 | Section/Shrub ID
+# This indicates that shrub is nested within section
 
 #Fixed Effects/Explanatory Variables
-  #C1 = iem.summ.temp
-  #C2 = iem.summ.rain
+#C1 = iem.summ.temp
+#C2 = iem.summ.rain.10
 
-  #H1 = MooseDensity
-  #H2 = HareIndex
-  #H3 = PropMoose
-  #H4 = PropHare
-  #H5 = PropPtarmagin
+#H1 = MooseDensity
+#H2 = HareIndex
+#H3 = PropMoose
+#H4 = PropHare
+#H5 = PropPtarmagin
 
-  #X1 = Elevation
-  #X2 = Slope
-  #X3 = Y_Cord
-  #X4 = DistToRoad
+#X1 = Elevation
+#X2 = Slope
+#X3 = Y_Cord
+#X4 = DistToRoad
 
-# NULL MODEL #### 
+
+
+# 2. NULL MODELS #### 
+
+# Null models will be used to compare the effect of adding fixed effects to the model 
+
 null_model = lme(resid ~ 1, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                  method = "ML")
 
-# CLIMATE MODELS #### 
+null_model_b = lme(resid ~ 1, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                 method = "ML")
 
-# Average summer temperature model
+null_model_s = lme(resid ~ 1, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                 method = "ML")
+
+# 3. CLIMATE MODELS #### 
+
+# Climate sensitivy is expected to be the primaty driver of shrub growth in this region, this we will begin forward selection by
+# Determining the optimal climate model for the data. 
+
+# Optimal Models:
+
+  # All Data: C1xC2_model
+  # Betula: C1xC2_model_b
+  # Salix: C1xC2_model_s
+
+## 3.1 Mean Summer Temperature #####
+
+# MST for All Data
 C1_model = lme(resid ~ iem.summ.temp, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-              method = "ML")
-
-  anova(null_model, C1_model)
-
-  summary(C1_model)
-
-# Summer percipitation model
-C2_model = lme(resid ~ iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                method = "ML")
 
-  anova(null_model, C3_model)
+  anova(null_model, C1_model)
   
-  summary(C3_model)
+  summary(C1_model)
+
+# MST for Betula
+C1_model_b = lme(resid ~ iem.summ.temp, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+               method = "ML")
+
+  anova(null_model_b, C1_model_b)
   
+  summary(C1_model_b)
 
-# Climate models with mean summer temperature & mean summer percipitation model
-C1C2_model = lme(resid ~ iem.summ.temp + iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                            na.action=na.pass, method = "ML", control = lmeControl(opt = "optim"))
+# MST for Salix
+C1_model_s = lme(resid ~ iem.summ.temp, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+               method = "ML")
 
-anova(null_model, C1_model, C2_model, C3_model)
-
-summary(C1C3_model)
-
-# Climate model with an interaction term between summer temperature & mean summer percipitation model
-  #This model is used to assess wether growth is greater in years when it is both warmer and wetter
-  #We see that as mean precipitation increases, shrub growth increases more for every degree c increase
-
-core_climate = lme(resid ~ iem.summ.temp + iem.summ.rain + iem.summ.temp * iem.summ.rain , data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                   method = "ML")
-
-anova(C1C3_model, core_climate)
-
-summary(core_climate)
+  anova(null_model_s, C1_model_s)
+  
+  summary(C1_model_s)
 
 
-C2C3_climate = lme(resid ~ iem.temp + iem.summ.rain + iem.temp * iem.summ.rain , data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                   method = "ML")
+## 3.2 Mean Summer Precipitation  ####
 
-anova(core_climate, C2C3_climate)
+# MSP for All Data
+C2_model = lme(resid ~ iem.summ.rain.10, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+               method = "ML")
 
-summary(core_climate)
+  anova(null_model, C2_model)
+  
+  summary(C2_model)
+
+# MSP for Betula 
+C2_model_b = lme(resid ~ iem.summ.rain.10, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+               method = "ML")
+
+  anova(null_model_b, C2_model_b)
+  
+  summary(C2_model_b)
+
+# MSP for Salix 
+C2_model_s = lme(resid ~ iem.summ.rain.10, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+               method = "ML")
+
+  anova(null_model_s, C2_model_s)
+  
+  summary(C2_model_s)
+
+
+## 3.3 Addative Effect MST + MSP ####
+
+# MST + MSP for All Data
+C1C2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                 method = "ML")
+
+  anova(C1_model, C1C2_model)
+  
+  anova(C2_model, C1C2_model)
+  
+  summary(C1C2_model)
+
+# MST + MSP for Betula
+C1C2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                 method = "ML")
+
+  anova(C1_model_b, C1C2_model_b)
+  
+  anova(C2_model_b, C1C2_model_b)
+  
+  anova(null_model_b, C1C2_model_b)
+  
+  summary(C1C2_model_b)
+
+# MST + MSP for Salix
+C1C2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                 method = "ML")
+
+anova(C1_model_s, C1C2_model_s)
+
+anova(C2_model_s, C1C2_model_s)
+
+summary(C1C2_model_s)
+
+## 3.3 Interactive Effect MST * MSP ####
+
+#This model is used to assess wether growth is greater in years when it is both warmer and wetter
+#We see that as mean precipitation increases, shrub growth increases more for every degree c increase
+
+# MST * MSP for All Data
+C1xC2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 , data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+
+  anova(C1C2_model, C1xC2_model)
+  
+  summary(C1xC2_model)
+
+# MST * MSP for Betula
+C1xC2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 , data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+
+  anova(C1C2_model_b, C1xC2_model_b)
+  
+  anova(C2_model_b, C1xC2_model_b)
+  
+  anova(null_model_b, C1xC2_model_b)
+  
+  summary(C1xC2_model_b)
+
+# MST * MSP for Salix
+C1xC2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 , data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+
+  anova(C1C2_model_s, C1xC2_model_s)
+  
+  summary(C1xC2_model_s)
+
+
+## 3.4 Model Assumptions & Effect Size for Climate Model ####
 
 #Plots the Satadardize Residuals plot for the core climate model
-plot(core_climate)
+
+### All Data
+# Plot Residuals vs. Fitted Plot to check for non-linearity, unequal error variances, and outliers
+plot(C1xC2_model)
+
+# Plot Normal QQ ti assess the distribution of the data
+qqnorm(resid(C1xC2_model))
+qqline(resid(C1xC2_model))
+
+#Plot the effect size of the model
+sjPlot :: plot_model(C1xC2_model, axis.labels=c("Interaction", "Mean Summer Pecip", "Mean Summer Temp"),
+                     show.values=TRUE, show.p=TRUE,
+                     title="Effect of Mean Summer Temp & Precip on Shrub Growth")
+
+sjPlot::tab_model(C1xC2_model, show.re.var= TRUE, 
+                  pred.labels =c("(Intercept)", "Mean Summer Temperature", "Mean Summer Precipitation", "Interaction MST & MSP"),
+                  dv.labels= "Effects of Summer Temperature & Precipitation on Shrub Growth")
+
+### Betula 
+# Plot Residuals vs. Fitted Plot to check for non-linearity, unequal error variances, and outliers
+plot(C1xC2_model_b)
+
+# Plot Normal QQ ti assess the distribution of the data
+qqnorm(resid(C1xC2_model_b))
+qqline(resid(C1xC2_model_b))
+
+#Plot the effect size of the model
+sjPlot :: plot_model(C1xC2_model_b, axis.labels=c("Interaction", "Mean Summer Pecip", "Mean Summer Temp"),
+                     show.values=TRUE, show.p=TRUE,
+                     title="Effect of Mean Summer Temp & Precip on Shrub Growth")
+
+sjPlot::tab_model(C1xC2_model_b, show.re.var= TRUE, 
+                  pred.labels =c("(Intercept)", "Mean Summer Temperature", "Mean Summer Precipitation", "Interaction MST & MSP"),
+                  dv.labels= "Effects of Summer Temperature & Precipitation on Shrub Growth")
+
+### Salix
+# Plot Residuals vs. Fitted Plot to check for non-linearity, unequal error variances, and outliers
+plot(C1xC2_model_s)
+
+# Plot Normal QQ ti assess the distribution of the data
+qqnorm(resid(C1xC2_model_s))
+qqline(resid(C1xC2_model_s))
+
+#Plot the effect size of the model
+sjPlot :: plot_model(C1xC2_model_s, axis.labels=c("Interaction", "Mean Summer Pecip", "Mean Summer Temp"),
+                     show.values=TRUE, show.p=TRUE,
+                     title="Effect of Mean Summer Temp & Precip on Shrub Growth")
+
+sjPlot::tab_model(C1xC2_model_s, show.re.var= TRUE, 
+                  pred.labels =c("(Intercept)", "Mean Summer Temperature", "Mean Summer Precipitation", "Interaction MST & MSP"),
+                  dv.labels= "Effects of Summer Temperature & Precipitation on Shrub Growth")
+
+# Optimal Climate Model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 , data = sd_final_cch, random = ~ 1|Section/ShrubID, method = "ML")
 
 
-# HERBIVORE MODELS#### 
+# 4. HERBIVORY MODELS ####
 
-# Temporal Moose Density model
+# We will assess the herbivore variables by comparing them one at a time to the null model
+# and retaining factors which significantly improve the fit of the model.
+
+# Optimal Models:
+
+  # All Data: H2_model
+  # Betula: H2_model_b
+  # Salix: No herbivory variables perform better than the NULL model
+  
+## 4.1 Temporal Moose Density model ####
+
+# All Data
 H1_model <- lme(resid ~ MooseDensity, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                 method = "ML")
+                method = "ML")
 
   anova(null_model, H1_model)
   
   summary(H1_model)
 
-# Temporal Hare Index, 1-3 scale representing different amplitudes of hare population peaks
-core_herb <- lme(resid ~ HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+# Betula
+H1_model_b <- lme(resid ~ MooseDensity, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                 method = "ML")
 
-  anova(null_model, core_herb )
+  anova(null_model_b, H1_model_b)
   
-  summary(core_herb )
+  summary(H1_model_b)
 
-      # Tests to see if making the hare index a factorial variable will change the outcome
-      H2_fac_model <- lme(resid ~ as.factor(HareIndex), data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                      method = "ML")
-      
-          anova(null_model, H2_fac_model)
-          
-          anova(H2_model, H2_fac_model)
-          
-          summary(H2_fac_model)
+# Salix
+H1_model_s <- lme(resid ~ MooseDensity, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
 
-# Spatial browsing pressure by Moose model 
+  anova(null_model_s, H1_model_s)
+  
+  summary(H1_model_s)
+
+## 4.2 Temporal Hare Index ####
+# This factor is based on a 1-3 scale representing different amplitudes of hare population peaks
+
+# All Data
+H2_model <- lme(resid ~ HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
+
+  anova(null_model, H2_model)
+  
+  summary(H2_model)
+
+# Betula
+H2_model_b <- lme(resid ~ HareIndex, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
+
+  anova(null_model_b, H2_model_b)
+  
+  summary(H2_model_b)
+
+# Salix
+H2_model_s <- lme(resid ~ HareIndex, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
+
+  anova(null_model_s, H2_model_s)
+  
+  summary(H2_model_s)
+
+## 4.3 Spatial browsing pressure by Moose ####
+
+# All Data
 H3_model <- lme(resid ~ PropMoose, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                 method = "ML")
 
   anova(null_model, H3_model)
   
   summary(H3_model)
+  
+# All Data Section
+H3S_model <- lme(resid ~ PropMoose_S, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(null_model, H3S_model)
+  
+  summary(H3S_model)
+  
+  
+# Betula
+H3_model_b <- lme(resid ~ PropMoose, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(null_model_b, H3_model_b)
+  
+  summary(H3_model_b)
+  
+# Betula Section
+H3S_model_b <- lme(resid ~ PropMoose_S, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(null_model_b, H3S_model_b)
+  
+  summary(H3S_model_b)
+  
+# Salix
+H3_model_s <- lme(resid ~ PropMoose, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(null_model_s, H3_model_s)
+  
+  summary(H3_model_s)
+  
+# Salix Section
+H3S_model_s <- lme(resid ~ PropMoose_S, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(null_model_s, H3S_model_s)
+  
+  summary(H3S_model_s)
 
-# Spatial browsing pressure by Hare model 
+## 4.4 Spatial browsing pressure by Hare #### 
+
+# All Data
 H4_model <- lme(resid ~ PropHare, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                 method = "ML")
 
   anova(null_model, H4_model)
   
   summary(H4_model)
-
-# Spatial browsing pressure by Ptarmagin model 
-H5_model <- lme(resid ~ PropPtarmagin, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                method = "ML")
-
-  anova(null_model, H5_model)
   
-  summary(H5_model)
-
-# Comparison of all base herbivore models
-anova(H1_model, H2_model, H3_model, H4_model, H5_model)
-
-# Herbivore model with temporal moose & hare index data
-H1H2_model <- lme(resid ~ MooseDensity + HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                method = "ML")
-
-  anova(H2_model, H1H2_model)
-
-  summary(H1H2_model)
-  
-          # Test to see if there is any interactive effect between hare density and moose density
-          H1xH2_model <- lme(resid ~ MooseDensity * HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                             method = "ML")
-          
-          anova(H2_model, H1xH2_model)
-          
-          summary(H1xH2_model)
-
-# Herbivore model with spatial browsing intensity by moose & hare index data
-H3H2_model <- lme(resid ~ PropMoose + HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                  method = "ML")
-
-  anova(H2_model, H3H2_model)
-  
-  summary(H3H2_model)
-  
-# HERBIVORE MODELS SITE LEVEL #### 
-  
-  # Temporal Moose Density model
-  H1_model <- lme(resid ~ MooseDensity, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                  method = "ML")
-  
-  anova(null_model, H1_model)
-  
-  summary(H1_model)
-  
-  # Temporal Hare Index, 1-3 scale representing different amplitudes of hare population peaks
-  core_herb <- lme(resid ~ HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                   method = "ML")
-  
-  anova(null_model, core_herb )
-  
-  summary(core_herb )
-  
-  # Tests to see if making the hare index a factorial variable will change the outcome
-  H2_fac_model <- lme(resid ~ as.factor(HareIndex), data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                      method = "ML")
-  
-  anova(null_model, H2_fac_model)
-  
-  anova(H2_model, H2_fac_model)
-  
-  summary(H2_fac_model)
-  
-  # Spatial browsing pressure by Moose model 
-  H3_model <- lme(resid ~ PropMoose_S, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                  method = "ML")
-  
-  anova(null_model, H3_model)
-  
-  summary(H3_model)
-  
-  # Spatial browsing pressure by Hare model 
-  H4_model <- lme(resid ~ PropHare_S, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+# All Data Section
+H4S_model <- lme(resid ~ PropHare_S, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                   method = "ML")
   
   anova(null_model, H4_model)
   
   summary(H4_model)
   
-  # Spatial browsing pressure by Ptarmagin model 
-  H5_model <- lme(resid ~ PropPtarmagin_S, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+# Betula
+H4_model_b <- lme(resid ~ PropHare, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(null_model_b, H4_model_b)
+  
+  summary(H4_model_b)
+  
+# Betula Section
+H4S_model_b <- lme(resid ~ PropHare_S, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(null_model_b, H4S_model_b)
+  
+  summary(H4S_model_b)
+  
+# Salix
+H4_model_s <- lme(resid ~ PropHare, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(null_model_s, H4_model_s)
+  
+  summary(H4_model_s)
+  
+# Salix Section
+H4S_model_s <- lme(resid ~ PropHare_S, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(null_model_s, H4S_model_s)
+  
+  summary(H4S_model_s)
+
+## 4.5 Spatial browsing pressure by Ptarmagin #### 
+
+# All Data 
+H5_model <- lme(resid ~ PropPtarmagin, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
+
+  anova(null_model, H5_model)
+  
+  summary(H5_model)
+  
+# All Data Section 
+H5S_model <- lme(resid ~ PropPtarmagin_S, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                   method = "ML")
   
   anova(null_model, H5_model)
   
   summary(H5_model)
+
+# Betula
+H5_model_b <- lme(resid ~ PropPtarmagin, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
   
-  # Comparison of all base herbivore models
-  anova(H1_model, H2_model, H3_model, H4_model, H5_model)
+  anova(null_model_b, H5_model_b)
   
-  # Herbivore model with temporal moose & hare index data
-  H1H2_model <- lme(resid ~ MooseDensity + HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+  summary(H5_model_b)
+  
+# Betula Section
+H5S_model_b <- lme(resid ~ PropPtarmagin_S, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                     method = "ML")
   
-  anova(H2_model, H1H2_model)
+  anova(null_model_b, H5S_model_b)
   
-  summary(H1H2_model)
+  summary(H5S_model_b)
   
-  # Test to see if there is any interactive effect between hare density and moose density
-  H1xH2_model <- lme(resid ~ MooseDensity * HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                     method = "ML")
+# Salix 
+H5_model_s <- lme(resid ~ PropPtarmagin, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
   
-  anova(H2_model, H1xH2_model)
+  anova(null_model_s, H5_model_s)
   
-  summary(H1xH2_model)
+  summary(H5_model_s)
   
-  # Herbivore model with spatial browsing intensity by moose & hare index data
-  H3H2_model <- lme(resid ~ PropMoose + HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+# Salix Section
+H5S_model_s <- lme(resid ~ PropPtarmagin_S, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
                     method = "ML")
   
-  anova(H2_model, H3H2_model)
+  anova(null_model_s, H5S_model_s)
   
-  summary(H3H2_model)
+  summary(H5S_model_s)
 
-# CLIMATE & HERBIVORE MODELS ####
+## 4.6 Herbivore model with temporal moose & hare index data ####
 
-# Models the interactive effects of mean summer temperature and presepitiation and temporal hare index
-CH2_model = lme(resid ~ iem.summ.temp + iem.summ.rain + iem.summ.temp * iem.summ.rain +
-                  HareIndex, 
-                  data = sd_final_cch, random = ~ 1|Section/ShrubID,
+# All Data
+H2H1_model <- lme(resid ~  HareIndex + MooseDensity, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                   method = "ML")
 
-  anova(core_climate, core_herb, CH2_model)
+  anova(H2_model, H2H1_model)
   
-  summary(CH2_model)
+  summary(H2H1_model)
+
+# Betula
+H2H1_model_b <- lme(resid ~  HareIndex + MooseDensity, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+
+  anova(H2_model_b, H2H1_model_b)
   
-  ggplot(data = sd_final_cch, 
-         aes(x = resid,
-             y = HareIndex,
-             colour = Genus)) + 
-    geom_point(size = 2) +
-    geom_smooth(method= "lm") +
-    xlab("Residuals") + ylab("Hare Index") +
-    scale_y_continuous (breaks=seq(1, 3, 1))
-  
-  ggplot(data = sd_final_cch, 
-         aes(x = resid,
-             y = MooseDensity,
-             colour=Genus)) + 
-    geom_point(size = 2) +
-    geom_smooth(method= "lm") +
-    xlab("Residuals") + ylab("Moose Density (moose/mile²)") 
-  
-  ggplot(data = sd_final_cch, 
-         aes(x = resid,
-             y = iem.summ.temp,
-             colour=Genus)) + 
-    geom_point(size = 2) +
-    geom_smooth(method= "lm") +
-    xlab("Residuals") + ylab("Mean Summer Temperature (°C)")
-  
-  ggplot(data = sd_final_cch, 
-         aes(x = resid,
-             y = iem.summ.rain,
-             colour=Genus)) + 
-    geom_point(size = 2) +
-    geom_smooth(method= "lm") +
-    xlab("Residuals") + ylab("Mean Summer Precipitation (mm)")
+  summary(H2H1_model_b)
   
   
-# Models the interactive effects of mean summer temperature and presepitiation, temporal hare index and temporal moose density
-CH1H2_model = lme(resid ~ iem.summ.temp + iem.summ.rain + iem.summ.temp * iem.summ.rain +
+H2xH1_model_b <- lme(resid ~  HareIndex * MooseDensity, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                      method = "ML")
+  
+  anova(H2_model_b, H2xH1_model_b)
+  
+  anova(H2H1_model_b, H2xH1_model_b)
+  
+  summary(H2xH1_model_b)
+  
+
+# Salix
+H2H1_model_s <- lme(resid ~  HareIndex + MooseDensity, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+
+  anova(H2_model_s, H2H1_model_s)
+  
+  summary(H2H1_model_s)
+
+
+
+
+
+
+
+# 5. HERBIVORY & CLIMATE MODELS ####
+  
+# We will further the model selection by adding the herbivory factors one at a time to the optimal climate model
+# and retaining factors which significantly improve the fit of the model.
+  
+  
+# Optimal Models:
+  
+  # All Data: CH2_model
+  # Betula: CH1H2_model_b 
+  # Salix: CH1_model_s
+  
+## 5.1 Climate & Moose Density ####
+
+# All Data
+CH1_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                MooseDensity, 
+                data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
+  
+  anova(C1xC2_model, CH1_model)
+  
+  summary(CH1_model)  
+  
+# Betula
+CH1_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                MooseDensity, 
+                data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
+  
+  anova(C1xC2_model_b, CH1_model_b)
+  
+  summary(CH1_model_b) 
+  
+  
+# Salix
+CH1_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                MooseDensity, 
+                data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
+  
+  anova(C1xC2_model_s, CH1_model_s)
+  
+  summary(CH1_model_s) 
+  
+## 5.2 Climate & Hare Density ####
+
+# ALl Data
+CH2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                HareIndex, 
+                data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
+  
+  anova(C1xC2_model, CH2_model)
+  
+  summary(C1xC2_model)
+  
+# Betula
+CH2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                HareIndex, 
+                data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
+  
+  anova(C1xC2_model_b, CH2_model_b)
+  
+  summary(CH2_model_b)
+  
+# Salix
+CH2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                HareIndex, 
+                data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                method = "ML")
+  
+  anova(C1xC2_model_s, CH2_model_s)
+  
+  summary(CH2_model_s)
+  
+  ## 5.3.1 Climate & Moose Browse ####
+  
+  # ALl Data
+  CH3_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                    PropMoose_S, 
+                  data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(C1xC2_model, CH3_model)
+  
+  summary(CH3_model)
+  
+  # Betula
+  CH3_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      PropMoose_S, 
+                    data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(C1xC2_model_b, CH3_model_b)
+  
+  summary(CH3_model_b)
+  
+  # Salix
+  CH3_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      PropMoose_S, 
+                    data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(C1xC2_model_s, CH3_model_s)
+  
+  summary(CH3_model_s)
+  
+  ## 5.3.2 Climate & Hare Browse ####
+  
+  # ALl Data
+  CH4_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                    PropHare_S, 
+                  data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(C1xC2_model, CH4_model)
+  
+  summary(CH4_model)
+  
+  # Betula
+  CH4_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      PropHare_S, 
+                    data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(C1xC2_model_b, CH4_model_b)
+  
+  summary(CH4_model_b)
+  
+  # Salix
+  CH4_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      PropHare_S, 
+                    data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(C1xC2_model_s, CH4_model_s)
+  
+  summary(CH4_model_s)
+  
+  ## 5.3.3 Climate & Patamigin Browse ####
+  
+  # ALl Data
+  CH5_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                    PropPtarmagin_S, 
+                  data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(C1xC2_model, CH5_model)
+  
+  summary(CH5_model)
+  
+  # Betula
+  CH5_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      PropPtarmagin_S, 
+                    data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(C1xC2_model_b, CH5_model_b)
+  
+  summary(CH5_model_b)
+  
+  # Salix
+  CH5_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      PropPtarmagin_S, 
+                    data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(C1xC2_model_s, CH5_model_s)
+  
+  summary(CH5_model_s)
+## 5.4 Climate & Moose Density + Hare Index ####
+  
+# All Data  
+CH1H2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
                   MooseDensity + HareIndex,
                   data = sd_final_cch, random = ~ 1|Section/ShrubID,
                   method = "ML")
-
+  
   anova(CH2_model, CH1H2_model)
   
   summary(CH1H2_model)
-
-# CLIMATE & HERBIVORE MODELS WITH INTERACTION TERMS ####
-
-# Models the interactive effects of mean summer temperature and presepitiation and temporal hare index 
-#including an interaction term between summer rain and hare index
-CH2_int_rain_model = lme(resid ~ iem.summ.temp + iem.summ.rain + iem.summ.temp * iem.summ.rain +
-                       HareIndex + iem.summ.rain * HareIndex,
-                       data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                       method = "ML")
-
-  anova(core_climate, CH2_model, CH2_int_rain_model)
   
-  summary(CH2_int_rain_model)
+# Betula  
+CH1H2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                    MooseDensity + HareIndex,
+                    data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
   
-# Models the interactive effects of mean summer temperature and presepitiation and temporal hare index 
-#including an interaction term between summer temp and hare index
-CH2_int_temp_model = lme(resid ~ iem.summ.temp + iem.summ.rain + iem.summ.temp * iem.summ.rain +
-                      HareIndex + iem.summ.temp * HareIndex,
-                      data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                      method = "ML")
+  anova(CH2_model_b, CH1H2_model_b)
   
-  anova(core_climate, CH2_model, CH2_int_temp_model)
+  summary(CH1H2_model_b)
   
-    # Models the interactive effects of mean summer temperature and presepitiation and spatial browing intensity 
-    #including an interaction term between summer temp and spatial browing intensity 
-    CH3_int_model = lme(resid ~ iem.summ.temp + iem.summ.rain + iem.summ.temp * iem.summ.rain +
-                            PropMoose + iem.summ.temp * PropMoose,
-                            data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                            method = "ML")
-      
-      anova(core_climate, CH3_int_model)
-      
-      # Models the interactive effects of mean summer temperature and presepitiation and temporal moose denisty
-      #including an interaction term between summer temp and temporal moose denisty
-    CH1_int_model = lme(resid ~ iem.summ.temp + iem.summ.rain + iem.summ.temp * iem.summ.rain +
-                            MooseDensity + iem.summ.temp * MooseDensity,
-                            data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                            method = "ML")
-    
-      anova(core_climate, CH1_int_model)
-
-
-# CALCULATE VARIANCE INFLATION FACTOR (VIF) FOR BEST MODEL ####
-
-# Create the function used to calculate the VIFs:
-      
-vif.lme <- function (fit) {
-        
-## Adapted from rms::vif
-        
-  v <- vcov(fit)
-  nam <- names(fixef(fit))
-        
-## exclude intercepts
-        
-   ns <- sum(1 * (nam == "Intercept" | nam == "(Intercept)"))
-      if (ns > 0) {
-      v <- v[-(1:ns), -(1:ns), drop = FALSE]
-      nam <- nam[-(1:ns)] }
-      d <- diag(v)^0.5
-      v <- diag(solve(v/(d %o% d)))
-      names(v) <- nam
-      v }
-
-# Create a model without the climatic interaction term
-
-C1C3H2_model = lme(resid ~ iem.summ.temp + iem.summ.rain +
-                  HareIndex, 
+  
+# Salix 
+CH1H2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                    MooseDensity + HareIndex,
+                    data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(CH1_model_s, CH1H2_model_s)
+  
+  summary(CH1H2_model_s)
+  
+## 5.5 Climate & Moose Browse + Hare Index ####
+  
+# All Data  
+CH3H2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                  PropMoose_S + HareIndex,
                   data = sd_final_cch, random = ~ 1|Section/ShrubID,
                   method = "ML")
-
-#Calculate the VIFs for the model without climatic interaction terms 
-#Note that values for VIF greater than two should be investigated further
-
-vif.lme(C1C3H2_model)
-      
-
-# LIKELIHOOD RATIO TEST BASED BACKWARD SELECTION ####
-
-# Stepwise regression using mean summer temperature rather than mean annual temperature
-
-lme.full.s = lme(resid ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose + PropHare + PropPtarmagin, 
-               data = sd_final_cch, random = ~ 1|Section/ShrubID,
-               method = "ML")
-
-summary(lme.full.s)
-
-drop1(lme.full.s, test = "Chisq")
-
-drop1(update(lme.full.s, ~ . -PropPtarmagin), test = "Chisq")
-
-drop1(update(lme.full.s, ~ . -PropPtarmagin -PropHare), test = "Chisq")
-
-drop1(update(lme.full.s, ~ . -PropPtarmagin -PropHare -MooseDensity), test = "Chisq")
-
-drop1(update(lme.full.s, ~ . -PropPtarmagin -PropHare -MooseDensity -PropMoose), test = "Chisq")
-
-# Stepwise regression using mean annual temperature rather than mean summer temperature
-
-# utlize the code "control=lmeControl(opt = "optim")" in the model as an optimizing algorithm because this model
-#produces the following error:
   
-  #Error in lme.formula(fixed = resid ~ iem.temp + iem.summ.rain + HareIndex +  : 
-  #nlminb problem, convergence error code = 1
-  #message = false convergence (8)
+  anova(CH2_model, CH1H2_model)
+  
+  summary(CH1H2_model)
+  
+# Betula  
+CH3H2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                    PropMoose_S + HareIndex,
+                    data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(CH2_model_b, CH3H2_model_b)
+  
+  summary(CH3H2_model_b)
+  
+  
+# Salix 
+CH3H2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                    PropMoose_S + HareIndex,
+                    data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(CH1_model_s, CH1H2_model_s)
+  
+  summary(CH1H2_model_s)  
+  
+## 5.6 Climate & Moose Density * Hare Index ####
 
+# All Data  
+CH1xH2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                  MooseDensity * HareIndex,
+                  data = sd_final_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(CH2_model, CH1xH2_model)
+    
+  summary(CH1xH2_model)
+  
+# Betula  
+CH1XH2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                  MooseDensity * HareIndex,
+                  data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(CH2_model_b, CH1XH2_model_b)
+  anova(CH1H2_model_b, CH1XH2_model_b)
+  
+  
+  summary(CH1XH2_model_b)
+  
+  
+# Salix 
+CH1xH2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                  MooseDensity * HareIndex,
+                  data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                  method = "ML")
+  
+  anova(CH1_model_s, CH1xH2_model_s)
+  
+  summary(CH1xH2_model_s)
+  
+# 6. INTERACTION OF CLIMATE AND HERBIVORY ####
 
-lme.full = lme(resid ~ iem.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose + PropHare + PropPtarmagin, 
-               data = sd_final_cch, random = ~ 1|Section/ShrubID,
-               method = "ML", control = lmeControl (opt = "optim"))
+## To test if these is an interaction between climate and herbivory
 
-summary(lme.full)
+## 6.1 Hare Index * Mean Summer Temperature ####
+  
+# Betula  
+CH_INT_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                     MooseDensity * HareIndex+
+                     HareIndex * iem.summ.temp,
+                     data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                     method = "ML")
+  
+  anova(CH1H2_model_b, CH_INT_model_b)
+  
+  
+  summary(CH1XH2_model_b)
+  
+  
+# Salix 
+CH_INT_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                     MooseDensity * HareIndex+
+                     HareIndex * iem.summ.temp,
+                     data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                     method = "ML")
+  
+  anova(CH1_model_s, CH1xH2_model_s)
+  
+  summary(CH1xH2_model_s)
 
-drop1(lme.full, test = "Chisq")
-
-drop1(update(lme.full, ~ . -MooseDensity), test = "Chisq")
-
-drop1(update(lme.full, ~ . -MooseDensity -PropPtarmagin), test = "Chisq")
-
-drop1(update(lme.full, ~ . -MooseDensity -PropPtarmagin -PropHare), test = "Chisq")
-
-drop1(update(lme.full, ~ . -MooseDensity -PropPtarmagin -PropHare -PropMoose), test = "Chisq")
-
-
-
-lme.full_sec = lme(resid ~ iem.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, 
-               data = sd_final_cch, random = ~ 1|Section/ShrubID,
-               method = "ML", control = lmeControl (opt = "optim"))
-
-summary(lme.full_sec)
-
-drop1(lme.full_sec, test = "Chisq")
-
-drop1(update(lme.full_sec, ~ . -MooseDensity), test = "Chisq")
-
-drop1(update(lme.full_sec, ~ . -MooseDensity -PropMoose_S), test = "Chisq")
-
-drop1(update(lme.full_sec, ~ . -MooseDensity -PropMoose_S -PropHare_S), test = "Chisq")
-
-drop1(update(lme.full_sec, ~ . -MooseDensity -PropMoose_S -PropHare_S -PropPtarmagin_S), test = "Chisq")
-
-
-anova(lme.full.s, CH2_model)
+  
+## 6.2 Hare Index * Mean Summer Precipitation ####
+  
+# Betula  
+CH_INT1_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      MooseDensity * HareIndex+
+                      HareIndex * iem.summ.rain.10,
+                      data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                      method = "ML")
+  
+  anova(CH1H2_model_b, CH_INT1_model_b)
+  
+  
+  summary(CH_INT1_model_b)
+  
+  
+# Salix 
+CH_INT1_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      MooseDensity * HareIndex+
+                      HareIndex * iem.summ.rain.10,
+                      data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                      method = "ML")
+  
+  anova(CH1_model_s, CH1xH2_model_s)
+  
+  summary(CH1xH2_model_s)
+  
+  
