@@ -191,7 +191,7 @@ DP_Data = subset(SD_BiBrowseMelt, select = c("ShrubID", "StemLength", "VertHeigh
 #Plot the density plot using ggplot2
 DP_Data %>% 
   filter(Species == c("Hare", "Moose", "Ptarmagin")) %>% 
-  ggplot(aes(x=VertHeight, group=Species, colour=Species, fill= Species, xtitle = "Shrub Height (cm)")) +
+  ggplot(aes(x=StemHeight, group=Species, colour=Species, fill= Species, xtitle = "Shrub Height (cm)")) +
   geom_density(alpha = 0.2) +
   scale_x_continuous (name = "Shrub Height (cm)") +
   scale_y_continuous (name = "Frequency") +

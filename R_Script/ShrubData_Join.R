@@ -14,6 +14,9 @@ sd_all_cc = join(sd_all, iem.climateAnnual, by='Shrub_ID_year', type='left', mat
 
 sd_all_cc = join(sd_all_cc, climateAnnual, by='Shrub_ID_year', type='left', match='all')
 
+#Create an standardized 
+sd_all_cc$iem.summ.rain.10 = sd_all_cc$iem.summ.rain/10
+
 #Joins the herbivore data to the combined shrub chronology and climate data
   #CCH stands for chronology, climate and herbivory 
 
@@ -37,6 +40,14 @@ sd_final_cch$Genus = ifelse(sd_final_cch$Species == "BENA", "Betula",
                                           ifelse(sd_final_cch$Species == "SABE", "Salix",
                                                  NA))))
 
+#Subset final data by Genus 
+sd_bena_cch = subset(sd_final_cch, Genus == "Betula") 
+  
+sd_salix_cch = subset(sd_final_cch, Genus == "Salix") 
+
 
 write.csv(sd_final_cch, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_CCH.csv")
 
+write.csv(sd_final_cch, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/BENA_CCH.csv")
+
+write.csv(sd_final_cch, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/SALIX_CCH.csv")
