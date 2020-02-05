@@ -198,6 +198,8 @@ anova(C1_model_s, C1C2_model_s)
 
 anova(C2_model_s, C1C2_model_s)
 
+anova(null_model_s, C1C2_model_s)
+
 summary(C1C2_model_s)
 
 ## 3.3 Interactive Effect MST * MSP ####
@@ -230,6 +232,8 @@ C1xC2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * i
                   method = "ML")
 
   anova(C1C2_model_s, C1xC2_model_s)
+  
+  anova(null_model_s, C1xC2_model_s)
   
   summary(C1xC2_model_s)
 
@@ -540,15 +544,16 @@ H2xH1_model_b <- lme(resid ~  HareIndex * MooseDensity, data = sd_bena_cch, rand
 H2H1_model_s <- lme(resid ~  HareIndex + MooseDensity, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
                   method = "ML")
 
-  anova(H2_model_s, H2H1_model_s)
+  anova(null_model_s, H2H1_model_s)
   
   summary(H2H1_model_s)
 
-
-
-
-
-
+H2xH1_model_s <- lme(resid ~  HareIndex * MooseDensity, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                     method = "ML")
+  
+  anova(null_model_s, H2xH1_model_s)
+  
+  summary(H2xH1_model_s)
 
 # 5. HERBIVORY & CLIMATE MODELS ####
   
@@ -722,6 +727,7 @@ CH2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem
   anova(C1xC2_model_s, CH5_model_s)
   
   summary(CH5_model_s)
+  
 ## 5.4 Climate & Moose Density + Hare Index ####
   
 # All Data  
@@ -827,57 +833,168 @@ CH1xH2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * 
 
 ## To test if these is an interaction between climate and herbivory
 
-## 6.1 Hare Index * Mean Summer Temperature ####
+## 6.1 MooseDensity : Mean Summer Temperature ####
   
 # Betula  
 CH_INT_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
-                     MooseDensity * HareIndex+
-                     HareIndex * iem.summ.temp,
+                     MooseDensity + HareIndex +
+                     iem.summ.temp:MooseDensity,
                      data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                      method = "ML")
   
   anova(CH1H2_model_b, CH_INT_model_b)
   
   
-  summary(CH1XH2_model_b)
+  summary(CH_INT_model_b)
   
   
 # Salix 
 CH_INT_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
-                     MooseDensity * HareIndex+
-                     HareIndex * iem.summ.temp,
+                     MooseDensity + HareIndex +
+                     iem.summ.temp:MooseDensity,
                      data = sd_salix_cch, random = ~ 1|Section/ShrubID,
                      method = "ML")
   
-  anova(CH1_model_s, CH1xH2_model_s)
+  anova(CH1_model_s, CH_INT_model_s)
   
-  summary(CH1xH2_model_s)
+  summary(CH_INT_model_s)
 
   
-## 6.2 Hare Index * Mean Summer Precipitation ####
+## 6.2 Hare Index : Mean Summer Temperature ####
   
 # Betula  
-CH_INT1_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
-                      MooseDensity * HareIndex+
-                      HareIndex * iem.summ.rain.10,
-                      data = sd_bena_cch, random = ~ 1|Section/ShrubID,
-                      method = "ML")
+CH_INT2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                    MooseDensity + HareIndex +
+                    iem.summ.temp:HareIndex,
+                    data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
   
-  anova(CH1H2_model_b, CH_INT1_model_b)
+  anova(CH1H2_model_b, CH_INT2_model_b)
   
   
-  summary(CH_INT1_model_b)
+  summary(CH1XH2_model_b)
   
   
 # Salix 
-CH_INT1_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
-                      MooseDensity * HareIndex+
-                      HareIndex * iem.summ.rain.10,
+CH_INT2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                     MooseDensity + HareIndex +
+                     iem.summ.temp:HareIndex,
+                     data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                     method = "ML")
+  
+  anova(CH1_model_s, CH_INT2_model_s)
+  
+  summary(CH_INT2_model_s)
+  
+  
+
+  
+  
+  
+  
+  
+  
+## 6.3 MooseDensity : Mean Mean Summer Precipitation ####
+  
+# Betula  
+CH_INT3_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                    MooseDensity + HareIndex +
+                    iem.summ.rain.10:MooseDensity,
+                    data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(CH1H2_model_b, CH_INT3_model_b)
+  
+  
+  summary(CH_INT3_model_b)
+  
+  
+# Salix 
+CH_INT3_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                    MooseDensity + HareIndex +
+                      iem.summ.rain.10:MooseDensity,
+                    data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                    method = "ML")
+  
+  anova(CH1H2_model_s, CH_INT3_model_s)
+  
+  summary(CH_INT3_model_s)
+  
+  
+## 6.4 Hare Index : Mean Summer Precipitation ####
+  
+# Betula  
+CH_INT4_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      MooseDensity + HareIndex +
+                      iem.summ.rain.10:HareIndex,
+                      data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                      method = "ML")
+  
+  anova(CH1H2_model_b, CH_INT4_model_b)
+  
+  
+  summary(CH_INT4_model_b)
+  
+  
+# Salix 
+CH_INT4_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      MooseDensity + HareIndex +
+                      iem.summ.rain.10:HareIndex,
                       data = sd_salix_cch, random = ~ 1|Section/ShrubID,
                       method = "ML")
   
-  anova(CH1_model_s, CH1xH2_model_s)
+  anova(CH1_model_s, CH_INT4_model_s)
   
-  summary(CH1xH2_model_s)
+  summary(CH_INT4_model_s)
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  
+## 6.5 MooseDensity : Mean Mean Summer Precipitation & Hare Index : Mean Summer Temperature ####
+  
+# Betula  
+CH_INT5_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
+                      MooseDensity + HareIndex +
+                      iem.summ.rain.10:MooseDensity +
+                      iem.summ.temp:HareIndex,
+                      data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                      method = "ML")
+  
+  anova(CH_INT3_model_b, CH_INT5_model_b)
+  
+  
+  summary(CH_INT5_model_b)
+  
+####### WORK ZONE #########
+  
+  
+ 
+  plot(CH2_model)
+  
+  qqnorm(resid(CH2_model))
+  qqline(resid(CH2_model))
+  
+  sim.lme = simulate(C1xC2_model, nsim = 1000, m2 = CH2_model, method = "ML")
+  plot(sim.lme)
+  
+  summary(CH2_model)
+  
+  sjPlot :: plot_model(CH2_model, axis.labels=c("Interaction MST & MSP", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),
+                       show.values=TRUE, show.p=TRUE,
+                       title="Effect on Shrub Growth")
+  
+  sjPlot::tab_model(CH2_model, show.re.var= TRUE, 
+                    pred.labels =c("(Intercept)", "Mean Summer Temperature", "Mean Summer Precipitation", "Interaction MST & MSP"),
+                    dv.labels= "Effects of Summer Temperature & Precipitation on Shrub Growth")
+  
+  stargazer(CH2_model, type = "text")
   
