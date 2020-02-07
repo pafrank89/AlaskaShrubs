@@ -322,10 +322,12 @@ vif.lme(CH1H2_model_b)
 vif.lme(CH1_model_s)
 
 # PLOTS ####
-ggplot(data = sd_final_cch, 
+
+par(mfrow=c(4,1))
+    
+ggplot(data = sd_bena_cch, 
        aes(x = resid,
-           y = HareIndex,
-           colour = Genus)) + 
+           y = HareIndex)) + 
   geom_point(size = 2) +
   geom_smooth(method= "lm") +
   xlab("Residuals") + ylab("Hare Index") +
@@ -337,7 +339,7 @@ ggplot(data = sd_final_cch,
            colour=Genus)) + 
   geom_point(size = 2) +
   geom_smooth(method= "lm") +
-  xlab("Residuals") + ylab("Moose Density (moose/mile²)") 
+  xlab("Residuals") + ylab("Moose Density (moose/km²)") 
 
 ggplot(data = sd_final_cch, 
        aes(x = resid,

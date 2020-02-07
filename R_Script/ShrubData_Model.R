@@ -872,7 +872,7 @@ CH_INT2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp *
   anova(CH1H2_model_b, CH_INT2_model_b)
   
   
-  summary(CH1XH2_model_b)
+  summary(CH_INT2_model_b)
   
   
 # Salix 

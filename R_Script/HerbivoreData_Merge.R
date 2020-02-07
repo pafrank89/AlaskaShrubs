@@ -3,7 +3,7 @@
 # peterfr@stud.ntnu.no
 # 2019-11-21
 
-MooseDensity = MooseDensity[-c(4,5,6,7,8), ] 
+#MooseDensity = MooseDensity[-c(4,5,6,7,8), ] 
 
 # Melt moose density data  
 MooseDensity<-melt(MooseDensity, id="GMU", na.rm = TRUE)
