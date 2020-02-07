@@ -21,10 +21,15 @@ library(gamlss)
 # 1. CORRELATION MATRICIES ####
 
 # Check for correlations between variables
-CorPlot = subset (sd_final_cch, select = c("Age", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "PropPtarmagin", "PropMoose_S", "PropHare_S", "PropPtarmagin_S"))
+CorPlot_b = subset (sd_bena_cch, select = c("resid", "BAI", "Age", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
+
+CorPlot_s = subset (sd_salix_cch, select = c("resid", "BAI", "Age", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
 
 #Creates a correlation matrix using the variables specified above
-chart.Correlation(CorPlot, histogram = TRUE, method = c("spearman"))
+chart.Correlation(CorPlot_b, histogram = TRUE, method = c("spearman"))
+
+chart.Correlation(CorPlot_s, histogram = TRUE, method = c("spearman"))
+
 
 #Creates a color coded correlation matrix using the variables specified above
 sd_final_cchCorr = cor(CorPlot)
@@ -76,19 +81,83 @@ chart.Correlation(CorPlot_salix, histogram = TRUE, method = c("spearman"))
 
 # 3. BOX PLOTS ####
 #Plot BAI as a function of soil texture
-plot(resid ~ factor(SoilText), data = sd_final_cch, notch = TRUE,varwidth = TRUE,
+plot(resid ~ factor(SoilText), data = sd_bena_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2,
-     pch = 1, ylab = "Basal Area Increment", xlab = "")
+     pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
+
+plot(resid ~ factor(SoilText), data = sd_salix_cch, notch = TRUE,varwidth = TRUE,
+     col = "white", border = "black", horizontal = TRUE, las = 2,
+     pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
 
 #plot BAI as a function of soil moisture
-plot(resid ~ factor(SoilMoist), data = sd_final_cch, notch = TRUE,varwidth = TRUE,
+plot(resid ~ factor(SoilMoist), data = sd_bena_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2,
-     pch = 1, ylab = "Basal Area Increment", xlab = "")
+     pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
+
+plot(resid ~ factor(SoilMoist), data = sd_salix_cch, notch = TRUE,varwidth = TRUE,
+     col = "white", border = "black", horizontal = TRUE, las = 2,
+     pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
 
 #Plot BAI as a function of observed vegetation cover 
-plot(resid_t ~ factor(VegCoverOBS), data = sd_final_cch, notch = TRUE,varwidth = TRUE,
+plot(resid ~ factor(VegCoverOBS), data = sd_bena_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2,
-     pch = 1, ylab = "Basal Area Increment", xlab = "")
+     pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
+
+plot(resid ~ factor(VegCoverOBS), data = sd_salix_cch, notch = TRUE,varwidth = TRUE,
+     col = "white", border = "black", horizontal = TRUE, las = 2,
+     pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
+
+#Plot BAI as a function of  
+ggplot(data = sd_bena_cch, 
+       aes(x = resid,
+           y = iem.summ.temp)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("Residuals of Standardized BAI") +
+  ylab("Mean Summer Temperature")
+
+ggplot(data = sd_bena_cch, 
+       aes(x = resid,
+           y = iem.summ.rain)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("Residuals of Standardized BAI") +
+  ylab("Mean Summer Temperature")
+
+ggplot(data = sd_salix_cch, 
+       aes(x = resid,
+           y = iem.summ.temp)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("Residuals of Standardized BAI") +
+  ylab("Mean Summer Temperature")
+
+ggplot(data = sd_salix_cch, 
+       aes(x = resid,
+           y = iem.summ.rain)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("Residuals of Standardized BAI") +
+  ylab("Mean Summer Precipitation")
+
+
+ggplot(data = sd_bena_cch, 
+       aes(x = resid,
+           y = CanopyCover)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("Residuals of Standardized BAI") +
+  ylab("Canopy Cover (%)")
+
+ggplot(data = sd_salix_cch, 
+       aes(x = resid,
+           y = CanopyCover)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("Residuals of Standardized BAI") +
+  ylab("Canopy Cover (%)")
+
+
 
 # 4. STEM HEIGHT ~ STEM DIAMETER & Y CORD #####
 #Plot Height ad a function of Stem Diameter
@@ -319,13 +388,102 @@ sd_BAI_agg = aggregate((x = sd_all),
 
 par(mfrow=c(1,1), omi=c(0.5,0.3,0,0), plt=c(0.1,0.9,0,0.7)) 
 
-plot(sd_BAI_bena_agg$BAI ~ sd_BAI_bena_agg$Year, type = "l", xaxt='n', main="Betula", ylab = "BAI", xlim = c(1987, 2015))
+plot(sd_BAI_bena_agg$BAI ~ sd_BAI_bena_agg$Year, type = "l", xaxt='n', main="Betula", ylab = "BAI") #, xlim = c(1987, 2015))
 
-plot(sd_BAI_salix_agg$BAI ~ sd_BAI_salix_agg$Year, type = "l", xaxt='n', main="Salix", ylab = "BAI", xlim = c(1987, 2015))
+plot(sd_BAI_salix_agg$BAI ~ sd_BAI_salix_agg$Year, type = "l", xaxt='n', main="Salix", ylab = "BAI") #, xlim = c(1987, 2015))
 
-plot(sd_BAI_agg$BAI ~ sd_BAI_agg$Year, type = "l", xlab = "Year", ylab = "BAI", xlim = c(1987, 2015))
+plot(sd_BAI_agg$BAI ~ sd_BAI_agg$Year, type = "l", xlab = "Year", ylab = "Basal Area Increment (mm²)",  col = "red", lwd = 3, cex.lab = 1.25)
 
-plot(HareCycle$HareIndex ~ HareCycle$Year, type = "l", main="Snowshow Hare Population Index", xlab = "Year", ylab = "Hare Index", xlim = c(1987, 2015))
+plot(sd_BAI_salix_agg$BAI ~ sd_BAI_salix_agg$Year, type = "l", xlab = "Year", ylab = "Basal Area Increment (mm²)",  col = "red", lwd = 3, cex.lab = 1.5)
+
+plot(sd_BAI_bena_agg$BAI ~ sd_BAI_bena_agg$Year, type = "l", xlab = "Year", ylab = "Basal Area Increment (mm²)",  col = "red", lwd = 3, cex.lab = 1.5, xlim = c(1987, 2020))
+
+ggplot() + 
+  geom_line(aes(y = BAI, x = Year), data = sd_BAI_agg) +
+  xlab("Year") + 
+  ylab("Basal Area Increment (mm²)")
+
+plot(HareCycle$HareIndex ~ HareCycle$Year, type = "l", main="Snowshow Hare Population Index", xlab = "Year", ylab = "Hare Index", xlim = c(1987, 2020))
+
+ggplot() + 
+  geom_line(aes(y = HareIndex, x = Year), data = HareCycle) +
+  xlab("Year") + 
+  ylab("Hare Cycle")
+
+
+plot(sd_BAI_bena_agg$resid ~ sd_BAI_bena_agg$Year, type = "l", xlab = "Year", ylab = "Basal Area Increment (mm²)",  col = "red", lwd = 3, cex.lab = 1.5) #, xlim = c(1987, 2015))
+
+plot(sd_BAI_salix_agg$resid ~ sd_BAI_salix_agg$Year, type = "l", xlab = "Year", ylab = "Basal Area Increment (mm²)",  col = "red", lwd = 3, cex.lab = 1.5, xlim = c(1987, 2015))
+
+plot(sd_bena_cch$resid ~ sd_bena_cch$Year, type = "l", xlab = "Year", ylab = "Basal Area Increment (mm²)",  col = "red", lwd = 3, cex.lab = 1.5, xlim = c(1987, 2015))
+
+
+hist(sd_bena_cch$resid)
+     
+plot(sd_bena_cch$Year, sd_bena_cch$resid)
+
+
+
+# 11. PLOT MIXED EFFECTS ACROSS SITES ####
+
+ggplot(sd_bena_cch, aes(x = iem.summ.temp, y = resid, colour = ShrubID)) +
+  facet_wrap(~Section, nrow=4) +   # a panel for each mountain range
+  geom_point(alpha = 0.5) +
+  theme_classic() +
+  geom_line(data = cbind(sd_bena_cch, pred = predict(CH1H2_model_b)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
+  theme(legend.position = "none",
+        panel.spacing = unit(2, "lines"))  # adding space between panels)
+
+ggplot(sd_salix_cch, aes(x = iem.summ.temp, y = resid, colour = ShrubID)) +
+  facet_wrap(~Section, nrow=4) +   # a panel for each mountain range
+  geom_point(alpha = 0.5) +
+  theme_classic() +
+  geom_line(data = cbind(sd_salix_cch, pred = predict(CH1_model_s)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
+  theme(legend.position = "none",
+        panel.spacing = unit(2, "lines"))  # adding space between panels)
+
+lme_rain_b = lmer(resid ~ iem.summ.rain.10 + (1 + iem.summ.rain.10|Section/ShrubID), data = sd_bena_cch)
+
+lme_rain_s = lmer(resid ~ iem.summ.rain.10 + (1 + iem.summ.rain.10|Section/ShrubID), data = sd_salix_cch)
+
+ggplot(sd_bena_cch, aes(x = iem.summ.rain.10, y = resid, colour = ShrubID)) +
+  facet_wrap(~Section, nrow=2) +   # a panel for each mountain range
+  geom_point(alpha = 0.5) +
+  theme_classic() +
+  geom_line(data = cbind(sd_bena_cch, pred = predict(lme_rain_b)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
+  theme(legend.position = "none",
+        panel.spacing = unit(2, "lines"))  # adding space between panels)
+
+ggplot(sd_salix_cch, aes(x = iem.summ.rain.10, y = resid, colour = ShrubID)) +
+  facet_wrap(~Section, nrow=2) +   # a panel for each mountain range
+  geom_point(alpha = 0.5) +
+  theme_classic() +
+  geom_line(data = cbind(sd_salix_cch, pred = predict(lme_rain_s)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
+  theme(legend.position = "none",
+        panel.spacing = unit(2, "lines"))  # adding space between panels)
+
+
+ggplot(sd_salix_cch) + 
+  aes(x = iem.summ.temp, y = resid) + 
+  stat_smooth(method = "lm", se = FALSE) +
+  # Put the points on top of lines
+  geom_point() +
+  facet_wrap("Section") +
+  labs(x = "Mean Summer Temperature", y = "Residuals of standardized BAI") + 
+  # We also need to help the x-axis, so it doesn't 
+  # create gridlines/ticks on 2.5 days
+  scale_x_continuous(breaks = 0:4 * 2)
+
+ggplot(sd_bena_cch) + 
+  aes(x = iem.summ.temp, y = resid) + 
+  stat_smooth(method = "lm", se = FALSE) +
+  # Put the points on top of lines
+  geom_point() +
+  facet_wrap("Section") +
+  labs(x = "Mean Summer Temperature", y = "Residuals of standardized BAI") + 
+  # We also need to help the x-axis, so it doesn't 
+  # create gridlines/ticks on 2.5 days
+  scale_x_continuous(breaks = 0:4 * 2)
 
 
 

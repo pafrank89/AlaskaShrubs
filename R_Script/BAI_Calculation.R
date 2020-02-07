@@ -393,7 +393,7 @@ plot(BAI ~ Age, data = sd_salix5,
 par(mfrow=c(1,2))
 
 plot(log(BAI) ~ log(Age), data = sd_bena5,
-     col = "black", pch = 1, ylab = "ln Basal Area Increment", xlab = "ln Ring Age") #, main = "Betula")
+     col = "black", pch = 1, ylab = "ln Basal Area Increment", xlab = "ln Ring Age", cex.lab = 1.5) #, main = "Betula")
 
 abline (lmBena, col = "red")
 
