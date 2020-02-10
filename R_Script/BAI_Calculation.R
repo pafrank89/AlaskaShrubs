@@ -235,7 +235,13 @@ write.csv( rw_mean_t,file = tmpName)
 rw_mean_t = csv2rwl(tmpName)
 
 
-# 4. CREATE DIAM FILES ####
+# 4. CALCULATE RING WIDTH INDEX (RWI) ####
+
+rwi_spline = detrend(rw_mean_t, method = "Spline", make.plot = TRUE)
+
+rwi_negexp = detrend(rw_mean_t, method = "ModNegExp", make.plot = TRUE)
+
+# 5. CREATE DIAM FILES ####
 
 #Calculates mean legnth of each of the 4 radii
 diam_mean = aggregate(x = diam,
@@ -270,7 +276,7 @@ diam_mean = select (diam_mean, -c (0,2))
 
 colnames(diam_mean)[colnames(diam_mean)=="rw_shrubID"] = "ShrubID"
 
-# 5. CALCULATE BAI ####
+# 6. CALCULATE BAI ####
 
 #Use the bai.out tool from dplR to calculate the basal area increment going from 
 #the bark to the pith. 
@@ -283,36 +289,68 @@ bai = bai.out(rwl = rw_mean_t, diam = diam_mean)
   #the rwl file and multiply it by 2. In my data this would not include the pit in the overall diameter, therefore we will
   #include the diam file to get the most accurate representation of the shrub. 
 
-# 6. TRANSPOSE BAI DATA ####
+# 7. TRANSPOSE BAI & RWI DATA ####
 
 #Transposes the data into a format which can be melted and joined back to the shrub data
 bai = data.frame (t(bai))
 
-# 7. TRUNCATE BAI DATA ####
+rwi_spline = data.frame (t(rwi_spline))
+
+rwi_negexp = data.frame (t(rwi_negexp))
+
+# 8. TRUNCATE BAI & RWI DATA ####
 
 #Remove the first row, 2019, which can not be used in the analysis
 bai$X2019 = NULL
 
-# 8. ADD SHRUB-ID AND RENAME COLUMNS  ####
+rwi_spline$X2019 = NULL
+
+rwi_negexp$X2019 = NULL
+
+# 9. ADD SHRUB-ID AND RENAME COLUMNS  ####
 
 #Adds the Shrub ID values to the transposed BAI data set 
 bai = cbind(ShrubID, bai)
+
+rwi_spline = cbind(ShrubID, rwi_spline)
+
+rwi_negexp = cbind(ShrubID, rwi_negexp)
 
 #Removes the row.name and then renames all the columns   
 bai = setNames(cbind(rownames(bai), bai, row.names = NULL), 
             c("Shrub.ID", "ShrubID", "2018","2017","2016","2015","2014","2013","2012","2011","2010","2009","2008","2007","2006","2005","2004","2003","2002","2001","2000","1999","1998","1997","1996","1995","1994","1993","1992","1991","1990","1989","1988","1987","1986","1985","1984","1983","1982","1981","1980","1979","1978","1977","1976","1975","1974","1973","1972","1971","1970","1969","1968","1967","1966","1965","1964","1963","1962","1961","1960","1959","1958","1957","1956","1955","1954","1953"))
 
+rwi_spline = setNames(cbind(rownames(rwi_spline), rwi_spline, row.names = NULL), 
+               c("Shrub.ID", "ShrubID", "2018","2017","2016","2015","2014","2013","2012","2011","2010","2009","2008","2007","2006","2005","2004","2003","2002","2001","2000","1999","1998","1997","1996","1995","1994","1993","1992","1991","1990","1989","1988","1987","1986","1985","1984","1983","1982","1981","1980","1979","1978","1977","1976","1975","1974","1973","1972","1971","1970","1969","1968","1967","1966","1965","1964","1963","1962","1961","1960","1959","1958","1957","1956","1955","1954","1953"))
+
+rwi_negexp = setNames(cbind(rownames(rwi_negexp), rwi_negexp, row.names = NULL), 
+               c("Shrub.ID", "ShrubID", "2018","2017","2016","2015","2014","2013","2012","2011","2010","2009","2008","2007","2006","2005","2004","2003","2002","2001","2000","1999","1998","1997","1996","1995","1994","1993","1992","1991","1990","1989","1988","1987","1986","1985","1984","1983","1982","1981","1980","1979","1978","1977","1976","1975","1974","1973","1972","1971","1970","1969","1968","1967","1966","1965","1964","1963","1962","1961","1960","1959","1958","1957","1956","1955","1954","1953"))
+
 #Removes the Shrub ID column which was added during the BAI calculation
 bai$Shrub.ID = NULL
 
-# 9. MELT BIA DATA AND RW DATA  ####
+rwi_spline$Shrub.ID = NULL
+
+rwi_negexp$Shrub.ID = NULL
+
+# 10. MELT BIA & RWI DATA AND RW DATA  ####
 
 #Melts the BAI data, ignoring all NA values
 bai_melt = melt(bai, id="ShrubID", na.rm = TRUE)
 
+rwi_s_melt = melt(rwi_spline, id="ShrubID", na.rm = TRUE)
+
+rwi_n_melt = melt(rwi_negexp, id="ShrubID", na.rm = TRUE)
+
 #Changes the field names of the melted data set to Year and BAI
 colnames(bai_melt)[colnames(bai_melt)=="variable"] = "Year"
 colnames(bai_melt)[colnames(bai_melt)=="value"] = "BAI"
+
+colnames(rwi_s_melt)[colnames(rwi_s_melt)=="variable"] = "Year"
+colnames(rwi_s_melt)[colnames(rwi_s_melt)=="value"] = "RWI_Spline"
+
+colnames(rwi_n_melt)[colnames(rwi_n_melt)=="variable"] = "Year"
+colnames(rwi_n_melt)[colnames(rwi_n_melt)=="value"] = "RWI_NegExp"
 
 #Removes 2019 from the ring width data prior to melting
 rw_mean$`2019` = NULL
@@ -325,22 +363,28 @@ colnames(rw_mean_melt)[colnames(rw_mean_melt)=="variable"] = "Year"
 colnames(rw_mean_melt)[colnames(rw_mean_melt)=="value"] = "RingWidth"
 
 
-# 10. JOIN SHRUB DATA TO THE MELTED BAI AND RW DATA  ####
+# 11. JOIN SHRUB DATA TO THE MELTED BAI, RWI & RW DATA  ####
 
 #Adds the melted ring width data to the melted bai data
-bai_rw_all = cbind(rw_mean_melt$RingWidth, bai_melt)
+bai_rwi_rw_all = cbind(rw_mean_melt$RingWidth, rwi_s_melt$RWI_Spline, rwi_n_melt$RWI_NegExp, bai_melt)
 
 #Reorders the columns after the ring width values are added
-bai_rw_all = bai_rw_all[,c(2,3,1,4)]
+bai_rwi_rw_all = bai_rwi_rw_all[,c(4,5,1,2,3,6)]
+
+bai_rwi_rw_all$`rwi_n_melt$RWI_NegExp`
 
 #Renames the added column 
-colnames(bai_rw_all)[colnames(bai_rw_all)=="rw_mean_melt$RingWidth"] = "RingWidth"
+colnames(bai_rwi_rw_all)[colnames(bai_rwi_rw_all)=="rw_mean_melt$RingWidth"] = "RingWidth"
+
+colnames(bai_rwi_rw_all)[colnames(bai_rwi_rw_all)=="rwi_s_melt$RWI_Spline"] = "RWI_Spline"
+
+colnames(bai_rwi_rw_all)[colnames(bai_rwi_rw_all)=="rwi_n_melt$RWI_NegExp"] = "RWI_NegExp"
 
 #Joins the ring width and bai data to the shrub age using the ShrubID as the key 
-bai_rw_age = join(bai_rw_all, age, by='ShrubID', type='left', match='all')
+bai_rwi_rw_age = join(bai_rwi_rw_all, age, by='ShrubID', type='left', match='all')
 
 # Joins the ring width and bai data to the shrub data using the ShrubID as the key 
-sd_join = join(bai_rw_age, shrub_data_ss, by='ShrubID', type='left', match='all')
+sd_join = join(bai_rwi_rw_age, shrub_data_ss, by='ShrubID', type='left', match='all')
 
 str(sd_join)
 
@@ -354,7 +398,7 @@ sd_join$Age = sd_join$Year - sd_join$Estab
 write.csv(sd_join, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_BAI.csv")
 
 
-# 11. SUBSET DATA BY GENUS & SPECIES ####
+# 12. SUBSET DATA BY GENUS & SPECIES ####
 
 #Subsets the data by species
 sd_bena = subset(sd_join, Species == "BENA")
@@ -372,7 +416,7 @@ sd_salix5 = filter(sd_salix, Age > 5)
   #sd_join_sabe = subset(sd_join, Species == "SABE", select = ShrubID : Species)
   #sd_sagl = subset(sd_join, Species == "SAGL", select = ShrubID : Species)
 
-# 12. PLOT BAI VS AGE ####
+# 13. PLOT BAI VS AGE ####
 
 #Plots BAI as a function of age on a single graph
 par(mfrow=c(1,1))
@@ -381,13 +425,33 @@ plot(BAI ~ Age, data = sd_join,
       col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 95))
     
 #Plots BAI as a function of age on two graphs by genus
-par(mfrow=c(1,2))
+par(mfrow=c(2,4))
 
-plot(BAI ~ Age, data = sd_bena5,
-     col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 50), main = "Betula")
+#Betula
+plot(RingWidth ~ Age, data = sd_bena5,
+     col = "black", pch = 1, ylab = "Ring Width", xlab = "Ring Age (years)", main = "Betula")
 
-plot(BAI ~ Age, data = sd_salix5,
-     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 90), main = "Salix")
+plot(RWI_Spline ~ Age, data = sd_bena5,
+     col = "black", pch = 1, ylab = "Ring Width Index (Spline)", xlab = "Ring Age (years)")
+
+plot(RWI_NegExp ~ Age, data = sd_bena5,
+     col = "black", pch = 1, ylab = "Ring Width Index (Negative Expontial)", xlab = "Ring Age (years)")
+
+plot(log(BAI) ~ Age, data = sd_bena5,
+     col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)")
+
+#Salix
+plot(RingWidth ~ Age, data = sd_salix5,
+     col = "blue", pch = 1, ylab = "Ring Width", xlab = "Ring Age (years)", main = "Salix")
+
+plot(RWI_Spline ~ Age, data = sd_salix5,
+     col = "blue", pch = 1, ylab = "Ring Width Index (Spline)", xlab = "Ring Age (years)")
+
+plot(RWI_NegExp ~ Age, data = sd_salix5,
+     col = "blue", pch = 1, ylab = "Ring Width Index (Negative Expontial)", xlab = "Ring Age (years)")
+
+plot(log(BAI) ~ Age, data = sd_salix5,
+     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)")
 
 #Plots BAI as a function of age on two graphs by genus in log-log scale
 par(mfrow=c(1,2))
@@ -406,22 +470,6 @@ abline (lmSalix,  col = "red")
 
 summary(lmSalix)
 
-
-#Plots BAI as a function of age on four graphs by species
-par(mfrow=c(2,2))
-
-plot(BAI ~ Age, data = sd_bena5,
-     col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Betula nana")
- 
-plot(BAI ~ Age, data = sd_sapu5,
-     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix pulchra")
-
-plot(BAI ~ Age, data = sd_sabe5,
-     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix bebbiana")
-
-plot(BAI ~ Age, data = sd_sagl5,
-     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 93), main = "Salix glauca")
-
 #Check the distributions of age and BAI data on a histogram
 #Note that both age and BAI are not normally distributed, the distribution is right (positive) skewed toward small BAI or young individuals.
 par(mfrow=c(2,2))
@@ -432,7 +480,7 @@ hist(sd_bena5$BAI, xlab = "Basal Area Increment", main = "Betula nana BAI Distri
 hist(sd_salix5$Age, xlab = "Ring Age (years)", main = "Salix spp. Age Distribution")
 hist(sd_salix5$BAI, xlab = "Basal Area Increment", main = "Salix spp. BAI Distribution")
 
-# 13. CREATE LINEAR REGRESSION MODELS ####
+# 14. CREATE LINEAR REGRESSION MODELS ####
 lmBena = lm(log(BAI) ~ log(Age), data = sd_bena5)
 lmSalix = lm(log(BAI) ~ log(Age), data = sd_salix5)
 
@@ -454,7 +502,7 @@ summary(lmSalix)
     dwtest(lmBena)
     dwtest(lmSalix)
 
-# 14. CREATE LINEAR MIXED EFFECTS MODELS ####
+# 15. CREATE LINEAR MIXED EFFECTS MODELS ####
     
 #Create a linear mixed effects model which models BAI as a function of age
 #The mixed effects model is used becuase it allows us to model the fixed effects of BAI and age
@@ -495,7 +543,7 @@ qqnorm(lmeSalix)
 ggplot(sd_salix5, aes(x = log(Age), y = log(BAI))) + geom_point() + stat_smooth(method = "lm", size = 1)
     
     
-# 15. EXTRACT RESIDUALS FROM LINEAR MIXED EFFECTS MODEL ####
+# 16. EXTRACT RESIDUALS FROM LINEAR MODEL ####
 
 #Extract the residuals from the linear model: his is variation that can be expected to be explained by something else than age.
 
