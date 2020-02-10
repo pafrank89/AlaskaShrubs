@@ -40,14 +40,27 @@ sd_final_cch$Genus = ifelse(sd_final_cch$Species == "BENA", "Betula",
                                           ifelse(sd_final_cch$Species == "SABE", "Salix",
                                                  NA))))
 
+sd_all_cch$Genus = ifelse(sd_all_cch$Species == "BENA", "Betula",
+                            ifelse(sd_all_cch$Species == "SAPU", "Salix",
+                                   ifelse(sd_all_cch$Species == "SAGL", "Salix",
+                                          ifelse(sd_all_cch$Species == "SABE", "Salix",
+                                                 NA))))
+
+
+
 #Subset final data by Genus 
 sd_bena_cch = subset(sd_final_cch, Genus == "Betula") 
   
 sd_salix_cch = subset(sd_final_cch, Genus == "Salix") 
 
+# Subset the full data by Genus
+sd_all_bena_cch = subset(sd_all_cch, Genus == "Betula") 
+
+sd_all_salix_cch = subset(sd_all_cch, Genus == "Salix") 
+
 
 write.csv(sd_final_cch, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_CCH.csv")
 
-write.csv(sd_final_cch, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/BENA_CCH.csv")
+write.csv(sd_bena_cch, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/BENA_CCH.csv")
 
-write.csv(sd_final_cch, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/SALIX_CCH.csv")
+write.csv(sd_salix_cch, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/SALIX_CCH.csv")

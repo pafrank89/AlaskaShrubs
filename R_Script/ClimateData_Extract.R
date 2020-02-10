@@ -216,15 +216,10 @@ iem.climate$Shrub_ID_year <- do.call(paste, c(snap.climate[c("Shrub_ID", "year")
 
 # Calculate the following variables
 
-      # 1. Mean summer temperature June-August (pity that don't know growth period lenght...)
+      # 1. Mean summer temperature June-August 
       # 2. Yearly mean temperature
-      # 3. Mean min summer temperature June-August
-      # 4. Mean max summer temperature June-August
       # 5. Precipitation sum June-August
-      # 6. Precipitation sum October-March (for snow)
-      # 7. Yearly frost day sums
-      # 8. Mean PET June-August
-      # 9. Yearly wet day sums
+
 
 # extract right months
 snap.climatesummer<-snap.climate[snap.climate$month=="Jun"|snap.climate$month=="Jul"|snap.climate$month=="Aug",]
