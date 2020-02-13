@@ -232,7 +232,7 @@ tmpName = tempfile()
     
 write.csv( rw_mean_t,file = tmpName)
     
-rw_mean_t = csv2rwl(tmpName)
+rwl_out = csv2rwl(tmpName)
 
 
 # 4. CALCULATE RING WIDTH INDEX (RWI) ####
@@ -241,7 +241,7 @@ rwi_spline = detrend(rw_mean_t, method = "Spline", make.plot = TRUE)
 
 rwi_negexp = detrend(rw_mean_t, method = "ModNegExp", make.plot = TRUE)
 
-# 5. CREATE DIAM FILES ####
+# 5. CREATE DIAM & D2PITH FILES ####
 
 #Calculates mean legnth of each of the 4 radii
 diam_mean = aggregate(x = diam,
@@ -249,11 +249,20 @@ diam_mean = aggregate(x = diam,
                       FUN = mean,
                       na.rm = TRUE)
 
+pith_mean = aggregate(x = pith,
+                      by = list(pith$`Shrub ID`),
+                      FUN = mean,
+                      na.rm = TRUE)
+
 #Removes unused colums from the aggregated dataset 
 diam_mean = select (diam_mean, -c (2))
 
+pith_mean = select (pith_mean, -c (2))
+
 #Changes the column name output from the aggregate function to ShrubID
 colnames(diam_mean)[colnames(diam_mean)=="Group.1"] = "ShrubID"
+
+colnames(pith_mean)[colnames(pith_mean)=="Group.1"] = "ShrubID"
 
 #Multiplies the averaged radii values by 2 to get the diameter of the stem - the bark
 diam_mean$diam = diam_mean$Radius * 2
@@ -272,16 +281,68 @@ rw_shrubID = row.names(rw_shrubID)
 
 diam_mean = cbind(rw_shrubID, diam_mean)
 
+d2pith = cbind(rw_shrubID, pith_mean)
+
 diam_mean = select (diam_mean, -c (0,2))
+
+d2pith$ShrubID = NULL
 
 colnames(diam_mean)[colnames(diam_mean)=="rw_shrubID"] = "ShrubID"
 
+colnames(d2pith)[colnames(d2pith)=="rw_shrubID"] = "ShrubID"
+
+colnames(d2pith)[colnames(d2pith)=="Pith"] = "d2pith"
+
+
 # 6. CALCULATE BAI ####
+
+### 6.1 Reorded RWL File ###
+# The bai.out function in dplr contains an error which makes the bai.in and bai.out functions preform the same calculation
+# which is always calculating from the pith to the bark. Therefore we must reorder the RWL file such that the the earliest
+# year of the RWL file is on the topmost row
+
+Years = rownames(rw_mean_t)
+
+rwl_in = cbind(Years, rw_mean_t)
+
+rwl_in<-rwl_in %>% arrange(Years)
+
+rownames(rwl_in) = rwl_in$Years
+
+rwl_in$Years = NULL
 
 #Use the bai.out tool from dplR to calculate the basal area increment going from 
 #the bark to the pith. 
 
-bai = bai.out(rwl = rw_mean_t, diam = diam_mean)
+bai = bai.in(rwl = rwl_in, d2pith = d2pith)
+
+write.csv(bai, "/Users/peterfrank/Desktop/baiIN_d2pith.csv")
+
+#baiOUT_diam = bai.out(rwl = rwl_out, diam = diam_mean)
+
+#write.csv(baiOUT_diam, "/Users/peterfrank/Desktop/baiOUT_diam.csv")
+
+### TEST ALL PAIRS OF IN AND OUT DATA ###
+
+# Use bai.in function with data aranged from the earliest year to the latest 
+#baiIN = bai.in(rwl = rwl_in)
+
+#write.csv(baiIN, "/Users/peterfrank/Desktop/baiIN.csv")
+
+# Use bai.in function with data aranged from the latest year to the earliest 
+#baiIN_wOUT = bai.in(rwl = rwl_out)
+
+#write.csv(baiIN_wOUT, "/Users/peterfrank/Desktop/baiIN_wOUT.csv")
+
+# Use bai.out function with data aranged from the latest year to the earliest 
+#baiOUT = bai.out(rwl = rwl_out)
+
+#write.csv(baiOUT, "/Users/peterfrank/Desktop/baiOUT.csv")
+
+# Use bai.out function with data aranged from the earliest year to the latest
+#baiOUT_wIN = bai.out(rwl = rwl_in)
+
+#write.csv(baiOUT_wIN, "/Users/peterfrank/Desktop/baiOUT_wIN.csv")
 
   #bai_no_diam = bai.out(rwl = rw_mean_t) 
   #After talks with Kata on 01/15/2020 I've decided to specify a diam for each shrub. The diam file is the mean radius for 
@@ -290,6 +351,17 @@ bai = bai.out(rwl = rw_mean_t, diam = diam_mean)
   #include the diam file to get the most accurate representation of the shrub. 
 
 # 7. TRANSPOSE BAI & RWI DATA ####
+
+# Reverse the BAI data to go from oldest to youngest
+Years = rownames(bai)
+
+bai = cbind(Years, bai)
+
+bai<-bai %>% arrange(desc(Years))
+
+rownames(bai) = bai$Years
+
+bai$Years = NULL
 
 #Transposes the data into a format which can be melted and joined back to the shrub data
 bai = data.frame (t(bai))
@@ -403,7 +475,11 @@ write.csv(sd_join, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/Ala
 #Subsets the data by species
 sd_bena = subset(sd_join, Species == "BENA")
 
+range(sd_bena$BAI)
+
 sd_salix = subset(sd_join, grepl("^SA", sd_join$Species)) 
+
+range(sd_salix$BAI)
 
 #Removes all age values less than 5 years 
 sd_bena5 = filter(sd_bena, Age > 5)
@@ -425,7 +501,7 @@ plot(BAI ~ Age, data = sd_join,
       col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", ylim=c(0, 95))
     
 #Plots BAI as a function of age on two graphs by genus
-par(mfrow=c(2,4))
+par(mfrow=c(2,3))
 
 #Betula
 plot(RingWidth ~ Age, data = sd_bena5,
@@ -437,8 +513,14 @@ plot(RWI_Spline ~ Age, data = sd_bena5,
 plot(RWI_NegExp ~ Age, data = sd_bena5,
      col = "black", pch = 1, ylab = "Ring Width Index (Negative Expontial)", xlab = "Ring Age (years)")
 
-plot(log(BAI) ~ Age, data = sd_bena5,
+plot(BAI ~ Age, data = sd_bena5,
      col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)")
+
+plot(log(BAI) ~ Age, data = sd_bena5,
+     col = "black", pch = 1, ylab = "lnBasal Area Increment", xlab = "Ring Age (years)")
+
+plot(log(BAI) ~ log(Age), data = sd_bena5,
+     col = "black", pch = 1, ylab = "lnBasal Area Increment", xlab = "ln Ring Age (years)")
 
 #Salix
 plot(RingWidth ~ Age, data = sd_salix5,
@@ -450,14 +532,56 @@ plot(RWI_Spline ~ Age, data = sd_salix5,
 plot(RWI_NegExp ~ Age, data = sd_salix5,
      col = "blue", pch = 1, ylab = "Ring Width Index (Negative Expontial)", xlab = "Ring Age (years)")
 
-plot(log(BAI) ~ Age, data = sd_salix5,
+plot(BAI ~ Age, data = sd_salix5,
      col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)")
+
+plot(log(BAI) ~ Age, data = sd_salix5,
+     col = "blue", pch = 1, ylab = "lnBasal Area Increment", xlab = "Ring Age (years)")
+
+plot(log(BAI) ~ log(Age), data = sd_salix5,
+     col = "blue", pch = 1, ylab = "lnBasal Area Increment", xlab = "lnRing Age (years)")
 
 #Plots BAI as a function of age on two graphs by genus in log-log scale
 par(mfrow=c(1,2))
 
+plot(BAI ~ Age, data = sd_bena5,
+     col = "black", pch = 1, ylab = "ln Basal Area Increment", xlab = "ln Ring Age", cex.lab = 1) #, main = "Betula")
+
+abline (lmBena, col = "red")
+
+summary(lmBena)
+
+plot(BAI ~ Age, data = sd_salix5,
+     col = "blue", pch = 1, ylab = "ln Basal Area Increment", xlab = "ln Ring Age") #, main = "Salix")
+
+abline (lmSalix,  col = "red")
+
+summary(lmSalix)
+
+# LOG BAI
+
+par(mfrow=c(1,2))
+
+plot(log(BAI) ~ Age, data = sd_bena5,
+     col = "black", pch = 1, ylab = "ln Basal Area Increment", xlab = "ln Ring Age", cex.lab = 1) #, main = "Betula")
+
+abline (lmBena, col = "red")
+
+summary(lmBena)
+
+plot(log(BAI) ~ Age, data = sd_salix5,
+     col = "blue", pch = 1, ylab = "ln Basal Area Increment", xlab = "ln Ring Age") #, main = "Salix")
+
+abline (lmSalix,  col = "red")
+
+summary(lmSalix)
+
+# LOG BAI & LOG AGE
+
+par(mfrow=c(1,2))
+
 plot(log(BAI) ~ log(Age), data = sd_bena5,
-     col = "black", pch = 1, ylab = "ln Basal Area Increment", xlab = "ln Ring Age", cex.lab = 1.5) #, main = "Betula")
+     col = "black", pch = 1, ylab = "ln Basal Area Increment", xlab = "ln Ring Age", cex.lab = 1) #, main = "Betula")
 
 abline (lmBena, col = "red")
 
@@ -470,6 +594,21 @@ abline (lmSalix,  col = "red")
 
 summary(lmSalix)
 
+#Plots BAI as a function of age on two graphs by genus in gg-plots
+
+ggplot(sd_bena5, aes(x=Age, y = BAI)) +
+      geom_point(alpha = 0.5) +
+      stat_smooth(method = "lm", formula = y ~ x, size = 1)
+
+ggplot(sd_bena5, aes(x=Age, y = log(BAI))) +
+  geom_point(alpha = 0.5) +
+  stat_smooth(method = "lm", formula = y ~ x, size = 1)
+
+
+ggplot(sd_bena5, aes(x=log(Age), y = log(BAI))) +
+  geom_point(alpha = 0.5) +
+  stat_smooth(method = "lm", formula = y ~ x, size = 1)
+
 #Check the distributions of age and BAI data on a histogram
 #Note that both age and BAI are not normally distributed, the distribution is right (positive) skewed toward small BAI or young individuals.
 par(mfrow=c(2,2))
@@ -481,8 +620,17 @@ hist(sd_salix5$Age, xlab = "Ring Age (years)", main = "Salix spp. Age Distributi
 hist(sd_salix5$BAI, xlab = "Basal Area Increment", main = "Salix spp. BAI Distribution")
 
 # 14. CREATE LINEAR REGRESSION MODELS ####
-lmBena = lm(log(BAI) ~ log(Age), data = sd_bena5)
-lmSalix = lm(log(BAI) ~ log(Age), data = sd_salix5)
+#lmBena = lm(BAI ~ Age, data = sd_bena5)
+#lmSalix = lm(BAI ~ Age, data = sd_salix5)
+
+lmBena = lm(log(BAI) ~ Age, data = sd_bena5)
+lmSalix = lm(log(BAI) ~ Age, data = sd_salix5)
+
+lmBena_l = lm(log(BAI) ~ Age, data = sd_bena5)
+lmSalix_l = lm(log(BAI) ~ Age, data = sd_salix5)
+
+lmBena_ll = lm(log(BAI) ~ log(Age), data = sd_bena5)
+lmSalix_ll = lm(log(BAI) ~ log(Age), data = sd_salix5)
 
 #Generate the Summary Statistic
 summary(lmBena)
@@ -547,10 +695,41 @@ ggplot(sd_salix5, aes(x = log(Age), y = log(BAI))) + geom_point() + stat_smooth(
 
 #Extract the residuals from the linear model: his is variation that can be expected to be explained by something else than age.
 
-sd_bena_res = add_residuals(sd_bena5, lmBena)
+sd_bena_res = add_residuals(sd_bena5, lmBena_l)
+  
+  sd_bena_res$ShrubID_year <- do.call(paste, c(sd_bena_res[c("ShrubID", "Year")], sep = "_"))
 
-sd_salix_res = add_residuals(sd_salix5, lmSalix)
+sd_salix_res = add_residuals(sd_salix5, lmSalix_l)
 
+  sd_salix_res$ShrubID_year <- do.call(paste, c(sd_salix_res[c("ShrubID", "Year")], sep = "_"))
+
+sd_bena_res_ll = add_residuals(sd_bena5, lmBena_ll)
+
+  sd_bena_res_ll$ShrubID_year <- do.call(paste, c(sd_bena_res_ll[c("ShrubID", "Year")], sep = "_"))
+    
+  colnames(sd_bena_res_ll)[colnames(sd_bena_res_ll)=="resid"] = "resid_ll"
+
+  sd_bena_res_ll <- sd_bena_res_ll %>%
+    select(ShrubID_year, resid_ll)
+  
+sd_salix_res_ll = add_residuals(sd_salix5, lmSalix_ll)
+
+  sd_salix_res_ll$ShrubID_year <- do.call(paste, c(sd_salix_res_ll[c("ShrubID", "Year")], sep = "_"))
+
+  colnames(sd_salix_res_ll)[colnames(sd_salix_res_ll)=="resid"] = "resid_ll"
+
+  sd_salix_res_ll <- sd_salix_res_ll %>%
+    select(ShrubID_year, resid_ll)  
+
+  
+sd_bena_res <- left_join(sd_bena_res, sd_bena_res_ll, by = "ShrubID_year")
+
+  sd_bena_res$ShrubID_year = NULL
+
+sd_salix_res <- left_join(sd_salix_res, sd_salix_res_ll, by = "ShrubID_year")
+
+  sd_salix_res$ShrubID_year = NULL
+  
 #Transform residuals back into BAI scale from the log scale
 
 #sd_bena_res$resid_t = exp(1)^(sd_bena_res$resid)

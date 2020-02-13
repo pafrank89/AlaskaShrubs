@@ -48,33 +48,18 @@ packageVersion("")
 update.packages("")
 
 # OPTIMAL MODEL - FORWARD SELECTION NO INTERACTIONS####
-Fwd_Betula <- lme(resid ~ HareIndex + iem.summ.rain + MooseDensity, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+Fwd_Betula <- lme(resid ~ MooseDensity + iem.summ.temp + iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                   method = "RMEL")
 
-Fwd_Salix <- lme(resid ~ iem.summ.temp + MooseDensity + iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+Fwd_Salix <- lme(resid ~ iem.summ.temp + MooseDensity + iem.summ.rain + HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                  method = "RMEL")
 
 # OPTIMAL MODEL - BACKWARD SELECTION NO INTERACTIONS####
-Bkw_Betula <- lme(resid ~ HareIndex + iem.summ.rain + MooseDensity, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+Bkw_Betula <- lme(resid ~ MooseDensity + iem.summ.temp + iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                   method = "RMEL")
 
-Bkw_Salix <- lme(resid ~ iem.summ.temp + MooseDensity + iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
+Bkw_Salix <- lme(resid ~ iem.summ.temp + MooseDensity + iem.summ.rain + HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                  method = "RMEL")
-
-# OPTIMAL MODEL - FORWARD SELECTION WITH CLIMATE INTERACTION####
-Fwd_Int_Betula <- lme(resid ~ HareIndex + iem.summ.temp:iem.summ.rain + MooseDensity, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                  method = "RMEL")
-
-Fwd_Int_Salix <- lme(resid ~ iem.summ.temp:iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                 method = "RMEL")
-
-# OPTIMAL MODEL - BACKWARD SELECTION WITH CLIMATE INTERACTION####
-Bkw_Betula <- lme(resid ~ HareIndex + iem.summ.temp:iem.summ.rain + MooseDensity, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                  method = "RMEL")
-
-Bkw_Salix <- lme(resid ~ iem.summ.temp:iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                 method = "RMEL")
-
 
 # LIKELIHOOD RATIO TEST BASED ON FORWARD AND BACKWARD SELECTION ####
 
@@ -82,18 +67,17 @@ Bkw_Salix <- lme(resid ~ iem.summ.temp:iem.summ.rain, data = sd_final_cch, rando
 
 add1(null_model_b, scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_b, ~ . + HareIndex), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_b, ~ . + MooseDensity), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_b, ~ . + HareIndex + iem.summ.rain), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_b, ~ . + MooseDensity + iem.summ.temp), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_b, ~ . + HareIndex + iem.summ.rain + MooseDensity), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_b, ~ . + MooseDensity + iem.summ.temp + iem.summ.rain), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-summary(update(null_model_b, ~ . + HareIndex + iem.summ.rain + MooseDensity))
+summary(update(null_model_b, ~ . + MooseDensity + iem.summ.temp + iem.summ.rain))
 
 # Backward stepwise regression Betula
 
-lme_full_b = lme(resid ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S +
-                   iem.summ.temp:iem.summ.rain, 
+lme_full_b = lme(resid ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S,
                  data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                  method = "ML")
 
@@ -109,21 +93,23 @@ drop1(update(lme_full_b, ~ . -PropHare_S -PropMoose_S), test = "Chisq")
 
 drop1(update(lme_full_b, ~ . -PropMoose_S -PropHare_S -PropPtarmagin_S), test = "Chisq")
 
-drop1(update(lme_full_b, ~ . -PropMoose_S -PropHare_S -PropPtarmagin_S -iem.summ.temp), test = "Chisq")
+drop1(update(lme_full_b, ~ . -PropMoose_S -PropHare_S -PropPtarmagin_S -HareIndex), test = "Chisq")
 
-summary(update(lme_full_b, ~ . -PropMoose_S -PropHare_S -PropPtarmagin_S -iem.summ.temp))
+summary(update(lme_full_b, ~ . -PropMoose_S -PropHare_S -PropPtarmagin_S -HareIndex))
 
 # Forward stepwise regression for Salix
 
 add1(null_model_s, scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_s, ~ . + iem.summ.temp), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_s, ~ . + MooseDensity), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_s, ~ . + iem.summ.temp + MooseDensity), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_s, ~ . + MooseDensity + iem.summ.temp), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_s, ~ . + iem.summ.temp + MooseDensity + iem.summ.rain), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_s, ~ . + MooseDensity + iem.summ.temp + HareIndex), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-summary(update(null_model_s, ~ . + iem.summ.temp + MooseDensity + iem.summ.rain))
+add1(update(null_model_s, ~ . + MooseDensity + iem.summ.temp + HareIndex + iem.summ.rain), scope = ~ iem.summ.temp + iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+
+summary(update(null_model_s, ~ . + MooseDensity + iem.summ.temp + HareIndex + iem.summ.rain))
 
 # Backward stepwise regression for Salix
 
@@ -137,15 +123,13 @@ piecewiseSEM::rsquared(lme_full_s)
 
 drop1(lme_full_s, test = "Chisq")
 
-drop1(update(lme_full_s, ~ . -PropMoose_S), test = "Chisq")
+drop1(update(lme_full_s, ~ . -PropHare_S), test = "Chisq")
 
-drop1(update(lme_full_s, ~ . -PropMoose_S -PropHare_S), test = "Chisq")
+drop1(update(lme_full_s, ~ . -PropHare_S -PropMoose_S), test = "Chisq")
 
-drop1(update(lme_full_s, ~ . -PropMoose_S -PropHare_S -PropPtarmagin_S), test = "Chisq")
+drop1(update(lme_full_s, ~ . -PropHare_S -PropMoose_S -PropPtarmagin_S), test = "Chisq")
 
-drop1(update(lme_full_s, ~ . -PropMoose_S -PropHare_S -PropPtarmagin_S -HareIndex), test = "Chisq")
-
-summary(update(lme_full_s, ~ . -PropMoose_S -PropHare_S -PropPtarmagin_S -HareIndex))
+summary(update(lme_full_s, ~ . -PropHare_S -PropMoose_S -PropPtarmagin_S))
 
 
 # TESTING VARIABLE INTERACTIONS IN GLOBAL MODELS ####
@@ -241,7 +225,7 @@ AIC_forward = stepAIC(null_model_s, direction = c("forward"),
 lme_global_b = lme(resid ~ iem.summ.temp + iem.summ.rain +
                   iem.summ.temp * iem.summ.rain +
                   iem.summ.temp * HareIndex +
-                  iem.summ.rain * HareIndex +
+                  iem.summ.temp * MooseDensity +
                   MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S,
                   data = sd_bena_cch, random = ~ 1|Section/ShrubID, method = "ML")
 
@@ -263,9 +247,9 @@ summary(pred_avg_b)
 
 # Salix Model Averaging
 lme_global_s = lme(resid ~ iem.summ.temp + iem.summ.rain +
-                     #iem.summ.temp * iem.summ.rain +
-                     #iem.summ.temp * PropPtarmagin_S +
-                     #iem.summ.rain * PropPtarmagin_S +
+                     iem.summ.temp * iem.summ.rain +
+                     iem.summ.temp * MooseDensity +
+                     iem.summ.rain * HareIndex +
                      MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S,
                      data = sd_salix_cch, random = ~ 1|Section/ShrubID, method = "ML")
 

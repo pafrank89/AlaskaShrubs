@@ -3,8 +3,6 @@
 # peterfr@stud.ntnu.no
 # 2019-11-21
 
-#MooseDensity = MooseDensity[-c(4,5,6,7,8), ] 
-
 # Melt moose density data  
 MooseDensity<-melt(MooseDensity, id="GMU", na.rm = TRUE)
 
@@ -19,6 +17,37 @@ MooseDensity$GMU_year <- do.call(paste, c(MooseDensity[c("GMU", "Year")], sep = 
 MooseDensity[1] = NULL
 MooseDensity[1] = NULL
 
-#Reorders the columns 
+# Reorders the columns 
 MooseDensity = MooseDensity[,c(2,1)]
+
+# Plot Moose Density over Time ####
+
+  #loess24 = loess(GMU_24A ~ Year, data = MD_Graph, span = 0.2)
+  #loess20 = loess(GMU_20F ~ Year, data = MD_Graph, span = 0.2)
+  #loess26 = loess(GMU_26B ~ Year, data = MD_Graph, span = 0.2)
+
+  #smooth24 = predict(loess24)
+  #smooth20 = predict(loess20)
+  #smooth26 = predict(loess26)
+
+#lines(smooth24, x = MD_Graph$Year, col = "blue", lwd = 2)
+
+plot(GMU_24A ~ Year, data = MD_Graph, main = "Game Management Unit Moose Density",
+     col = "blue", ylim=c(0,.65), xlim=c(1985, 2020), type = "o",
+     ylab = "Moose Density (moose/km²)", xlab = "Year")
+
+par(new=TRUE)
+
+plot(GMU_20F ~ Year, data = MD_Graph, 
+     col = "red", type = "o", xlab = "", ylab = "", axes=FALSE, ylim=c(0,.65), xlim=c(1985, 2020))
+
+par(new=TRUE)
+
+plot(GMU_26B ~ Year, data = MD_Graph, 
+     col = "forest green", type = "o", xlab = "", ylab = "", axes=FALSE, ylim=c(0,.65), xlim=c(1985, 2020))
+
+
+legend("topright",legend=c("24A (4,146 km²)","20F (6,267 km²)", "26B (16,332 km²)"),
+       text.col=c("blue", "red", "forest green"), 
+       lty = c(1, 1, 1), col=c("blue", "red", "forest green"), bty = "n", cex=1)
 

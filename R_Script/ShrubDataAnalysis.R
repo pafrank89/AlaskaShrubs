@@ -22,9 +22,9 @@ library(Hmisc)
 # 1. CORRELATION MATRICIES ####
 
 # Check for correlations between variables
-CorPlot_b = subset (sd_bena_cch, select = c("resid", "BAI", "Age", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
+CorPlot_b = subset (sd_bena_cch, select = c("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
 
-CorPlot_s = subset (sd_salix_cch, select = c("resid", "BAI", "Age", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
+CorPlot_s = subset (sd_salix_cch, select = c("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
 
 #Creates a correlation matrix using the variables specified above
 chart.Correlation(CorPlot_b, histogram = TRUE, method = c("spearman"))
@@ -157,8 +157,6 @@ ggplot(data = sd_salix_cch,
   geom_smooth(method= "lm") +
   xlab("Residuals of Standardized BAI") +
   ylab("Canopy Cover (%)")
-
-
 
 # 4. STEM HEIGHT ~ STEM DIAMETER & Y CORD #####
 #Plot Height ad a function of Stem Diameter
@@ -394,62 +392,97 @@ sd_all_salix_agg = aggregate((x = sd_all_salix_cch),
 par(mfrow=c(1,2))
 
 plot(RingWidth ~ Year, data = sd_all_bena_agg, main = "Betula",
-     col = "blue", type = "l", ylim=c(-1.5, 1.5), xlim=c(1975, 2020),
+     col = "blue", type = "l", ylim=c(-1.7, 1.5), xlim=c(1955, 2020),
      ylab = "Ring Width", xlab = "Year")
 
 par(new=TRUE)
 
 plot(RWI_Spline ~  Year, data = sd_all_bena_agg, 
-     col = "red", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5, 1.5), xlim=c(1975, 2020))
+     col = "red", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.7, 1.5), xlim=c(1955, 2020))
 
 par(new=TRUE)
 
 plot(RWI_NegExp ~ Year, data = sd_all_bena_agg,
-     col = "green", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5, 1.5), xlim=c(1975, 2020))
+     col = "green", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.7, 1.5), xlim=c(1955, 2020))
 
 par(new=TRUE)
 
 plot(log(BAI) ~ Year, data = sd_all_bena_agg,
-     col = "orange", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5, 2), xlim=c(1975, 2020))
+     col = "orange", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.7, 2), xlim=c(1955, 2020))
 
 par(new=TRUE)
 
 plot(resid ~ Year, data = sd_all_bena_agg,
-     col = "purple", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5, 2), xlim=c(1975, 2020))
+     col = "purple", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.7, 2), xlim=c(1955, 2020))
 
-legend("bottomleft",legend=c("Ring Width","RWI_Spline", "RWI_NegExp", "lnBAI", "BAI Residuals"),
+par(new=TRUE)
+
+plot(resid_ll ~ Year, data = sd_all_bena_agg,
+     col = "pink", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.7, 2), xlim=c(1955, 2020))
+
+legend("bottomright",legend=c("Ring Width","RWI_Spline", "RWI_NegExp", "lnBAI", "BAI Residuals"),
        text.col=c("blue", "red", "green", "orange", "purple"), 
        lty = c(1, 1, 1, 1, 1), col=c("blue", "red", "green", "orange", "purple"), bty = "n", cex=0.75)
 
 # For Salix
 
 plot(RingWidth ~ Year, data = sd_all_salix_agg, main = "Salix",
-     col = "blue", type = "l", ylim=c(-.6,1.5), xlim=c(1975, 2020),
+     col = "blue", type = "l", ylim=c(-1.5,2.5), xlim=c(1975, 2020),
      ylab = "Ring Width", xlab = "Year")
 
 par(new=TRUE)
 
 plot(RWI_Spline ~  Year, data = sd_all_salix_agg, 
-     col = "red", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-.6,2.5), xlim=c(1975, 2020))
+     col = "red", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5,2.5), xlim=c(1975, 2020))
 
 par(new=TRUE)
 
 plot(RWI_NegExp ~ Year, data = sd_all_salix_agg,
-     col = "green", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-.6,2.5), xlim=c(1975, 2020))
+     col = "green", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5,2.5), xlim=c(1975, 2020))
 
 par(new=TRUE)
 
 plot(log(BAI) ~ Year, data = sd_all_salix_agg,
-     col = "orange", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-.6,2.5), xlim=c(1975, 2020))
+     col = "orange", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5,2.5), xlim=c(1975, 2020))
 
 par(new=TRUE)
 
 plot(resid ~ Year, data = sd_all_salix_agg,
-     col = "purple", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-.6,2.5), xlim=c(1975, 2020))
+     col = "purple", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5,2.5), xlim=c(1975, 2020))
+
+par(new=TRUE)
+
+plot(resid_ll ~ Year, data = sd_all_salix_agg,
+     col = "pink", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5,2.5), xlim=c(1975, 2020))
 
 #legend("topright",legend=c("Ring Width","RWI_Spline", "RWI_NegExp", "lnBAI", "BAI Residuals"),
        #text.col=c("blue", "red", "green", "orange", "purple"), 
        #lty = c(1, 1, 1, 1, 1), col=c("blue", "red", "green", "orange", "purple"), bty = "n", cex=0.75)
+
+
+# Plot Age Trend for Poster
+par(oma=c(0,.5,0,0))
+
+par(mar=c(5, 5, 2, 2))
+
+plot(BAI ~ Year, data = sd_all_bena_agg,
+     col = "Black", type = "l", lwd = 2.5, lty = 1,
+     ylim=c(0,11), xlim=c(1955, 2020),
+     ylab = "Basal Area Increment (mm²)", xlab = "Year",
+     cex.lab = 2.15, cex.axis = 1.35)
+
+par(new=TRUE)
+
+plot(BAI ~ Year, data = sd_all_salix_agg,
+     col = "Blue", type = "l", lwd = 2.5, lty = 1,
+     xlab = "", ylab = "", axes=FALSE, 
+     ylim=c(0,11), xlim=c(1955, 2020))
+
+legend("topleft",legend=c("Betula","Salix"),
+text.col=c("black", "blue"),
+lty = c(1, 1), lwd = c(2,2), col=c("black", "blue"), bty = "n", cex=2)
+
+hist(sd_all_cch$resid, main = "", xlab = "Age Standardized BAI", cex.lab = 2, cex.axis = 1.35)
 
 # 11. PLOT GROWTH TREND BY AGE ####
 par(mfrow=c(2,5))
@@ -487,8 +520,26 @@ plot(log(BAI) ~ Age, data = sd_all_salix_cch,
 plot(resid ~ Age, data = sd_all_salix_cch,
      col = "blue", pch = 1, ylab = "Residuals of BAI", xlab = "Ring Age (years)")
 
+# Plot for Poster
+par(oma=c(0,.5,0,0))
 
-# 12. VIOLIN PLOTS 
+par(mar=c(5, 5, 2, 2))
+
+plot(log(BAI) ~ Age, data = sd_all_bena_cch,
+     col = "black", pch = 1, cex.lab = 2, cex.axis = 1.25,
+     ylab = "ln Basal Area Increment", xlab = "Ring Age (years)")
+
+#par(new=TRUE)
+
+#plot(BAI ~ Age, data = sd_all_bena_cch,
+     #col = "blue", pch = 4, cex.lab = 1.75,
+     #xlab = "", ylab = "", axes=FALSE)
+
+abline(lmBena, col = "red", lwd = 2)
+
+summary(lmBena)
+
+
 # 12. PLOT AGE DISTRIBUTION OVER TIME ####
 
 ggplot(sd_all_bena_cch, aes(x=as.factor(Year), y=Age)) +
@@ -510,9 +561,16 @@ ggplot(sd_all_bena_cch, aes(x=as.factor(Year), y=resid)) +
   #stat_summary(fun.data=mean_sdl, mult=1, geom="pointrange", color="red")
   #geom_jitter(shape=16, position=position_jitter(0.2))
 
-# 13. PLOT GROTH TREND AND FIXED EFFECTS OVER TIME ####
+# 13. PLOT GROWTH TREND (BAI) AND FIXED EFFECTS OVER TIME ####
 
 ## Plot standardized BAI residuals against mean summer temperature
+
+range(sd_BAI_bena_agg$resid)
+range(sd_BAI_salix_agg$resid)
+
+#To plot graphs next to one another
+par(mfrow=c(1,2))
+
 # Start by adding extra space to right margin of plot within frame
 par(mar=c(5, 4, 4, 6) + 0.1)
 
@@ -524,7 +582,7 @@ plot(sd_BAI_bena_agg$iem.summ.temp ~ sd_BAI_bena_agg$Year,
 
 axis(2, ylim=c(9,15),col="black",las=1)
 
-mtext("Mean Summer Temperature",side=2,line=2.5)
+mtext("Mean Summer Temperature (°C)",side=2,line=2.5)
 
 box()
 
@@ -533,7 +591,7 @@ par(new=TRUE)
 
 # Plot the second plot and put axis scale on right
 plot(sd_BAI_bena_agg$resid ~ sd_BAI_bena_agg$Year, 
-     axes=FALSE, ylim=c(-.7, .7),
+     axes=FALSE, ylim=c(-1.5, .7),
      type = "l", xlab = "", ylab = "", 
      col = "black", lwd = 1, lty = 5, cex.lab = 1)
 
@@ -542,13 +600,13 @@ par(new=TRUE)
 
 # Plot the third plot and put axis scale on right
 plot(sd_BAI_salix_agg$resid ~ sd_BAI_salix_agg$Year, 
-     axes=FALSE, ylim=c(-.7, .7),
+     axes=FALSE, ylim=c(-1.5, .7),
      type = "l", xlab = "", ylab = "", 
      col = "grey 52", lwd = 1, lty = 2, cex.lab = 1)
 
 mtext("Age Standardized BAI", side=4,col="black",line=4) 
 
-axis(4, ylim=c(-.7, .7), col="black", col.axis="black", las=1)
+axis(4, ylim=c(-1.5, .7), col="black", col.axis="black", las=1)
 
 # Add the Years axis
 axis(1,pretty(range(sd_BAI_bena_agg$Year),5))
@@ -572,7 +630,7 @@ plot(sd_BAI_bena_agg$iem.summ.rain.10 ~ sd_BAI_bena_agg$Year,
 
 axis(2, ylim=c(9,15),col="black",las=1)
 
-mtext("Mean Summer Temperature",side=2,line=2.5)
+mtext("Mean Summer Precipitation (cm)",side=2,line=2.5)
 
 box()
 
@@ -581,7 +639,7 @@ par(new=TRUE)
 
 # Plot the second plot and put axis scale on right
 plot(sd_BAI_bena_agg$resid ~ sd_BAI_bena_agg$Year, 
-     axes=FALSE, ylim=c(-.7, .7),
+     axes=FALSE, ylim=c(-1.5, .7),
      type = "l", xlab = "", ylab = "", 
      col = "black", lwd = 1, lty = 5, cex.lab = 1)
 
@@ -590,20 +648,20 @@ par(new=TRUE)
 
 # Plot the third plot and put axis scale on right
 plot(sd_BAI_salix_agg$resid~ sd_BAI_salix_agg$Year, 
-     axes=FALSE, ylim=c(-.7, .7),
+     axes=FALSE, ylim=c(-1.5, .7),
      type = "l", xlab = "", ylab = "", 
      col = "grey 52", lwd = 1, lty = 2, cex.lab = 1)
 
 mtext("Age Standardized BAI", side=4,col="black",line=4) 
 
-axis(4, ylim=c(-.7, .7), col="black", col.axis="black", las=1)
+axis(4, ylim=c(-1.5, .7), col="black", col.axis="black", las=1)
 
 # Add the Years axis
 axis(1,pretty(range(sd_BAI_salix_agg$Year),5))
 mtext("Year",side=1, col="black", line=2.5) 
 
 ## Add Legend
-legend("topright",legend=c("Precipitation","Betula", "Salix"),
+legend("topleft",legend=c("Precipitation","Betula", "Salix"),
        text.col=c("blue", "black", "grey 52"), lty = c(1, 5, 2), col=c("blue", "black", "dark grey"), bty = "n")
 
 
@@ -629,7 +687,7 @@ par(new=TRUE)
 
 # Plot the second plot and put axis scale on right
 plot(sd_BAI_bena_agg$resid ~ sd_BAI_bena_agg$Year, 
-     axes=FALSE, ylim=c(-.7, .7),
+     axes=FALSE, ylim=c(-1.5, .7),
      type = "l", xlab = "", ylab = "", 
      col = "black", lwd = 1, lty = 5, cex.lab = 1)
 
@@ -638,20 +696,166 @@ par(new=TRUE)
 
 # Plot the third plot and put axis scale on right
 plot(sd_BAI_salix_agg$resid~ sd_BAI_salix_agg$Year, 
-     axes=FALSE, ylim=c(-.7, .7),
+     axes=FALSE, ylim=c(-1.5, .7),
      type = "l", xlab = "", ylab = "", 
      col = "grey 52", lwd = 1, lty = 2, cex.lab = 1)
 
 mtext("Residuals of Standardized BAI", side=4,col="black",line=4) 
 
-axis(4, ylim=c(-.7, .7), col="black", col.axis="black", las=1)
+axis(4, ylim=c(-1.5, .7), col="black", col.axis="black", las=1)
 
 # Add the Years axis
 axis(1,pretty(range(sd_BAI_bena_agg$Year),5))
 mtext("Year",side=1, col="black", line=2.5) 
 
 
-# 14. PLOT MIXED EFFECTS ACROSS SITES ####
+# 14. PLOT GROWTH TREND (RWI) AND FIXED EFFECTS OVER TIME ####
+
+## Plot standardized BAI residuals against mean summer temperature
+
+#To plot graphs next to one another
+par(mfrow=c(1,2))
+
+# Start by adding extra space to right margin of plot within frame
+par(mar=c(5, 4, 4, 6) + 0.1)
+
+# 14.1 Plot first set of data and draw its axis
+plot(sd_BAI_bena_agg$iem.summ.temp ~ sd_BAI_bena_agg$Year, 
+     axes=FALSE, ylim=c(10,14), #main="Shrub Growth ",
+     type = "l", xlab = "", ylab = "", 
+     col = "red", lwd = 1, cex.lab = 1)
+
+axis(2, ylim=c(9,15),col="black",las=1)
+
+mtext("Mean Summer Temperature (°C)",side=2,line=2.5)
+
+box()
+
+# Allow a second plot on the same graph
+par(new=TRUE)
+
+# Plot the second plot and put axis scale on right
+plot(sd_BAI_bena_agg$RWI_Spline ~ sd_BAI_bena_agg$Year, 
+     axes=FALSE, ylim=c(0.75, 1.25),
+     type = "l", xlab = "", ylab = "", 
+     col = "black", lwd = 1, lty = 5, cex.lab = 1)
+
+# Allow for a third plot using the second accis
+par(new=TRUE)
+
+# Plot the third plot and put axis scale on right
+plot(sd_BAI_salix_agg$RWI_Spline ~ sd_BAI_salix_agg$Year, 
+     axes=FALSE, ylim=c(0.75, 1.25),
+     type = "l", xlab = "", ylab = "", 
+     col = "grey 52", lwd = 1, lty = 2, cex.lab = 1)
+
+mtext("Ring Width Index", side=4,col="black",line=4) 
+
+axis(4, ylim=c(0.75, 1.25), col="black", col.axis="black", las=1)
+
+# Add the Years axis
+axis(1,pretty(range(sd_BAI_bena_agg$Year),5))
+mtext("Year",side=1, col="black", line=2.5) 
+
+## Add Legend
+legend("topright",legend=c("Temperature","Betula", "Salix"),
+       text.col=c("red", "black", "grey 52"), lty = c(1, 5, 2), col=c("red", "black", "dark grey"), bty = "n")
+
+
+# 14.2 Plot raw BAI against mean summer Precip
+
+# Start by adding extra space to right margin of plot within frame
+par(mar=c(5, 4, 4, 6) + 0.1)
+
+# Plot first set of data and draw its axis
+plot(sd_BAI_bena_agg$iem.summ.rain.10 ~ sd_BAI_bena_agg$Year, 
+     axes=FALSE, ylim=c(7,37), #main="Shrub Growth ",
+     type = "l", xlab = "", ylab = "", 
+     col = "blue", lwd = 1, cex.lab = 1)
+
+axis(2, ylim=c(9,15),col="black",las=1)
+
+mtext("Mean Summer Precipitation (cm)",side=2,line=2.5)
+
+box()
+
+# Allow a second plot on the same graph
+par(new=TRUE)
+
+# Plot the second plot and put axis scale on right
+plot(sd_BAI_bena_agg$RWI_Spline ~ sd_BAI_bena_agg$Year, 
+     axes=FALSE, ylim=c(0.75, 1.25),
+     type = "l", xlab = "", ylab = "", 
+     col = "black", lwd = 1, lty = 5, cex.lab = 1)
+
+# Allow for a third plot using the second accis
+par(new=TRUE)
+
+# Plot the third plot and put axis scale on right
+plot(sd_BAI_salix_agg$RWI_Spline~ sd_BAI_salix_agg$Year, 
+     axes=FALSE, ylim=c(0.75, 1.25),
+     type = "l", xlab = "", ylab = "", 
+     col = "grey 52", lwd = 1, lty = 2, cex.lab = 1)
+
+mtext("Ring Width Index", side=4,col="black",line=4) 
+
+axis(4, ylim=c(0.75, 1.25), col="black", col.axis="black", las=1)
+
+# Add the Years axis
+axis(1,pretty(range(sd_BAI_salix_agg$Year),5))
+mtext("Year",side=1, col="black", line=2.5) 
+
+## Add Legend
+legend("topright",legend=c("Precipitation","Betula", "Salix"),
+       text.col=c("blue", "black", "grey 52"), lty = c(1, 5, 2), col=c("blue", "black", "dark grey"), bty = "n")
+
+
+# 14.3 Plot Betula standardized BAI residuals against Hare Cycles 
+
+# Start by adding extra space to right margin of plot within frame
+par(mar=c(5, 4, 4, 6) + 0.1)
+
+# Plot first set of data and draw its axis
+plot(sd_BAI_bena_agg$HareIndex ~ sd_BAI_bena_agg$Year, 
+     axes=FALSE, ylim=c(0,4), main="",
+     type = "l", xlab = "", ylab = "", 
+     col = "forest green", lwd = 1, cex.lab = 1)
+
+axis(2, ylim=c(1,3),col="black",las=1)
+
+mtext("Hare Cycle Index",side=2,line=2.5)
+
+box()
+
+# Allow a second plot on the same graph
+par(new=TRUE)
+
+# Plot the second plot and put axis scale on right
+plot(sd_BAI_bena_agg$RWI_Spline ~ sd_BAI_bena_agg$Year, 
+     axes=FALSE, ylim=c(0.75, 1.25),
+     type = "l", xlab = "", ylab = "", 
+     col = "black", lwd = 1, lty = 5, cex.lab = 1)
+
+# Allow for a third plot using the second accis
+par(new=TRUE)
+
+# Plot the third plot and put axis scale on right
+plot(sd_BAI_salix_agg$RWI_Spline~ sd_BAI_salix_agg$Year, 
+     axes=FALSE, ylim=c(0.75, 1.25),
+     type = "l", xlab = "", ylab = "", 
+     col = "grey 52", lwd = 1, lty = 2, cex.lab = 1)
+
+
+mtext("Ring WIdth Index", side=4,col="black",line=4) 
+
+axis(4, ylim=c(0.75, 1.25), col="black", col.axis="black", las=1)
+
+# Add the Years axis
+axis(1,pretty(range(sd_BAI_bena_agg$Year),5))
+mtext("Year",side=1, col="black", line=2.5) 
+
+
+# 15. PLOT MIXED EFFECTS ACROSS SITES ####
 
 ggplot(sd_bena_cch, aes(x = iem.summ.temp, y = resid, colour = ShrubID)) +
   facet_wrap(~Section, nrow=4) +   # a panel for each mountain range
