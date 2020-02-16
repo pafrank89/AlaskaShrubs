@@ -49,10 +49,14 @@ update.packages("")
 
 # OPTIMAL MODEL - FORWARD SELECTION NO INTERACTIONS####
 Fwd_Betula <- lme(resid ~ MooseDensity + iem.summ.temp + iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                  method = "RMEL")
+                  method = "REML")
+
+summary(Fwd_Betula)
 
 Fwd_Salix <- lme(resid ~ iem.summ.temp + MooseDensity + iem.summ.rain + HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                 method = "RMEL")
+                 method = "REML")
+
+summary(Fwd_Salix)
 
 # OPTIMAL MODEL - BACKWARD SELECTION NO INTERACTIONS####
 Bkw_Betula <- lme(resid ~ MooseDensity + iem.summ.temp + iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
@@ -143,11 +147,11 @@ add1(lme_full_s, scope = .~. + .^2, test= "Chisq")
 
 add1(null_model_b, scope = ~ iem.summ.temp:iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_b, ~ . + HareIndex), scope = ~ iem.summ.temp:iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_b, ~ . + iem.summ.temp:iem.summ.rain), scope = ~ iem.summ.temp:iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_b, ~ . + HareIndex + iem.summ.temp:iem.summ.rain), scope = ~ iem.summ.temp:iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_b, ~ . +  iem.summ.temp:iem.summ.rain + HareIndex ), scope = ~ iem.summ.temp:iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_b, ~ . + HareIndex + iem.summ.temp:iem.summ.rain + MooseDensity), scope = ~ iem.summ.temp:iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_b, ~ . +  iem.summ.temp:iem.summ.rain + HareIndex + MooseDensity), scope = ~ iem.summ.temp:iem.summ.rain + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
 summary(update(null_model_b, ~ . + HareIndex + iem.summ.temp:iem.summ.rain + MooseDensity))
 
@@ -301,9 +305,9 @@ vif.lme <- function (fit) {
 #Calculate the VIFs for the model without climatic interaction terms 
 #Note that values for VIF greater than two should be investigated further
 
-vif.lme(CH1H2_model_b)
+vif.lme(Optimal_model_s)
 
-vif.lme(CH1_model_s)
+vif.lme(Optimal_model_b)
 
 # PLOTS ####
 

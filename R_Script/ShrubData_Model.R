@@ -292,7 +292,63 @@ C1xC2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * i
   summary(C1xC2_model_s)
 
 
-## 3.4 Model Assumptions & Effect Size for Climate Model ####
+## 3.4 Quadratic Term For MST ####
+
+  # MST^2 for Betula
+  C1.2_model_b = lme(resid ~ iem.summ.temp + I(iem.summ.temp^2), data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                      method = "ML")
+  
+  anova(null_model_b, C1.2_model_b)
+  
+  summary(C1.2_model_b)
+  
+  # MST^2 for Salix
+  C1.2_model_s = lme(resid ~ iem.summ.temp + I(iem.summ.temp^2), data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                      method = "ML")
+  
+  anova(null_model_s, C1.2_model_s)
+  
+  summary(C1xC2_model_s)
+  
+  
+## 3.5 Quadratic Term For MSP ####
+  
+  # MSP^2 for Betula
+  C2.2_model_b = lme(resid ~ iem.summ.rain.10 + I(iem.summ.rain.10^2), data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                     method = "ML")
+  
+  anova(null_model_b, C1.2_model_b)
+  
+  summary(C1.2_model_b)
+  
+  # MSP^2 for Salix
+  C2.2_model_s = lme(resid ~ iem.summ.rain.10 + I(iem.summ.rain.10^2), data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                     method = "ML")
+  
+  anova(null_model_s, C1.2_model_s)
+  
+  summary(C1xC2_model_s)
+  
+  
+## 3.6 Quadratic Term For MST + MSP ####
+  
+  # MST^2 + MSP^2 for Betula
+  C1.2_C2.2_model_b = lme(resid ~ iem.summ.temp + I(iem.summ.temp^2) + iem.summ.rain.10 + I(iem.summ.rain.10^2), data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                     method = "ML")
+  
+  anova(null_model_b, C1.2_C2.2_model_b)
+  
+  summary(C1.2_C2.2_model_b)
+  
+  # MST^2 + MSP^2 for Salix
+  C1.2_C2.2_model_s = lme(resid ~ iem.summ.temp + I(iem.summ.temp^2) + iem.summ.rain.10 + I(iem.summ.rain.10^2), data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                     method = "ML")
+  
+  anova(null_model_s, C1.2_C2.2_model_s)
+  
+  summary(C1.2_C2.2_model_s)
+  
+## 3.7 Model Assumptions & Effect Size for Climate Model ####
 
 #Plots the Satadardize Residuals plot for the core climate model
 
