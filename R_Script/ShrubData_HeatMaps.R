@@ -31,6 +31,7 @@ MyData_b$SE <- sqrt(predvar_b1)
 MyData_b$SEup<-MyData_b$SE+MyData_b$Pred
 MyData_b$SEdown<-MyData_b$Pred-MyData_b$SE
 
+
 # Plot
 col.l = colorRampPalette(c( 'white', rgb(0, 80, 158, max = 255)))
 z = c(0:10)
@@ -76,11 +77,62 @@ pb = pb + contourplot(SEdown ~ iem.summ.temp * iem.summ.rain.10,
 
 pb
 
+# plot points growth & size by sample size:
+str(sd_bena_cch)
+
+sd_bena_cch$Year_Section <- do.call(paste, c(sd_bena_cch[c("Year", "Section")], sep = "_"))
+
+growth<-tapply(sd_bena_cch$resid, list(sd_bena_cch$Year_Section),mean)    
+names <- rownames(growth)
+rownames(growth) <- NULL
+growth <- cbind(names,growth)
+colnames(growth)[colnames(growth)=="names"] <- "Year_Section"
+
+temp<-tapply(sd_bena_cch$iem.summ.temp, list(sd_bena_cch$Year_Section),mean)    
+names <- rownames(temp)
+rownames(temp) <- NULL
+temp <- cbind(names,temp)
+colnames(temp)[colnames(temp)=="names"] <- "Year_Section"
+
+rain<-tapply(sd_bena_cch$iem.summ.rain.10, list(sd_bena_cch$Year_Section),mean)    
+names <- rownames(rain)
+rownames(rain) <- NULL
+rain <- cbind(names,rain)
+colnames(rain)[colnames(rain)=="names"] <- "Year_Section"
+
+moose<-tapply(sd_bena_cch$MooseDensity, list(sd_bena_cch$Year_Section),mean)    
+names <- rownames(moose)
+rownames(moose) <- NULL
+moose <- cbind(names,moose)
+colnames(moose)[colnames(moose)=="names"] <- "Year_Section"
+
+s<- count(sd_bena_cch, vars = "Year_Section")
+
+plotpoints<-cbind(growth, moose, temp, rain, s, by="Year_Section")
+
+str(plotpoints)
+
+plotpoints$n<-(plotpoints$freq)/5
+
+plotpoints$moose<-as.numeric(as.character(plotpoints$moose))
+plotpoints$temp<-as.numeric(as.character(plotpoints$temp))
+plotpoints$rain<-as.numeric(as.character(plotpoints$rain))
+plotpoints$n<-as.numeric(as.character(plotpoints$n))
+plotpoints$growth<-as.numeric(as.character(plotpoints$growth))
+
+pb
+
 trellis.focus("panel", 1, 1, highlight=F)
 
 lpoints(sd_bena_cch$iem.summ.temp, y = sd_bena_cch$iem.summ.rain.10, 
         col = rgb(red = 0, green = 0, blue = 0, alpha = 0.2), 
         pch = 4, cex = 0.6)
+
+lpoints(plotpoints$temp, y = plotpoints$rain,
+        cex=c(plotpoints$n),
+        col="black", # outline color
+        bg=c('col.l', by=plotpoints$growth),
+        pch=21) # type
 
 # DEVELOP HEAT MAPS FOR OPTIMAL SALIX MODEL ####
 HM_S_MST_MSP = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +

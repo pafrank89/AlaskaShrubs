@@ -297,23 +297,22 @@ plot(HerbiPlot$MooseFeces ~ HerbiPlot$`2015MooseDensity`)
 
 # 9. PLOT ENVIRONEMNTAL VARIABLES ALONG Y-CORD #### 
 
-par(mfrow=c(6,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) 
+par(mfrow=c(6,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) #, bg=NA) 
 
 #par(mfrow=c(1,1))
 
 plot(Section_Data$PropMoose ~ Section_Data$Y_Cord, 
-     type = "b", pch = 1, col = "green", lty = 1,
+     type = "b", pch = 1, col = "green", lty = 1, lwd = 1.5, 
      xaxt='n', frame.plot = FALSE,
-     ylab = "% Twigs 
-     Browsed", xlab = "", cex.lab = 1.5)
+     ylab = "% Twigs Browsed", xlab = "", cex.lab = 1.5)
 
-lines(Section_Data$Y_Cord, Section_Data$PropHare, type = "b", pch = 1, col = "red", lty = 2)
-lines(Section_Data$Y_Cord, Section_Data$PropPtarmagin, type = "b", pch = 1, col = "blue", lty = 3)
+lines(Section_Data$Y_Cord, Section_Data$PropHare, type = "b", pch = 1, col = "red", lty = 2, lwd = 1.5 )
+lines(Section_Data$Y_Cord, Section_Data$PropPtarmagin, type = "b", pch = 1, col = "blue", lty = 3, lwd = 1.5)
 
 legend("topleft", legend=c("Moose", "Hare", "Ptarmagin"),
-       col=c("green", "red", "blue"), lty=1:3, cex=1, bty = "n", text.width=0)
+       col=c("green", "red", "blue"), lty=1:3, cex=1.45, bty = "n", text.width=0)
 
-mtext("Browsing Pressure", side= 3, line = -1, adj = 1, padj = 0, cex=1)
+mtext("Browsing Pressure", side= 3, line = -1, adj = 1, padj = 0, cex=1.25)
 
     #plot(Section_Data$PropHare ~ Section_Data$Y_Cord, 
          #type = "b", pch = 1, col = "green", lty = 1,
@@ -327,41 +326,41 @@ mtext("Browsing Pressure", side= 3, line = -1, adj = 1, padj = 0, cex=1)
     
 plot(Section_Data$CanopyCover ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "forest green", 
-     xaxt='n', frame.plot = FALSE,
+     xaxt='n', frame.plot = FALSE, lwd = 1.5, 
      ylab = "%", xlab = "", cex.lab = 1.5)
 
 #mtext("Canopy Cover", side= 4, line = 1, cex=0.6)
 
-mtext("Canopy Cover", side= 3, line = -3, adj = 1, cex=1)
+mtext("Canopy Cover", side= 3, line = -3, adj = 1, cex=1.25)
 
 plot(Section_Data$StemHeight ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "forest green", 
-     xaxt='n', frame.plot = FALSE,
+     xaxt='n', frame.plot = FALSE, lwd = 1.5, 
      ylab = "cm", xlab = "", cex.lab = 1.5)
 
-mtext("Canopy Height", side= 3, line = -2.5, adj = 1, padj = 0, cex=1)
+mtext("Canopy Height", side= 3, line = -2.5, adj = 1, padj = 0, cex=1.25)
 
 plot(Section_Data$iem.summ.rain ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "dark blue", 
-     xaxt='n', frame.plot = FALSE,
+     xaxt='n', frame.plot = FALSE, lwd = 1.5, 
      ylab = "mm", xlab = "", cex.lab = 1.5)
 
-mtext("Mean Summer Precipitation", side= 3, line = -1.25, adj = 1, padj = 0, cex=1)
+mtext("Mean Summer Precipitation", side= 3, line = -1.25, adj = 1, padj = 0, cex=1.25)
 
 plot(Section_Data$iem.summ.temp ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "red", 
-     xaxt='n', frame.plot = FALSE,
+     xaxt='n', frame.plot = FALSE, lwd = 1.5, 
      ylab = "°C", xlab = "", cex.lab = 1.5)
 
-mtext("Mean Summer Temperature", side= 3, line = -2, adj = 1, padj = 0, cex=1)
+mtext("Mean Summer Temperature", side= 3, line = -2, adj = 1, padj = 0, cex=1.25)
 
 plot(Section_Data$Elevation ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "black", 
-     frame.plot = FALSE,
+     frame.plot = FALSE, lwd = 1.5, 
      ylab = "m", xlab = "Latitude", cex.lab = 1.5)
 
-mtext("Elevation", side= 3, line = -.5, adj = 1, padj = 0, cex=1)
-mtext("Latitude", side= 1, line = 3, cex=1)
+mtext("Elevation", side= 3, line = -.5, adj = 1, padj = 0, cex=1.25)
+mtext("Latitude", side= 1, line = 3, cex=1.25)
 
 
 

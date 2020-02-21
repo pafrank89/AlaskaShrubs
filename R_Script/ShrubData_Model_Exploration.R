@@ -231,7 +231,7 @@ lme_global_b = lme(resid ~ iem.summ.temp + iem.summ.rain +
                   iem.summ.temp * HareIndex +
                   iem.summ.temp * MooseDensity +
                   MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S,
-                  data = sd_bena_cch, random = ~ 1|Section/ShrubID, method = "ML")
+                  data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 dredge_b = dredge(lme_global_b)
 
@@ -250,12 +250,12 @@ summary(mod.avg_b)
 summary(pred_avg_b)
 
 # Salix Model Averaging
-lme_global_s = lme(resid ~ iem.summ.temp + iem.summ.rain +
-                     iem.summ.temp * iem.summ.rain +
+lme_global_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
+                     iem.summ.temp * iem.summ.rain.10 +
                      iem.summ.temp * MooseDensity +
-                     iem.summ.rain * HareIndex +
+                     iem.summ.temp * HareIndex +
                      MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S,
-                     data = sd_salix_cch, random = ~ 1|Section/ShrubID, method = "ML")
+                     data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 dredge_s = dredge(lme_global_s)
 

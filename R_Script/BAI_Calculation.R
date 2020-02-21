@@ -540,5 +540,50 @@ sd_all = rbind(sd_bena_res, sd_salix_res)
 
 write.csv(sd_all, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysis/AlaskaShrubs/R_Data/Shrub_BAI+RESID.csv")
 
+### DATA FOR KATA WITH AGES >5 ####
+lmBena_k = lm(log(BAI) ~ Age, data = sd_bena)
+lmSalix_k = lm(log(BAI) ~ Age, data = sd_salix)
+
+sd_bena_k = add_residuals(sd_bena, lmBena_k)
+
+sd_bena_k$ShrubID_year <- do.call(paste, c(sd_bena_k[c("ShrubID", "Year")], sep = "_"))
+
+sd_salix_k = add_residuals(sd_salix, lmSalix_k)
+
+sd_salix_k$ShrubID_year <- do.call(paste, c(sd_salix_k[c("ShrubID", "Year")], sep = "_"))
+
+sd_k = rbind(sd_bena_k, sd_salix_k)
+
+sd_k$Shrub_ID_year <- do.call(paste, c(sd_k[c("ShrubID", "Year")], sep = "_"))
+
+#Joins the climate and shrub chronology data together
+sd_k_cc = join(sd_k, iem.climateAnnual, by='Shrub_ID_year', type='left', match='all')
+
+sd_k_cc = join(sd_k_cc, climateAnnual, by='Shrub_ID_year', type='left', match='all')
+
+#Create an standardized 
+sd_k_cc$iem.summ.rain.10 = sd_k_cc$iem.summ.rain/10
+
+#Joins the herbivore data to the combined shrub chronology and climate data
+#CCH stands for chronology, climate and herbivory 
+
+#Joins the Hare cycle data
+sd_k_cch = join(sd_k_cc, HareCycle, by='Year', type='left', match='all')
+
+#Adds a column GMU_year which can be used to join on the Moose density data
+sd_k_cch$GMU_year <- do.call(paste, c(sd_k_cch[c("GMU", "Year")], sep = "_"))
+
+#Joins the moose density data
+sd_k_cch = join(sd_k_cch, MooseDensity, by='GMU_year', type='left', match='all')
+
+
+sd_k_cch$Genus = ifelse(sd_k_cch$Species == "BENA", "Betula",
+                          ifelse(sd_k_cch$Species == "SAPU", "Salix",
+                                 ifelse(sd_k_cch$Species == "SAGL", "Salix",
+                                        ifelse(sd_k_cch$Species == "SABE", "Salix",
+                                               NA))))
+
+
+write.csv(sd_k, "/Users/peterfrank/Desktop/AK_DaltonHwy_Shrubs.csv")
 
 
