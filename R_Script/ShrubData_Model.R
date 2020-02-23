@@ -25,7 +25,18 @@ Optimal_model_b = lme(resid ~ iem.summ.temp * iem.summ.rain.10 + iem.summ.temp +
 
 summary(Optimal_model_b)
 
+anova.lme(Optimal_model_b)
+
+AICc(Optimal_model_b)
+
+# Examine variance components and their confidence intervals for the model
+VarCorr(Optimal_model_b)
+
+intervals(Optimal_model_b)
+
 plot(Optimal_model_b)
+
+plot.lme(Optimal_model_b)
 
 # Plot Normal QQ ti assess the distribution of the data
 qqnorm(resid(Optimal_model_b))
@@ -145,10 +156,6 @@ str(sd_salix_cch)
 # 2. NULL MODELS #### 
 
 # Null models will be used to compare the effect of adding fixed effects to the model 
-
-null_model = lme(resid ~ 1, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                 method = "ML")
-
 null_model_b = lme(resid ~ 1, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                  method = "ML")
 
@@ -162,22 +169,13 @@ null_model_s = lme(resid ~ 1, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
 
 # Optimal Models:
 
-  # All Data: C1xC2_model
   # Betula: C1xC2_model_b
   # Salix: C1xC2_model_s
 
 ## 3.1 Mean Summer Temperature #####
 
-# MST for All Data
-C1_model = lme(resid ~ iem.summ.temp, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-               method = "ML")
-
-  anova(null_model, C1_model)
-  
-  summary(C1_model)
-
 # MST for Betula
-C1_model_b = lme(resid ~ iem.summ.temp, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+C1_model_b = lme(resid ~ iem.summ.temp, data = sd_bena_cch_S, random = ~ 1|Section/ShrubID,
                method = "ML")
 
   anova(null_model_b, C1_model_b)
@@ -194,14 +192,6 @@ C1_model_s = lme(resid ~ iem.summ.temp, data = sd_salix_cch, random = ~ 1|Sectio
 
 
 ## 3.2 Mean Summer Precipitation  ####
-
-# MSP for All Data
-C2_model = lme(resid ~ iem.summ.rain.10, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-               method = "ML")
-
-  anova(null_model, C2_model)
-  
-  summary(C2_model)
 
 # MSP for Betula 
 C2_model_b = lme(resid ~ iem.summ.rain.10, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
@@ -221,16 +211,6 @@ C2_model_s = lme(resid ~ iem.summ.rain.10, data = sd_salix_cch, random = ~ 1|Sec
 
 
 ## 3.3 Addative Effect MST + MSP ####
-
-# MST + MSP for All Data
-C1C2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                 method = "ML")
-
-  anova(C1_model, C1C2_model)
-  
-  anova(C2_model, C1C2_model)
-  
-  summary(C1C2_model)
 
 # MST + MSP for Betula
 C1C2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
@@ -260,14 +240,6 @@ summary(C1C2_model_s)
 
 #This model is used to assess wether growth is greater in years when it is both warmer and wetter
 #We see that as mean precipitation increases, shrub growth increases more for every degree c increase
-
-# MST * MSP for All Data
-C1xC2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 , data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                  method = "ML")
-
-  anova(C1C2_model, C1xC2_model)
-  
-  summary(C1xC2_model)
 
 # MST * MSP for Betula
 C1xC2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 , data = sd_bena_cch, random = ~ 1|Section/ShrubID,
@@ -1105,42 +1077,7 @@ CH_INT5_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp *
   
 ####### WORK ZONE #########
   
-  
- 
-  plot(CH2_model)
-  
-  qqnorm(resid(CH2_model))
-  qqline(resid(CH2_model))
-  
-  sim.lme = simulate(C1xC2_model, nsim = 1000, m2 = CH2_model, method = "ML")
-  plot(sim.lme)
-  
-  summary(CH2_model)
-  
-  sjPlot :: plot_model(CH2_model, axis.labels=c("Interaction MST & MSP", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),
-                       show.values=TRUE, show.p=TRUE,
-                       title="Effect on Shrub Growth")
-  
-  sjPlot::tab_model(CH2_model, show.re.var= TRUE, 
-                    pred.labels =c("(Intercept)", "Mean Summer Temperature", "Mean Summer Precipitation", "Interaction MST & MSP"),
-                    dv.labels= "Effects of Summer Temperature & Precipitation on Shrub Growth")
-  
-  stargazer(CH2_model, type = "text")
-  
-  
-par(oma=c(0,.5,0,0))
-  
-par(mar=c(5, 5, 2, 2))  
-  
-  plot(resid ~ iem.summ.temp, data = sd_salix_cch,
-       col = "black", pch = 1, ylab = "Age Standardized BAI", xlab = "Mean Summer Temperature",
-       cex.lab = 2.15, cex.axis = 1.35)
-  
-  lmTemp_s =lm(resid ~ iem.summ.temp, data = sd_salix_cch)
-  
-  summary(lmTemp_s)
 
-  abline(lmTemp_s, col = "red", lwd = 2.5)
   
   
   

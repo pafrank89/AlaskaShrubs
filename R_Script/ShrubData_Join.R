@@ -73,8 +73,8 @@ sd_bena_cch_S = sd_bena_cch
 
 sd_bena_cch_S[c(23,24,25,53,66,67,69)] = scale(sd_bena_cch_S[c(23,24,25,53,66,67,69)])
 
-mean(sd_bena_cch$HareIndex)
-mean(sd_bena_cch_S$HareIndex)
+summary(sd_bena_cch)
+summary(sd_bena_cch_S)
 
 str(sd_salix_cch)
 sd_salix_cch_S = sd_salix_cch
