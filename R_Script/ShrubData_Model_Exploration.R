@@ -15,6 +15,8 @@ install.packages("sjPlot")
 install.packages("stargazer")
 install.packages("MuMIn")
 install.packages("olsrr")
+install.packages("globaltest")
+install.packages("coefplot")
 
 library(lme4)
 library(nlme)
@@ -43,6 +45,9 @@ library(rlang)
 library(stargazer)
 library(MuMIn)
 library(olsrr)
+library(nonnest2)
+library(coefplot)
+library(piecewiseSEM)
 
 sessionInfo()
 old.packages()
@@ -56,10 +61,14 @@ Fwd_Betula <- lme(resid ~ MooseDensity + iem.summ.temp + iem.summ.rain, data = s
 
 summary(Fwd_Betula)
 
+vif.lme(Fwd_Betula)
+
 Fwd_Salix <- lme(resid ~ iem.summ.temp + MooseDensity + iem.summ.rain + HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                  method = "REML")
 
 summary(Fwd_Salix)
+
+vif.lme(Fwd_Salix)
 
 # OPTIMAL MODEL - BACKWARD SELECTION NO INTERACTIONS####
 Bkw_Betula <- lme(resid ~ MooseDensity + iem.summ.temp + iem.summ.rain, data = sd_final_cch, random = ~ 1|Section/ShrubID,
@@ -68,9 +77,11 @@ Bkw_Betula <- lme(resid ~ MooseDensity + iem.summ.temp + iem.summ.rain, data = s
 Bkw_Salix <- lme(resid ~ iem.summ.temp + MooseDensity + iem.summ.rain + HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                  method = "RMEL")
 
+vif.lme(Optimal_model_b)
+
 # LIKELIHOOD RATIO TEST BASED ON FORWARD AND BACKWARD SELECTION ####
 
-null_model_b_S = lme(resid ~ 1, data = sd_bena_cch_S, random = ~ 1|Section/ShrubID,
+null_model_b = lme(resid ~ 1, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                    method = "ML")
 
 null_model_b_S = lme(resid ~ 1, data = sd_salix_cch_S, random = ~ 1|Section/ShrubID,
@@ -80,15 +91,15 @@ summary(sd_salix_cch)
 
 #Forward stepwise regression for Betula 
 
-add1(null_model_b_S, scope = ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(null_model_b, scope = ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_b_S, ~ . + MooseDensity), scope = ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_b, ~ . + MooseDensity), scope = ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_b_S, ~ . + MooseDensity + iem.summ.temp), scope = ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_b, ~ . + MooseDensity + iem.summ.temp), scope = ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-add1(update(null_model_b_S, ~ . + MooseDensity + iem.summ.temp + iem.summ.rain.10), scope = ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
+add1(update(null_model_b, ~ . + MooseDensity + iem.summ.temp + iem.summ.rain.10), scope = ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S, test = "Chisq")
 
-summary(update(null_model_b_S, ~ . + MooseDensity + iem.summ.temp + iem.summ.rain.10))
+summary(update(null_model_b, ~ . + MooseDensity + iem.summ.temp + iem.summ.rain.10))
 
 
 # Forward stepwise regression for Salix
@@ -237,29 +248,47 @@ summary(update(lme_full_I_s, ~ . -PropMoose_S -PropHare_S -PropPtarmagin_S -Hare
 
 # AIC BASED FORWARD SELECTION ####
 
-AIC_forward = stepAIC(null_model_b, direction = c("forward"), 
-                      scope = (~ iem.summ.temp + iem.summ.rain +
-                                 iem.summ.temp * iem.summ.rain +
+AIC_forward_b = stepAIC(null_model_b, direction = c("forward"), 
+                      scope = (~ iem.summ.temp + iem.summ.rain.10 + 
+                                 iem.summ.temp * iem.summ.rain.10 +
                                  iem.summ.temp * HareIndex +
-                                 iem.summ.rain * HareIndex +
-                                 MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S + ...))
+                                 iem.summ.temp * MooseDensity +
+                                 MooseDensity + HareIndex + ...))
 
-AIC_forward = stepAIC(null_model_s, direction = c("forward"), 
-                      scope = (~ iem.summ.temp + iem.summ.rain +
-                                 iem.summ.temp * iem.summ.rain +
-                                 iem.summ.temp * PropPtarmagin_S +
-                                 iem.summ.rain * PropPtarmagin_S +
-                                 MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S + ...))
+summary(AIC_forward_b)
+
+
+AIC_forward_s = stepAIC(null_model_s, direction = c("forward"), 
+                      scope = (~ iem.summ.temp + iem.summ.rain.10 + 
+                                 iem.summ.temp * iem.summ.rain.10 +
+                                 iem.summ.temp * HareIndex +
+                                 iem.summ.temp * MooseDensity +
+                                 MooseDensity + HareIndex + ...))
+
+summary(AIC_forward_s)
 
 # MODEL AVERAGING FROM GLOBAL MODEL ####
 
 # Betula Model Averaging
-lme_global_b = lme(resid ~ iem.summ.temp + iem.summ.rain +
-                  iem.summ.temp * iem.summ.rain +
-                  iem.summ.temp * HareIndex +
-                  iem.summ.temp * MooseDensity +
-                  MooseDensity + HareIndex,
-                  data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+lme_global_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                     iem.summ.temp * iem.summ.rain.10 +
+                     iem.summ.temp * HareIndex +
+                     iem.summ.temp * MooseDensity +
+                     MooseDensity + HareIndex,
+                   data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+
+anova.lme(lme_global_b)
+
+summary(lme_global_b)
+
+r.squaredLR(lme_global_b)
+
+plot(lme_global_b)
+
+qqnorm(resid(lme_global_b))
+
+qqline(resid(lme_global_b))
 
 dredge_b = dredge(lme_global_b)
 
@@ -279,18 +308,28 @@ summary(pred_avg_b)
 
 plot(model.sel_b)
 
-r.squaredLR(lme_global_b)
+
 
 # Salix Model Averaging
-lme_global_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
-                     iem.summ.temp * MooseDensity +
+lme_global_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                     iem.summ.temp * iem.summ.rain.10 +
                      iem.summ.temp * HareIndex +
-                     Genus * MooseDensity + 
-                     Genus * HareIndex +
-                     Genus * iem.summ.temp +
-                     Genus * iem.summ.rain.10 +
-                     MooseDensity + HareIndex, # + PropMoose_S + PropHare_S + PropPtarmagin_S,
-                     data = sd_final_cch, random = ~ 1|Section/ShrubID, method = "ML")
+                     iem.summ.temp * MooseDensity +
+                     MooseDensity + HareIndex,
+                     data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+
+
+summary(lme_global_s)
+
+r.squaredLR(lme_global_s)
+
+plot(lme_global_s)
+
+qqnorm(resid(lme_global_s))
+
+qqline(resid(lme_global_s))
+
 
 dredge_s = dredge(lme_global_s)
 

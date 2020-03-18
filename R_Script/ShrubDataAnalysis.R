@@ -14,16 +14,24 @@ library(PerformanceAnalytics)
 library(corrplot)
 library(RColorBrewer)
 library(gamlss)
+library(heplots)
 
 install.packages("Hmisc")
 library(Hmisc)
 
+
 # 1. CORRELATION MATRICIES ####
 
 # Check for correlations between variables
-CorPlot_b = subset (sd_bena_cch, select = c("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
+CorPlot_b = subset (sd_bena_cch, select = c("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "PropPtarmagin", "iem.summ.temp", "iem.summ.rain.10","iem.wint.rain", "Elevation", "Slope", "Aspect", "Y_Cord", "CanopyCover", "DistToRoad"))
 
-CorPlot_s = subset (sd_salix_cch, select = c("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
+CorPlot_s = subset (sd_salix_cch, select = c("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "PropPtarmagin", "iem.summ.temp", "iem.summ.rain.10", "iem.wint.rain", "Elevation", "Slope", "Aspect", "Y_Cord", "CanopyCover", "DistToRoad"))
+
+
+#CorPlot_b = subset (sd_bena_cch, select = c("PropMoose", "MooseFeces_S", "PropHare", "HareFeces _S", "PropPtarmagin", "PtarmaginFeces_S"))
+
+#CorPlot_s = subset (sd_salix_cch, select = c( "PropMoose", "MooseFeces_S", "PropHare", "HareFeces _S", "PropPtarmagin", "PtarmaginFeces_S"))
+
 
 #Creates a correlation matrix using the variables specified above
 chart.Correlation(CorPlot_b, histogram = TRUE, method = c("spearman"))
@@ -32,10 +40,13 @@ chart.Correlation(CorPlot_s, histogram = TRUE, method = c("spearman"))
 
 
 #Creates a color coded correlation matrix using the variables specified above
-sd_final_cchCorr = cor(CorPlot)
+cchCorrb = cor(CorPlot_b)
 
-corrplot(sd_final_cchCorr , type="upper", order="hclust",
-         col=brewer.pal(n=9, name="RdYlBu"))
+cchCorrs = cor(CorPlot_s)
+
+corrplot.mixed(cchCorrb, lower.col = "black", number.cex = .7, tl.cex = .7)
+
+corrplot.mixed(cchCorrs, lower.col = "black", number.cex = .7, tl.cex = .7)
 
 #All
 #("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", summ.temp", "temp", "summ.min", "summ.max", "summ.rain", "wint.rain", "pet", "wet", "frost", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad")
@@ -81,8 +92,10 @@ chart.Correlation(CorPlot_salix, histogram = TRUE, method = c("spearman"))
 
 # 3. BOX PLOTS ####
 #Plot BAI as a function of soil texture
+par(mar=c(4,9,2,1)) 
+
 plot(resid ~ factor(SoilText), data = sd_bena_cch, notch = TRUE,varwidth = TRUE,
-     col = "white", border = "black", horizontal = TRUE, las = 2,
+     col = "white", border = "black", horizontal = TRUE, las = 2, 
      pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
 
 plot(resid ~ factor(SoilText), data = sd_salix_cch, notch = TRUE,varwidth = TRUE,
@@ -99,13 +112,28 @@ plot(resid ~ factor(SoilMoist), data = sd_salix_cch, notch = TRUE,varwidth = TRU
      pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
 
 #Plot BAI as a function of observed vegetation cover 
+par(mar=c(4,12,2,1)) 
+
 plot(resid ~ factor(VegCoverOBS), data = sd_bena_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2,
      pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
 
+veg_b_anova = aov(resid ~ VegCoverOBS, data = sd_bena_cch)
+
+summary(veg_b_anova)
+
+# ANOVA equivalent to R2
+etasq(veg_b_anova, partial = FALSE)
+
 plot(resid ~ factor(VegCoverOBS), data = sd_salix_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2,
      pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
+
+veg_s_anova = aov(iem.summ.rain.10 ~ VegCoverOBS, data = sd_salix_cch)
+
+summary.aov(veg_s_anova)
+
+etasq(veg_s_anova, partial = FALSE)
 
 #Plot BAI as a function of  
 ggplot(data = sd_bena_cch, 
@@ -553,7 +581,7 @@ lty = c(1, 1), lwd = c(2,2), col=c("black", "blue"), bty = "n", cex=2)
 hist(sd_all_cch$resid, main = "", xlab = "Age Standardized BAI", cex.lab = 2, cex.axis = 1.35)
 
 # 11. PLOT GROWTH TREND BY AGE ####
-par(mfrow=c(2,5))
+par(mfrow=c(2,2))
 
 #Betula
 plot(RingWidth ~ Age, data = sd_all_bena_cch,
@@ -565,11 +593,15 @@ plot(RWI_Spline ~ Age, data = sd_all_bena_cch,
 plot(RWI_NegExp ~ Age, data = sd_all_bena_cch,
      col = "black", pch = 1, ylab = "Ring Width Index (Negative Expontial)", xlab = "Ring Age (years)")
 
-plot(log(BAI) ~ Age, data = sd_all_bena_cch,
-     col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)")
+plot(BAI ~ Age, data = sd_all_bena_cch,
+     col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", main = "Betula")
 
 plot(resid ~ Age, data = sd_all_bena_cch,
-     col = "black", pch = 1, ylab = "Residuals of BAI", xlab = "Ring Age (years)")
+     col = "black", pch = 1, ylab = "Residuals of lnBAI", xlab = "Ring Age (years)")
+
+lmResid_b = lm(resid ~ Age, data = sd_all_bena_cch)
+
+abline(lmResid_b, col = "red", lwd = 2)
 
 
 #Salix
@@ -582,11 +614,17 @@ plot(RWI_Spline ~ Age, data = sd_all_salix_cch,
 plot(RWI_NegExp ~ Age, data = sd_all_salix_cch,
      col = "blue", pch = 1, ylab = "Ring Width Index (Negative Expontial)", xlab = "Ring Age (years)")
 
-plot(log(BAI) ~ Age, data = sd_all_salix_cch,
-     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)")
+plot(BAI ~ Age, data = sd_all_salix_cch,
+     col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", main = "Salix")
+
+abline(lmSalix_l, col = "red", lwd = 2)
 
 plot(resid ~ Age, data = sd_all_salix_cch,
-     col = "blue", pch = 1, ylab = "Residuals of BAI", xlab = "Ring Age (years)")
+     col = "blue", pch = 1, ylab = "Residuals of lnBAI", xlab = "Ring Age (years)")
+
+lmResid_s = lm(resid ~ Age, data = sd_all_salix_cch)
+
+abline(lmResid_s, col = "red", lwd = 2)
 
 # Plot for Poster
 par(oma=c(0,.5,0,0))

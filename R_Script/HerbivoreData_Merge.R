@@ -51,7 +51,7 @@ plot(GMU_26B ~ Year, data = GMU_MooseDensity_Graph,
 
 legend("topright",legend=c("24A (4,146 km²)","20F (6,267 km²)", "26B (16,332 km²)"),
        text.col=c("blue", "red", "forest green"), 
-       lty = c(1, 1, 1), col=c("blue", "red", "forest green"), bty = "n", cex=1)
+       lty = c(1, 1, 1), col=c("blue", "red", "forest green"), bty = "n", cex=1.5)
 
 
 # Plot Hare Cycle over Time ####

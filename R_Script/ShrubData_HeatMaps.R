@@ -4,7 +4,7 @@ library(qualityTools)
 # DEVELOP HEAT MAPS FOR OPTIMAL BETULA MODEL ####
 HM_B_MST_MSP = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 +
                 MooseDensity,
-                data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                data = sd_bena_cch_S, random = ~ 1|Section/ShrubID,
                 method = "REML")
 
 summary(HM_B_MST_MSP)
@@ -218,31 +218,36 @@ lpoints(sd_salix_cch$iem.summ.temp, y = sd_salix_cch$iem.summ.rain.10,
 
 
 # DEVELOP HEAT MAPS FOR OPTIMAL BETULA MODEL WITH INTERACTION MST:MD ####
-HM_B_MST_MD = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
-                   MooseDensity + 
-                   iem.summ.temp * MooseDensity,
-                   data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+HM_B_MST_HD = lme(resid ~ iem.summ.temp + HareIndex + 
+                   iem.summ.temp * HareIndex,
+                   data = sd_bena_cch_S, random = ~ 1|Section/ShrubID,
                    method = "REML")
 
-HI = mean(sd_bena_cch$HareIndex)
-MD = mean(sd_bena_cch$MooseDensity)
-SR = mean(sd_bena_cch$iem.summ.rain)
-ST = mean(sd_bena_cch$iem.summ.temp)
+HI = mean(sd_bena_cch_S$HareIndex)
+MD = mean(sd_bena_cch_S$MooseDensity)
+SR = mean(sd_bena_cch_S$iem.summ.rain)
+ST = mean(sd_bena_cch_S$iem.summ.temp)
 range(sd_bena_cch$iem.summ.temp)
-range(sd_bena_cch$iem.summ.rain.10)
-range(sd_bena_cch$MooseDensity)
+range(sd_bena_cch_S$iem.summ.rain.10)
+range(sd_bena_cch_S$MooseDensity)
+range(sd_bena_cch$HareIndex)
 
-# Predict
-MyData_bm<-expand.grid(iem.summ.temp = seq(6, 18, length = 190),
-                      iem.summ.rain.10 = SR, 
-                      MooseDensity = seq(0.09, 0.6, length = 190))
+# Predict Standardized Data
+MyData_bm<-expand.grid(iem.summ.temp = seq(-2.2, 2.7, length = 190),
+                       iem.summ.rain.10 = SR,
+                       MooseDensity = MD,
+                      HareIndex = seq(-0.65, 2.5, length = 190))
+
+# Predict Non-Standardized Data
+MyData_bm<-expand.grid(iem.summ.temp = seq(6, 17.5, length = 190),
+                       HareIndex = seq(.5, 3.5, length = 190))
 
 
-MyData_bm$Pred <- predict(HM_B_MST_MD, MyData_bm, level = 0) #Predicts the values based on model
+MyData_bm$Pred <- predict(Optimal_model_b, MyData_bm, level = 0) #Predicts the values based on model
 
 # Calculate SEs
-Designmat_b2 <- model.matrix(formula(HM_B_MST_MD)[-2], MyData_bm) ## [-2] drops response from formula
-predvar_b2 <- diag(Designmat_b2 %*% vcov(HM_B_MST_MD) %*% t(Designmat_b2)) 
+Designmat_b2 <- model.matrix(formula(Optimal_model_b)[-2], MyData_bm) ## [-2] drops response from formula
+predvar_b2 <- diag(Designmat_b2 %*% vcov(Optimal_model_b) %*% t(Designmat_b2)) 
 MyData_bm$SE <- sqrt(predvar_b2)
 MyData_bm$SEup<-MyData_bm$SE+MyData_bm$Pred
 MyData_bm$SEdown<-MyData_bm$Pred-MyData_bm$SE
@@ -250,10 +255,10 @@ MyData_bm$SEdown<-MyData_bm$Pred-MyData_bm$SE
 # Plot
 col.l = colorRampPalette(c('white', rgb(0, 80, 158, max = 255)))
 z = c(0:10)
-pM = contourplot(Pred ~ iem.summ.temp + MooseDensity,
+pM = contourplot(Pred ~ iem.summ.temp + HareIndex,
                  data=MyData_bm,
                  xlab="Mean Summer Temperature",
-                 ylab="Moose Density",
+                 ylab="HareIndex",
                  pretty=TRUE,
                  lty=1,
                  zlim=range(z, finite=TRUE),
@@ -266,7 +271,7 @@ pM = contourplot(Pred ~ iem.summ.temp + MooseDensity,
 pM
 
 # Plot Standard error lines 
-pM = pM + contourplot(SEup ~ iem.summ.temp * MooseDensity, 
+pM = pM + contourplot(SEup ~ iem.summ.temp * HareIndex, 
                       data = MyData_bm,
                       cuts=10,
                       at = c(0.2), #change these when you see the plot
@@ -278,7 +283,7 @@ pM = pM + contourplot(SEup ~ iem.summ.temp * MooseDensity,
                       region=FALSE,
                       main = list("", cex = 1))
 
-pM = pM + contourplot(SEdown ~ iem.summ.temp * MooseDensity, 
+pM = pM + contourplot(SEdown ~ iem.summ.temp * HareIndex, 
                       data=MyData_bm,
                       cuts=10,
                       at = c(0.2), #change these when you see the plot
@@ -294,7 +299,7 @@ pM
 
 trellis.focus("panel", 1, 1, highlight=F)
 
-lpoints(sd_bena_cch$iem.summ.temp, y = sd_bena_cch$MooseDensity, 
+lpoints(sd_bena_cch_S$iem.summ.temp, y = sd_bena_cch_S$HareIndex, 
         col = rgb(red = 0, green = 0, blue = 0, alpha = 0.1), 
         pch = 4, cex = 0.65)
 

@@ -17,6 +17,8 @@ sd_all_cc = join(sd_all_cc, climateAnnual, by='Shrub_ID_year', type='left', matc
 #Create an standardized 
 sd_all_cc$iem.summ.rain.10 = sd_all_cc$iem.summ.rain/10
 
+sd_all_cc$iem.wint.rain = sd_all_cc$iem.wint.rain/10
+
 #Joins the herbivore data to the combined shrub chronology and climate data
   #CCH stands for chronology, climate and herbivory 
 
@@ -71,7 +73,7 @@ write.csv(sd_salix_cch, "/Users/peterfrank/Documents/Master's Thesis/DataAnalysi
 str(sd_bena_cch)
 sd_bena_cch_S = sd_bena_cch
 
-sd_bena_cch_S[c(23,24,25,53,66,67,69)] = scale(sd_bena_cch_S[c(23,24,25,53,66,67,69)])
+sd_bena_cch_S[c(15,23,24,25,46,47,53,66,67,69)] = scale(sd_bena_cch_S[c(15,23,24,25,46,47,53,66,67,69)])
 
 summary(sd_bena_cch)
 summary(sd_bena_cch_S)
@@ -79,7 +81,8 @@ summary(sd_bena_cch_S)
 str(sd_salix_cch)
 sd_salix_cch_S = sd_salix_cch
 
-sd_salix_cch_S[c(23,24,25,53,66,67,69)] = scale(sd_salix_cch_S[c(23,24,25,53,66,67,69)])
+sd_salix_cch_S[c(15,23,24,25,46,47,53,66,67,69)] = scale(sd_salix_cch_S[c(15,23,24,25,46,47,53,66,67,69)])
 
-mean(sd_salix_cch_S$HareIndex)
-mean(sd_salix_cch_S$HareIndex)
+summary(sd_bena_cch_S)
+
+

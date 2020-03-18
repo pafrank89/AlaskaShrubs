@@ -162,6 +162,23 @@ null_model_b = lme(resid ~ 1, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
 null_model_s = lme(resid ~ 1, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
                  method = "ML")
 
+
+full_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose + PropHare + PropPtarmagin, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                     method = "ML")
+
+summary(full_model_b)
+
+r.squaredLR(full_model_b)
+
+
+
+full_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose + PropHare + PropPtarmagin, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                   method = "ML")
+
+summary(full_model_s)
+
+r.squaredLR(full_model_s)
+
 # 3. CLIMATE MODELS #### 
 
 # Climate sensitivy is expected to be the primaty driver of shrub growth in this region, this we will begin forward selection by
@@ -208,6 +225,23 @@ C2_model_s = lme(resid ~ iem.summ.rain.10, data = sd_salix_cch, random = ~ 1|Sec
   anova(null_model_s, C2_model_s)
   
   summary(C2_model_s)
+  
+  
+  # MWP for Betula 
+  CW_model_b = lme(resid ~ iem.wint.rain, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
+                   method = "ML")
+  
+  anova(null_model_b, CW_model_b)
+  
+  summary(CW_model_b)
+  
+  # MWP for Salix 
+  CW_model_s = lme(resid ~ iem.wint.rain, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
+                   method = "ML")
+  
+  anova(null_model_s, CW_model_s)
+  
+  summary(CW_model_s)
 
 
 ## 3.3 Addative Effect MST + MSP ####
@@ -388,14 +422,6 @@ sjPlot::tab_model(C1xC2_model_s, show.re.var= TRUE,
   
 ## 4.1 Temporal Moose Density model ####
 
-# All Data
-H1_model <- lme(resid ~ MooseDensity, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                method = "ML")
-
-  anova(null_model, H1_model)
-  
-  summary(H1_model)
-
 # Betula
 H1_model_b <- lme(resid ~ MooseDensity, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                 method = "ML")
@@ -414,14 +440,6 @@ H1_model_s <- lme(resid ~ MooseDensity, data = sd_salix_cch, random = ~ 1|Sectio
 
 ## 4.2 Temporal Hare Index ####
 # This factor is based on a 1-3 scale representing different amplitudes of hare population peaks
-
-# All Data
-H2_model <- lme(resid ~ HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-                method = "ML")
-
-  anova(null_model, H2_model)
-  
-  summary(H2_model)
 
 # Betula
 H2_model_b <- lme(resid ~ HareIndex, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
