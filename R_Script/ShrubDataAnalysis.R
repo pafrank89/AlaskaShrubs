@@ -4,10 +4,7 @@
 # 2019-10-06
 
 library(tidyverse)
-<<<<<<< HEAD
-=======
 library(dlpr)
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 library(ggplot2)
 library(GGally)
 library(reshape2)
@@ -18,15 +15,8 @@ library(PerformanceAnalytics)
 library(corrplot)
 library(RColorBrewer)
 library(gamlss)
-<<<<<<< HEAD
 library(heplots)
-=======
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
-
-install.packages("Hmisc")
 library(Hmisc)
-
-<<<<<<< HEAD
 
 # 1. CORRELATION MATRICIES ####
 
@@ -40,14 +30,12 @@ CorPlot_s = subset (sd_salix_cch, select = c("resid", "MooseDensity", "HareIndex
 
 #CorPlot_s = subset (sd_salix_cch, select = c( "PropMoose", "MooseFeces_S", "PropHare", "HareFeces _S", "PropPtarmagin", "PtarmaginFeces_S"))
 
-=======
 # 1. CORRELATION MATRICIES ####
 
 # Check for correlations between variables
 CorPlot_b = subset (sd_bena_cch, select = c("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
 
 CorPlot_s = subset (sd_salix_cch, select = c("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 
 #Creates a correlation matrix using the variables specified above
 chart.Correlation(CorPlot_b, histogram = TRUE, method = c("spearman"))
@@ -56,7 +44,6 @@ chart.Correlation(CorPlot_s, histogram = TRUE, method = c("spearman"))
 
 
 #Creates a color coded correlation matrix using the variables specified above
-<<<<<<< HEAD
 cchCorrb = cor(CorPlot_b)
 
 cchCorrs = cor(CorPlot_s)
@@ -64,12 +51,11 @@ cchCorrs = cor(CorPlot_s)
 corrplot.mixed(cchCorrb, lower.col = "black", number.cex = .7, tl.cex = .7)
 
 corrplot.mixed(cchCorrs, lower.col = "black", number.cex = .7, tl.cex = .7)
-=======
+
 sd_final_cchCorr = cor(CorPlot)
 
 corrplot(sd_final_cchCorr , type="upper", order="hclust",
          col=brewer.pal(n=9, name="RdYlBu"))
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 
 #All
 #("resid", "MooseDensity", "HareIndex", "PropMoose", "PropHare", iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", summ.temp", "temp", "summ.min", "summ.max", "summ.rain", "wint.rain", "pet", "wet", "frost", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad")
@@ -115,15 +101,14 @@ chart.Correlation(CorPlot_salix, histogram = TRUE, method = c("spearman"))
 
 # 3. BOX PLOTS ####
 #Plot BAI as a function of soil texture
-<<<<<<< HEAD
 par(mar=c(4,9,2,1)) 
 
 plot(resid ~ factor(SoilText), data = sd_bena_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2, 
-=======
+     pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
+
 plot(resid ~ factor(SoilText), data = sd_bena_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2,
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
      pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
 
 plot(resid ~ factor(SoilText), data = sd_salix_cch, notch = TRUE,varwidth = TRUE,
@@ -140,16 +125,12 @@ plot(resid ~ factor(SoilMoist), data = sd_salix_cch, notch = TRUE,varwidth = TRU
      pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
 
 #Plot BAI as a function of observed vegetation cover 
-<<<<<<< HEAD
 par(mar=c(4,12,2,1)) 
 
-=======
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 plot(resid ~ factor(VegCoverOBS), data = sd_bena_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2,
      pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
 
-<<<<<<< HEAD
 veg_b_anova = aov(resid ~ VegCoverOBS, data = sd_bena_cch)
 
 summary(veg_b_anova)
@@ -157,21 +138,16 @@ summary(veg_b_anova)
 # ANOVA equivalent to R2
 etasq(veg_b_anova, partial = FALSE)
 
-=======
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 plot(resid ~ factor(VegCoverOBS), data = sd_salix_cch, notch = TRUE,varwidth = TRUE,
      col = "white", border = "black", horizontal = TRUE, las = 2,
      pch = 1, ylab = "Residuals of Standardized BAI", xlab = "")
 
-<<<<<<< HEAD
 veg_s_anova = aov(iem.summ.rain.10 ~ VegCoverOBS, data = sd_salix_cch)
 
 summary.aov(veg_s_anova)
 
 etasq(veg_s_anova, partial = FALSE)
 
-=======
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 #Plot BAI as a function of  
 ggplot(data = sd_bena_cch, 
        aes(x = resid,
@@ -361,17 +337,11 @@ plot(HerbiPlot$PropMoose ~ HerbiPlot$`2015MooseDensity`)
 plot(HerbiPlot$MooseFeces ~ HerbiPlot$`2015MooseDensity`)
 
 # 9. PLOT ENVIRONEMNTAL VARIABLES ALONG Y-CORD #### 
-
-<<<<<<< HEAD
 par(mfrow=c(6,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) #, bg=NA) 
-=======
-par(mfrow=c(6,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) 
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 
 #par(mfrow=c(1,1))
 
-plot(Section_Data$PropMoose ~ Section_Data$Y_Cord, 
-<<<<<<< HEAD
+plot(Section_Data$PropMoose ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "green", lty = 1, lwd = 1.5, 
      xaxt='n', frame.plot = FALSE,
      ylab = "% Twigs Browsed", xlab = "", cex.lab = 1.5)
@@ -383,38 +353,11 @@ legend("topleft", legend=c("Moose", "Hare", "Ptarmagin"),
        col=c("green", "red", "blue"), lty=1:3, cex=1.45, bty = "n", text.width=0)
 
 mtext("Browsing Pressure", side= 3, line = -1, adj = 1, padj = 0, cex=1.25)
-=======
-     type = "b", pch = 1, col = "green", lty = 1,
-     xaxt='n', frame.plot = FALSE,
-     ylab = "% Twigs 
-     Browsed", xlab = "")
-
-lines(Section_Data$Y_Cord, Section_Data$PropHare, type = "b", pch = 1, col = "red", lty = 2)
-lines(Section_Data$Y_Cord, Section_Data$PropPtarmagin, type = "b", pch = 1, col = "blue", lty = 3)
-
-legend("topleft", legend=c("Moose", "Hare", "Ptarmagin"),
-       col=c("green", "red", "blue"), lty=1:3, cex=0.8, bty = "n")
-
-mtext("Browsing Pressure", side= 3, line = -1, adj = 1, padj = 0, cex=0.6)
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
-
-    #plot(Section_Data$PropHare ~ Section_Data$Y_Cord, 
-         #type = "b", pch = 1, col = "green", lty = 1,
-         #xaxt='n', frame.plot = FALSE,
-         #ylab = "% Twigs", xlab = "")
-
-    #plot(Section_Data$PropPtarmagin ~ Section_Data$Y_Cord, 
-         #type = "b", pch = 1, col = "green", lty = 1,
-         #xaxt='n', frame.plot = FALSE,
-         #ylab = "% Twigs", xlab = "")
     
 plot(Section_Data$CanopyCover ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "forest green", 
-<<<<<<< HEAD
      xaxt='n', frame.plot = FALSE, lwd = 1.5, 
      ylab = "%", xlab = "", cex.lab = 1.5)
-
-#mtext("Canopy Cover", side= 4, line = 1, cex=0.6)
 
 mtext("Canopy Cover", side= 3, line = -3, adj = 1, cex=1.25)
 
@@ -447,108 +390,6 @@ plot(Section_Data$Elevation ~ Section_Data$Y_Cord,
 mtext("Elevation", side= 3, line = -.5, adj = 1, padj = 0, cex=1.25)
 mtext("Latitude", side= 1, line = 3, cex=1.25)
 
-
-
-
-
-
-par(mfrow=c(6,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) 
-
-#par(mfrow=c(1,1))
-
-plot(Section_Data$PropMoose ~ Section_Data$Y_Cord, 
-     type = "b", pch = 1, col = "green", lty = 1,
-     xaxt='n', frame.plot = FALSE,
-     ylab = "", xlab = "", cex.lab = 1.5)
-
-lines(Section_Data$Y_Cord, Section_Data$PropHare, type = "b", pch = 1, col = "red", lty = 2)
-lines(Section_Data$Y_Cord, Section_Data$PropPtarmagin, type = "b", pch = 1, col = "blue", lty = 3)
-
-legend("topleft", legend=c("", "", ""),
-       col=c("green", "red", "blue"), lty=1:3, cex=.8, bty = "n", text.width=0)
-
-#mtext("Browsing Pressure", side= 3, line = -1, adj = 1, padj = 0, cex=1)
-
-#plot(Section_Data$PropHare ~ Section_Data$Y_Cord, 
-#type = "b", pch = 1, col = "green", lty = 1,
-#xaxt='n', frame.plot = FALSE,
-#ylab = "% Twigs", xlab = "")
-
-#plot(Section_Data$PropPtarmagin ~ Section_Data$Y_Cord, 
-#type = "b", pch = 1, col = "green", lty = 1,
-#xaxt='n', frame.plot = FALSE,
-#ylab = "% Twigs", xlab = "")
-
-plot(Section_Data$CanopyCover ~ Section_Data$Y_Cord,
-     type = "b", pch = 1, col = "forest green", 
-     xaxt='n', frame.plot = FALSE,
-     ylab = "", xlab = "", cex.lab = 1.5)
-
-#mtext("Canopy Cover", side= 4, line = 1, cex=0.6)
-
-#mtext("Canopy Cover", side= 3, line = -3, adj = 1, cex=1)
-=======
-     xaxt='n', frame.plot = FALSE,
-     ylab = "%", xlab = "")
-
-#mtext("Canopy Cover", side= 4, line = 1, cex=0.6)
-
-mtext("Canopy Cover", side= 3, line = -3, adj = 1, cex=0.6)
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
-
-plot(Section_Data$StemHeight ~ Section_Data$Y_Cord,
-     type = "b", pch = 1, col = "forest green", 
-     xaxt='n', frame.plot = FALSE,
-<<<<<<< HEAD
-     ylab = "", xlab = "", cex.lab = 1.5)
-
-#mtext("Canopy Height", side= 3, line = -2.5, adj = 1, padj = 0, cex=1)
-=======
-     ylab = "cm", xlab = "")
-
-mtext("Canopy Height", side= 3, line = -2.5, adj = 1, padj = 0, cex=0.6)
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
-
-plot(Section_Data$iem.summ.rain ~ Section_Data$Y_Cord,
-     type = "b", pch = 1, col = "dark blue", 
-     xaxt='n', frame.plot = FALSE,
-<<<<<<< HEAD
-     ylab = "", xlab = "", cex.lab = 1.5)
-
-#mtext("Mean Summer Precipitation", side= 3, line = -1.25, adj = 1, padj = 0, cex=1)
-=======
-     ylab = "mm", xlab = "")
-
-mtext("Mean Summer Precipitation", side= 3, line = -1.25, adj = 1, padj = 0, cex=0.6)
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
-
-plot(Section_Data$iem.summ.temp ~ Section_Data$Y_Cord,
-     type = "b", pch = 1, col = "red", 
-     xaxt='n', frame.plot = FALSE,
-<<<<<<< HEAD
-     ylab = "", xlab = "", cex.lab = 1.5)
-
-#mtext("Mean Summer Temperature", side= 3, line = -2, adj = 1, padj = 0, cex=1)
-=======
-     ylab = "°C", xlab = "")
-
-mtext("Mean Summer Temperature", side= 3, line = -2, adj = 1, padj = 0, cex=0.6)
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
-
-plot(Section_Data$Elevation ~ Section_Data$Y_Cord,
-     type = "b", pch = 1, col = "black", 
-     frame.plot = FALSE,
-<<<<<<< HEAD
-     ylab = "", xlab = "Latitude", cex.lab = 1.5)
-
-#mtext("Elevation", side= 3, line = -.5, adj = 1, padj = 0, cex=1)
-#mtext("Latitude", side= 1, line = 3, cex=1)
-=======
-     ylab = "m", xlab = "Latitude")
-
-mtext("Elevation", side= 3, line = -.5, adj = 1, padj = 0, cex=0.6)
-mtext("Latitude", side= 1, line = 3, cex=0.7)
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 
 # 10. PLOT GROWTH TREND OVER TIME ####
 
@@ -671,11 +512,10 @@ lty = c(1, 1), lwd = c(2,2), col=c("black", "blue"), bty = "n", cex=2)
 hist(sd_all_cch$resid, main = "", xlab = "Age Standardized BAI", cex.lab = 2, cex.axis = 1.35)
 
 # 11. PLOT GROWTH TREND BY AGE ####
-<<<<<<< HEAD
+
 par(mfrow=c(2,2))
-=======
+
 par(mfrow=c(2,5))
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 
 #Betula
 plot(RingWidth ~ Age, data = sd_all_bena_cch,
@@ -687,7 +527,6 @@ plot(RWI_Spline ~ Age, data = sd_all_bena_cch,
 plot(RWI_NegExp ~ Age, data = sd_all_bena_cch,
      col = "black", pch = 1, ylab = "Ring Width Index (Negative Expontial)", xlab = "Ring Age (years)")
 
-<<<<<<< HEAD
 plot(BAI ~ Age, data = sd_all_bena_cch,
      col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", main = "Betula")
 
@@ -697,13 +536,12 @@ plot(resid ~ Age, data = sd_all_bena_cch,
 lmResid_b = lm(resid ~ Age, data = sd_all_bena_cch)
 
 abline(lmResid_b, col = "red", lwd = 2)
-=======
+
 plot(log(BAI) ~ Age, data = sd_all_bena_cch,
      col = "black", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)")
 
 plot(resid ~ Age, data = sd_all_bena_cch,
      col = "black", pch = 1, ylab = "Residuals of BAI", xlab = "Ring Age (years)")
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 
 
 #Salix
@@ -716,7 +554,6 @@ plot(RWI_Spline ~ Age, data = sd_all_salix_cch,
 plot(RWI_NegExp ~ Age, data = sd_all_salix_cch,
      col = "blue", pch = 1, ylab = "Ring Width Index (Negative Expontial)", xlab = "Ring Age (years)")
 
-<<<<<<< HEAD
 plot(BAI ~ Age, data = sd_all_salix_cch,
      col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)", main = "Salix")
 
@@ -728,13 +565,12 @@ plot(resid ~ Age, data = sd_all_salix_cch,
 lmResid_s = lm(resid ~ Age, data = sd_all_salix_cch)
 
 abline(lmResid_s, col = "red", lwd = 2)
-=======
+
 plot(log(BAI) ~ Age, data = sd_all_salix_cch,
      col = "blue", pch = 1, ylab = "Basal Area Increment", xlab = "Ring Age (years)")
 
 plot(resid ~ Age, data = sd_all_salix_cch,
      col = "blue", pch = 1, ylab = "Residuals of BAI", xlab = "Ring Age (years)")
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 
 # Plot for Poster
 par(oma=c(0,.5,0,0))
@@ -1074,17 +910,15 @@ mtext("Year",side=1, col="black", line=2.5)
 # 15. PLOT MIXED EFFECTS ACROSS SITES ####
 
 ggplot(sd_bena_cch, aes(x = iem.summ.temp, y = resid, colour = ShrubID)) +
-<<<<<<< HEAD
   facet_wrap(~Section, nrow=4) +   # a panel for each sites
   geom_point(alpha = 0.5) +
   theme_classic() +
   geom_line(data = cbind(sd_bena_cch, pred = predict(Optimal_model_b)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
-=======
+
   facet_wrap(~Section, nrow=4) +   # a panel for each mountain range
   geom_point(alpha = 0.5) +
   theme_classic() +
   geom_line(data = cbind(sd_bena_cch, pred = predict(CH1H2_model_b)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
   theme(legend.position = "none",
         panel.spacing = unit(2, "lines"))  # adding space between panels)
 
@@ -1129,28 +963,23 @@ ggplot(sd_salix_cch) +
   scale_x_continuous(breaks = 0:4 * 2)
 
 ggplot(sd_bena_cch) + 
-<<<<<<< HEAD
   aes(x = iem.summ.temp, y = resid) +
   geom_point() +
   stat_smooth(method = "lm") +
   # Put the points on top of lines
   #facet_wrap("Section") +
   labs(x = "Mean Summer Temperature", y = "Age Standardized BAI") + 
-=======
+
   aes(x = iem.summ.temp, y = resid) + 
   stat_smooth(method = "lm", se = FALSE) +
   # Put the points on top of lines
   geom_point() +
   facet_wrap("Section") +
   labs(x = "Mean Summer Temperature", y = "Residuals of standardized BAI") + 
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
+
   # We also need to help the x-axis, so it doesn't 
   # create gridlines/ticks on 2.5 days
   scale_x_continuous(breaks = 0:4 * 2)
-
-
-
-<<<<<<< HEAD
 
 # 16. PLOT CHRONOLOGIES FOR POSTER GRAPH ####
 
@@ -1180,5 +1009,4 @@ plot(MAT.2.EXCTLF.1.SAPU ~ Year, data= graph_rw,
      ylim = c(0,.45), type = "o",
      cex.axis = 1, cex.lab = 1.25, lwd = 2,
      col = rgb(0, 80, 158, max = 255))
-=======
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
+
