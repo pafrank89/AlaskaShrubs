@@ -223,7 +223,7 @@ HM_B_MST_HD = lme(resid ~ iem.summ.temp + HareIndex +
                    data = sd_bena_cch_S, random = ~ 1|Section/ShrubID,
                    method = "REML")
 
-#Used in the predict grid
+#Used in the predict grid 
 HI = mean(sd_bena_cch_S$HareIndex)
 MD = mean(sd_bena_cch_S$MooseDensity)
 SR = mean(sd_bena_cch_S$iem.summ.rain)
