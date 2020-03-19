@@ -17,6 +17,7 @@ library(RColorBrewer)
 library(gamlss)
 library(heplots)
 library(Hmisc)
+library(data.table)
 
 # 1. CORRELATION MATRICIES ####
 
@@ -280,21 +281,20 @@ DP_Data %>%
 #browsing at that height for each of the three study species. 
 
 #Select only pertinent columns from the larger ShrubData file 
-SD_BiBrowse = select(ShrubData, "ShrubID", "StemLength", "VertHeight", "BinaryMoose", "BinaryHare", "BinaryPtarmagin")
-
-subset (sd_final_cch, select = c("resid_t", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "iem.summ.temp", "iem.temp", "iem.summ.rain", "iem.wint.rain", "summ.temp", "temp", "summ.min", "summ.max", "summ.rain", "wint.rain", "pet", "wet", "frost", "Elevation", "Slope", "Y_Cord", "CanopyCover", "DistToRoad"))
+SD_BiBrowse = subset(ShrubData, select = c("ShrubID", "StemLength", "StemHeight", "BMoose", "BHare", "BPtarmagin"))
 
 #Specify the data frame as a table prior to the melt function
 SD_BiBrowseTable= as.data.table(SD_BiBrowse)
 
 #Melt the data retaining the ShrubID, StemLength & VertHeight variables while melting out the browsing varibales
-SD_BiBrowseMelt = melt.data.table(SD_BiBrowseTable, id.vars = c("ShrubID", "StemLength", "VertHeight"), 
-                                  measure.vars = c("BinaryMoose", "BinaryHare", "BinaryPtarmagin"))
+SD_BiBrowseMelt = melt.data.table(SD_BiBrowseTable, id.vars = c("ShrubID", "StemLength", "StemHeight"), 
+                                  measure.vars = c("BMoose", "BHare", "BPtarmagin"))
+
 #Rename the melt output values field to Species
 names(SD_BiBrowseMelt)[5]<-"Species"
 
 #Subsets the output data from the melt to retain only the necessary fields 
-DP_Data = subset(SD_BiBrowseMelt, select = c("ShrubID", "StemLength", "VertHeight", "Species"))
+DP_Data = subset(SD_BiBrowseMelt, select = c("ShrubID", "StemLength", "StemHeight", "Species"))
 
 #Plot the density plot using ggplot2
 DP_Data %>% 

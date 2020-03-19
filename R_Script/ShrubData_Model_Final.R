@@ -108,9 +108,14 @@ VarCorr(Optimal_model_b)
 intervals(Optimal_model_b)
 
 #Plot the effect size of the Optimal Model for Betula
-sjPlot :: plot_model(Optimal_model_b, axis.labels=c("Temperature:Hare Interaction", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),
-                     show.values=TRUE, show.p=TRUE,
-                     title="Variable Effects on radial Growth in Betula nana ")
+?"sjPlot-themes"
+
+fp = sjPlot :: plot_model(Optimal_model_b, axis.labels=c("Temperature:Hare Interaction", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),
+                     show.values=TRUE, show.p=TRUE, show.intercept = FALSE, show.data = TRUE, type = "est", p.shape = TRUE,
+                     title="")
+fp
+
+fp + theme_sjplot2()
 
 sjPlot::tab_model(Optimal_model_b, show.re.var= TRUE, 
                   pred.labels =c("(Intercept)", "Mean Summer Temperature", "Mean Summer Precipitation", "Snowshoe Hare Index", "Moose Density", "Interaction Hare and Temperature"),
@@ -158,7 +163,8 @@ anova.lme(lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
               iem.summ.temp * iem.summ.rain.10 +
               iem.summ.temp * HareIndex +
               iem.summ.temp * MooseDensity +
-              MooseDensity + HareIndex,
+              MooseDensity + HareIndex +
+              PropMoose + PropHare + PropPtarmagin
               data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML"))
   
   
@@ -214,13 +220,78 @@ VarCorr(Optimal_model_s)
 intervals(Optimal_model_s)
 
 #Plot the effect size of the Optimal Model for Betula
-sjPlot :: plot_model(Optimal_model_s, axis.labels=c("Hare Index", "Moose Density", "Mean Summer Temp"),
-                     show.values=TRUE, show.p=TRUE, #type = "std",
-                     title="Variable Effects on radial Growth in Betula nana ")
+forest_plot_s = sjPlot :: plot_model(Optimal_model_s, axis.labels=c("Hare Index", "Moose Density", "Mean Summer Temp"),
+                     show.values=TRUE, show.p=TRUE, 
+                     vline.color = "grey", value.size = 5, dot.size = 3, line.size = 1, wrap.labels = 14,
+                     title="")
+
+forest_plot_s
+
+forest_plot_s + theme_sjplot2(base_size = 15, base_family = "")
+
 
 sjPlot::tab_model(Optimal_model_s, show.re.var= TRUE, 
                   pred.labels =c("(Intercept)", "Mean Summer Temperature", "Snowshoe Hare Index", "Moose Density"),
                   dv.labels= "Effects of Summer Temperature & Precipitation on Shrub Growth")
+
+
+
+
+
+
+#WORK ZONE ####
+# Step 1 of backward selection using global model
+anova.lme(lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                iem.summ.temp * iem.summ.rain.10 +
+                iem.summ.temp * HareIndex +
+                iem.summ.temp * MooseDensity +
+                MooseDensity + HareIndex +
+                PropMoose + PropHare + PropPtarmagin,
+                data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML"))
+
+# Step 2 of backward selection using global model
+anova.lme(lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                iem.summ.temp * iem.summ.rain.10 +
+                iem.summ.temp * HareIndex +
+                MooseDensity + HareIndex +
+                PropMoose + PropHare + PropPtarmagin,
+              data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML"))
+
+# Step 3 of backward selection using global model
+anova.lme(lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                iem.summ.temp * iem.summ.rain.10 +
+                MooseDensity + HareIndex +
+                PropMoose + PropHare + PropPtarmagin,
+              data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML"))
+
+# Step 4 of backward selection using global model
+anova.lme(lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                iem.summ.temp * iem.summ.rain.10 +
+                MooseDensity + HareIndex +
+                PropMoose + PropPtarmagin,
+              data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML"))
+
+# Step 5 of backward selection using global model
+anova.lme(lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                iem.summ.temp * iem.summ.rain.10 +
+                MooseDensity + HareIndex +
+                PropMoose,
+              data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML"))
+
+# Step 6 of backward selection using global model
+anova.lme(lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                MooseDensity + HareIndex +
+                PropMoose,
+              data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML"))
+
+anova.lme(lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                MooseDensity + HareIndex,
+              data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML"))
+
+
+
+
+
 
 
 

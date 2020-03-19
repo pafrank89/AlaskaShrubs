@@ -25,7 +25,6 @@ Optimal_model_b = lme(resid ~ iem.summ.temp * iem.summ.rain.10 + iem.summ.temp +
 
 summary(Optimal_model_b)
 
-<<<<<<< HEAD
 anova.lme(Optimal_model_b)
 
 AICc(Optimal_model_b)
@@ -39,10 +38,8 @@ plot(Optimal_model_b)
 
 plot.lme(Optimal_model_b)
 
-=======
 plot(Optimal_model_b)
 
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 # Plot Normal QQ ti assess the distribution of the data
 qqnorm(resid(Optimal_model_b))
 qqline(resid(Optimal_model_b))
@@ -161,20 +158,14 @@ str(sd_salix_cch)
 # 2. NULL MODELS #### 
 
 # Null models will be used to compare the effect of adding fixed effects to the model 
-<<<<<<< HEAD
-=======
-
 null_model = lme(resid ~ 1, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                  method = "ML")
 
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 null_model_b = lme(resid ~ 1, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                  method = "ML")
 
 null_model_s = lme(resid ~ 1, data = sd_salix_cch, random = ~ 1|Section/ShrubID,
                  method = "ML")
-
-<<<<<<< HEAD
 
 full_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + MooseDensity + HareIndex + PropMoose + PropHare + PropPtarmagin, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                      method = "ML")
@@ -192,8 +183,6 @@ summary(full_model_s)
 
 r.squaredLR(full_model_s)
 
-=======
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 # 3. CLIMATE MODELS #### 
 
 # Climate sensitivy is expected to be the primaty driver of shrub growth in this region, this we will begin forward selection by
@@ -201,30 +190,14 @@ r.squaredLR(full_model_s)
 
 # Optimal Models:
 
-<<<<<<< HEAD
-=======
+
   # All Data: C1xC2_model
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
   # Betula: C1xC2_model_b
   # Salix: C1xC2_model_s
 
-## 3.1 Mean Summer Temperature #####
-
-<<<<<<< HEAD
-# MST for Betula
-C1_model_b = lme(resid ~ iem.summ.temp, data = sd_bena_cch_S, random = ~ 1|Section/ShrubID,
-=======
-# MST for All Data
-C1_model = lme(resid ~ iem.summ.temp, data = sd_final_cch, random = ~ 1|Section/ShrubID,
-               method = "ML")
-
-  anova(null_model, C1_model)
-  
-  summary(C1_model)
-
+## 3.1 Mean Summer Temperature ####
 # MST for Betula
 C1_model_b = lme(resid ~ iem.summ.temp, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
                method = "ML")
 
   anova(null_model_b, C1_model_b)
@@ -241,9 +214,6 @@ C1_model_s = lme(resid ~ iem.summ.temp, data = sd_salix_cch, random = ~ 1|Sectio
 
 
 ## 3.2 Mean Summer Precipitation  ####
-
-<<<<<<< HEAD
-=======
 # MSP for All Data
 C2_model = lme(resid ~ iem.summ.rain.10, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                method = "ML")
@@ -252,7 +222,6 @@ C2_model = lme(resid ~ iem.summ.rain.10, data = sd_final_cch, random = ~ 1|Secti
   
   summary(C2_model)
 
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 # MSP for Betula 
 C2_model_b = lme(resid ~ iem.summ.rain.10, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                method = "ML")
@@ -268,8 +237,6 @@ C2_model_s = lme(resid ~ iem.summ.rain.10, data = sd_salix_cch, random = ~ 1|Sec
   anova(null_model_s, C2_model_s)
   
   summary(C2_model_s)
-<<<<<<< HEAD
-  
   
   # MWP for Betula 
   CW_model_b = lme(resid ~ iem.wint.rain, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
@@ -286,14 +253,9 @@ C2_model_s = lme(resid ~ iem.summ.rain.10, data = sd_salix_cch, random = ~ 1|Sec
   anova(null_model_s, CW_model_s)
   
   summary(CW_model_s)
-=======
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 
 
 ## 3.3 Addative Effect MST + MSP ####
-
-<<<<<<< HEAD
-=======
 # MST + MSP for All Data
 C1C2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                  method = "ML")
@@ -304,7 +266,6 @@ C1C2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10, data = sd_final_cch, 
   
   summary(C1C2_model)
 
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 # MST + MSP for Betula
 C1C2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                  method = "ML")
@@ -333,9 +294,6 @@ summary(C1C2_model_s)
 
 #This model is used to assess wether growth is greater in years when it is both warmer and wetter
 #We see that as mean precipitation increases, shrub growth increases more for every degree c increase
-
-<<<<<<< HEAD
-=======
 # MST * MSP for All Data
 C1xC2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 , data = sd_final_cch, random = ~ 1|Section/ShrubID,
                   method = "ML")
@@ -344,7 +302,6 @@ C1xC2_model = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem
   
   summary(C1xC2_model)
 
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 # MST * MSP for Betula
 C1xC2_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * iem.summ.rain.10 , data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                   method = "ML")
@@ -367,8 +324,6 @@ C1xC2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * i
   
   summary(C1xC2_model_s)
 
-
-<<<<<<< HEAD
 ## 3.4 Quadratic Term For MST ####
 
   # MST^2 for Betula
@@ -426,11 +381,6 @@ C1xC2_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp * i
   summary(C1.2_C2.2_model_s)
   
 ## 3.7 Model Assumptions & Effect Size for Climate Model ####
-=======
-## 3.4 Model Assumptions & Effect Size for Climate Model ####
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
-
-#Plots the Satadardize Residuals plot for the core climate model
 
 ### All Data
 # Plot Residuals vs. Fitted Plot to check for non-linearity, unequal error variances, and outliers
@@ -495,9 +445,6 @@ sjPlot::tab_model(C1xC2_model_s, show.re.var= TRUE,
   # Salix: No herbivory variables perform better than the NULL model
   
 ## 4.1 Temporal Moose Density model ####
-
-<<<<<<< HEAD
-=======
 # All Data
 H1_model <- lme(resid ~ MooseDensity, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                 method = "ML")
@@ -506,7 +453,6 @@ H1_model <- lme(resid ~ MooseDensity, data = sd_final_cch, random = ~ 1|Section/
   
   summary(H1_model)
 
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 # Betula
 H1_model_b <- lme(resid ~ MooseDensity, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                 method = "ML")
@@ -525,9 +471,6 @@ H1_model_s <- lme(resid ~ MooseDensity, data = sd_salix_cch, random = ~ 1|Sectio
 
 ## 4.2 Temporal Hare Index ####
 # This factor is based on a 1-3 scale representing different amplitudes of hare population peaks
-
-<<<<<<< HEAD
-=======
 # All Data
 H2_model <- lme(resid ~ HareIndex, data = sd_final_cch, random = ~ 1|Section/ShrubID,
                 method = "ML")
@@ -536,7 +479,6 @@ H2_model <- lme(resid ~ HareIndex, data = sd_final_cch, random = ~ 1|Section/Shr
   
   summary(H2_model)
 
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
 # Betula
 H2_model_b <- lme(resid ~ HareIndex, data = sd_bena_cch, random = ~ 1|Section/ShrubID,
                 method = "ML")
@@ -1160,18 +1102,6 @@ CH_INT4_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp *
   
   summary(CH_INT4_model_s)
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-  
-  
 ## 6.5 MooseDensity : Mean Mean Summer Precipitation & Hare Index : Mean Summer Temperature ####
   
 # Betula  
@@ -1190,11 +1120,6 @@ CH_INT5_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + iem.summ.temp *
   
   
 ####### WORK ZONE #########
-  
-<<<<<<< HEAD
-
-=======
-  
  
   plot(CH2_model)
   
@@ -1230,7 +1155,6 @@ par(mar=c(5, 5, 2, 2))
   summary(lmTemp_s)
 
   abline(lmTemp_s, col = "red", lwd = 2.5)
->>>>>>> 66da247bda7c4fa105412c7d66a446f439545b68
   
   
   
