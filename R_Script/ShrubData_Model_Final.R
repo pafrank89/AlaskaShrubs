@@ -24,6 +24,8 @@ lme_global_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
                     MooseDensity + HareIndex,
                     data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
+summary(lme_global_b)
+
 #Check the model assumptions, R2 and VIF for the global model
  
  # Plot Residuals vs. Fitted Plot to check for non-linearity, unequal error variances, and outliers
@@ -133,6 +135,9 @@ lme_global_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
                     iem.summ.temp * MooseDensity +
                     MooseDensity + HareIndex,
                     data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+
+summary(lme_global_s)
 
 #Check the model assumptions, R2 and VIF for the global model
 

@@ -394,8 +394,8 @@ mtext("Latitude", side= 1, line = 3, cex=1.25)
 # 10. PLOT GROWTH TREND OVER TIME ####
 
 # Aggregate growth data by year
-sd_BAI_bena_agg = aggregate((x = sd_bena_cch),
-                            by = list(sd_bena_cch$Year),
+sd_BAI_bena_agg_ = aggregate((x = sd_bena_cch),
+                            by = list(sd_bena_cch$Year),  
                             FUN = mean,
                             na.rm = TRUE)
 
@@ -412,6 +412,19 @@ sd_all_bena_agg = aggregate((x = sd_all_bena_cch),
 
 sd_all_salix_agg = aggregate((x = sd_all_salix_cch),
                              by = list(sd_all_salix_cch$Year),
+                             FUN = mean,
+                             na.rm = TRUE)
+
+
+# Aggregate growth data by year & section
+
+sd_all_bena_agg_s = aggregate((x = sd_all_bena_cch),
+                            by = list(sd_all_bena_cch$Year, sd_all_bena_cch$Section),
+                            FUN = mean,
+                            na.rm = TRUE)
+
+sd_all_salix_agg_s = aggregate((x = sd_all_salix_cch),
+                             by = list(sd_all_salix_cch$Year, sd_all_salix_cch$Section),
                              FUN = mean,
                              na.rm = TRUE)
 
@@ -482,12 +495,12 @@ par(new=TRUE)
 plot(resid_ll ~ Year, data = sd_all_salix_agg,
      col = "pink", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5,2.5), xlim=c(1975, 2020))
 
-#legend("topright",legend=c("Ring Width","RWI_Spline", "RWI_NegExp", "lnBAI", "BAI Residuals"),
-       #text.col=c("blue", "red", "green", "orange", "purple"), 
-       #lty = c(1, 1, 1, 1, 1), col=c("blue", "red", "green", "orange", "purple"), bty = "n", cex=0.75)
+legend("bottomright",legend=c("Ring Width","RWI_Spline", "RWI_NegExp", "lnBAI", "BAI Residuals"),
+       text.col=c("blue", "red", "green", "orange", "purple"), 
+       lty = c(1, 1, 1, 1, 1), col=c("blue", "red", "green", "orange", "purple"), bty = "n", cex=0.75)
 
 
-# Plot Age Trend for Poster
+# Plot Age Trend for Poster 
 par(oma=c(0,.5,0,0))
 
 par(mar=c(5, 5, 2, 2))
@@ -510,6 +523,40 @@ text.col=c("black", "blue"),
 lty = c(1, 1), lwd = c(2,2), col=c("black", "blue"), bty = "n", cex=2)
 
 hist(sd_all_cch$resid, main = "", xlab = "Age Standardized BAI", cex.lab = 2, cex.axis = 1.35)
+
+
+# PLOT GROWTH TREND OVER TIME BY SECTION & SPECIES ####
+
+#Plot growth trend by section
+ggplot(sd_all_bena_cch) + 
+  aes(x = Year, y = resid) + 
+  stat_summary(geom = "line", fun.y = mean) +
+  stat_summary(geom = "ribbon", fun.data = mean_cl_boot, alpha = 0.3) +
+  #Add Data for Salix to the existing graph
+  stat_summary(data = sd_all_salix_cch, geom = "line", fun.y = mean, colour = "blue") +
+  stat_summary(data = sd_all_salix_cch, geom = "ribbon", fun.data = mean_cl_boot, alpha = 0.3, fill = "blue") +
+  #Add Climate Variable on the second Y Axis
+  scale_y_continuous(sec.axis = sec_axis(~.*1, name = "Mean Summer Temperature (°C)")) +
+  stat_summary(data = sd_all_cch, aes(x = Year, y = (iem.summ.temp/10)), geom = "line", fun.y = mean, colour = "red") +
+  #facet_wrap("Section") +
+  labs(x = "Year", y = "Residuals of standardized BAI")
+
+#Plot growth trend ontop of climate data
+par(mar=c(5, 5, 4, 6) + 0.1)
+
+plot(resid ~ Year, data = sd_all_bena_agg, xlab="Year", ylab="Radial Growth\n(Age Standardized BAI)", 
+     axes=TRUE, col = "black", type = "l", lty = 1, lwd = 1.5, xlim=c(1985,2018))
+
+lines(sd_all_salix_agg$Year, sd_all_salix_agg$resid, type = "l", pch = 1, col = "blue", lty = 1, lwd = 1.5 )
+
+par(new=TRUE)
+
+plot(tmp ~ Year, data = sum_temp_agg, xlab="", ylab="", ylim=c(8,15), xlim=c(1985,2018),
+     axes=FALSE, col=alpha(rgb(1,0,0), 0.75), type = "l", lty = 3, lwd = 1.5) 
+
+mtext("Mean Summer Temperature (°C)",side=4, col="black",line=4) 
+
+axis(4, ylim=c(8,15), col="black",col.axis="black",las=1)
 
 # 11. PLOT GROWTH TREND BY AGE ####
 
@@ -630,13 +677,19 @@ par(mar=c(5, 4, 4, 6) + 0.1)
 plot(sd_BAI_bena_agg$iem.summ.temp ~ sd_BAI_bena_agg$Year, 
      axes=FALSE, ylim=c(10,14), #main="Shrub Growth ",
      type = "l", xlab = "", ylab = "", 
-     col = "red", lwd = 1, cex.lab = 1)
+     col=alpha(rgb(1,0,0), 0.75), lwd = 1.5, lty = 3, cex.lab = 1)
 
 axis(2, ylim=c(9,15),col="black",las=1)
 
 mtext("Mean Summer Temperature (°C)",side=2,line=2.5)
 
 box()
+
+matplot(dat$Age,
+  dat$CO2 + outer(dat$Standard_error, c(0,1,-1)),
+  type="l", lty=c(1,2,2), col=c(1,2,2),
+  xlab="Age", ylab="CO2"
+)
 
 # Allow a second plot on the same graph
 par(new=TRUE)
@@ -645,7 +698,7 @@ par(new=TRUE)
 plot(sd_BAI_bena_agg$resid ~ sd_BAI_bena_agg$Year, 
      axes=FALSE, ylim=c(-1.5, .7),
      type = "l", xlab = "", ylab = "", 
-     col = "black", lwd = 1, lty = 5, cex.lab = 1)
+     col = "black", lwd = 1, lty = 1, cex.lab = 1)
 
 # Allow for a third plot using the second accis
 par(new=TRUE)
@@ -654,7 +707,7 @@ par(new=TRUE)
 plot(sd_BAI_salix_agg$resid ~ sd_BAI_salix_agg$Year, 
      axes=FALSE, ylim=c(-1.5, .7),
      type = "l", xlab = "", ylab = "", 
-     col = "grey 52", lwd = 1, lty = 2, cex.lab = 1)
+     col = "grey 52", lwd = 1, lty = 1, cex.lab = 1)
 
 mtext("Age Standardized BAI", side=4,col="black",line=4) 
 
@@ -665,8 +718,8 @@ axis(1,pretty(range(sd_BAI_bena_agg$Year),5))
 mtext("Year",side=1, col="black", line=2.5) 
 
 ## Add Legend
-legend("topright",legend=c("Temperature","Betula", "Salix"),
-       text.col=c("red", "black", "grey 52"), lty = c(1, 5, 2), col=c("red", "black", "dark grey"), bty = "n")
+legend("topleft",legend=c("Temperature","Betula nana", "Salix spp."),
+       text.col=c("red", "black", "grey 52"), lty = c(3, 1, 1), col=c("red", "black", "dark grey"), bty = "n")
 
 
 # 13.2 Plot raw BAI against mean summer Precip
@@ -909,7 +962,8 @@ mtext("Year",side=1, col="black", line=2.5)
 
 # 15. PLOT MIXED EFFECTS ACROSS SITES ####
 
-ggplot(sd_bena_cch, aes(x = iem.summ.temp, y = resid, colour = ShrubID)) +
+
+ggplot(sd_bena_cch, aes(x = Year, y = resid, colour = Genus)) +
   facet_wrap(~Section, nrow=4) +   # a panel for each sites
   geom_point(alpha = 0.5) +
   theme_classic() +
