@@ -1,0 +1,10 @@
+Parameter,Full Model,M2,M3,M4,Minimal Adequate Model
+Mean Summer Temperature,0.4981,0.4981,0.4979,0.5074,0.5085
+Mean Summer Precipitation,0.0181,0.018,0.018,0.0187,0.0189
+Moose Density,0.0001,0.0001,0.0001,0.0001,0.0001
+Snowshoe Hare Index,0.3155,0.3154,0.3153,0.3172,0.3178
+Moose Browsing Intensity,0.9949,,,,
+Snowshoe Hare Browsing Intensity,0.9137,0.9136,,,
+Ptarmagin Browsing Intensity,0.1782,0.1782,0.1785,,
+Interaction of Moose Density and Mean Summer  Temperature,0.1099,0.1098,0.1096,0.1109,
+Interaction of Snowshoe Hare Index and Mean Summer Temperature,0.0141,0.0141,0.0143,0.0142,0.0142

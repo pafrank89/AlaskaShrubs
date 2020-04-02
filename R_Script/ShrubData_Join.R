@@ -48,7 +48,12 @@ sd_all_cch$Genus = ifelse(sd_all_cch$Species == "BENA", "Betula",
                                           ifelse(sd_all_cch$Species == "SABE", "Salix",
                                                  NA))))
 
-
+Shrub_Data$Genus = ifelse(Shrub_Data$Species == "BENA", "Betula",
+                          ifelse(Shrub_Data$Species == "SAPU", "Salix",
+                                 ifelse(Shrub_Data$Species == "SAGL", "Salix",
+                                        ifelse(Shrub_Data$Species == "SABE", "Salix",
+                                               ifelse(Shrub_Data$Species == "ALVI", "Alnus",
+                                                      NA)))))
 
 #Subset final data by Genus 
 sd_bena_cch = subset(sd_final_cch, Genus == "Betula") 

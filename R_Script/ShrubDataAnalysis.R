@@ -297,7 +297,7 @@ names(SD_BiBrowseMelt)[5]<-"Species"
 DP_Data = subset(SD_BiBrowseMelt, select = c("ShrubID", "StemLength", "StemHeight", "Species"))
 
 #Plot the density plot using ggplot2
-DP_Data %>% 
+P = DP_Data %>% 
   filter(Species == c("Hare", "Moose", "Ptarmagin")) %>% 
   ggplot(aes(x=StemHeight, group=Species, colour=Species, fill= Species, xtitle = "Shrub Height (cm)")) +
   geom_density(alpha = 0.2) +
@@ -305,22 +305,89 @@ DP_Data %>%
   scale_y_continuous (name = "Frequency") +
   theme_bw()
 
+P + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black"),
+          axis.text=element_text(size=14), axis.title=element_text(size=16),
+          legend.position = c(0.8, 0.8), legend.title = element_text( size=16), legend.text = element_text( size=14))
+
+
 # 7. BROWSING DATA ~ ENVIRONMENTAL COVARIATES ####
 # Assess the relationship beteween browsing data and other variables across the 23 sampled sections
 
-ggplot(data = SectionData, 
-       aes(x = Y_Cord,
-           y = Prop_TwigsBrowsed)) + 
-  geom_smooth(method=lm) + 
-  geom_point(size = 2) +
-  xlab("Latitude") + ylab("Proportion of Twigs Browsed")
+str(Section_Data)
 
-ggplot(data = SectionData, 
-       aes(x = Elevation,
-           y = Prop_TwigsBrowsed)) + 
-  geom_smooth(method=lm) + 
-  geom_point(size = 2) +
-  xlab("Elevation") + ylab("Proportion of Twigs Browsed")
+CorPlot_browse = subset (Section_Data, select = c("PropMoose", "PropHare", "PropPtarmagin", "StemHeight", "CanopyCover", "Y_Cord", "Slope", "PropALVI", "PropBENA", "PropSALIX"))
+
+#"MooseFeces", "HareFeces", "PtarmaginFeces"
+
+chart.Correlation(CorPlot_browse, histogram = TRUE, method = c("pearson"))
+
+cor.test(Section_Data$PropPtarmagin, Section_Data$Y_Cord, method = "pearson")
+
+kruskal.test(Section_Data$PropMoose, Section_Data$Y_Cord)
+
+#Assess Browsing Overlap 
+#792 Shrubs Sampled: Create a dataframe with values from 1-7,920,000
+ProbBase = data.frame(ID=c(1:7920000))
+
+#323 Browsed
+  #141 Browsed by Moose
+  #159 Browsed by Hare
+  #113 Browsed by Ptarmagin
+
+BrowseValue = c(1, 0)
+
+# Randomly assign values the dataframe based on the observed browsing numbers
+ProbBase$M1[sample(1:nrow(ProbBase), nrow(ProbBase), FALSE)] = rep(BrowseValue, c(1410000, 6510000))
+
+ProbBase$H1[sample(1:nrow(ProbBase), nrow(ProbBase), FALSE)] = rep(BrowseValue, c(1590000, 6330000))
+
+ProbBase$P1[sample(1:nrow(ProbBase), nrow(ProbBase), FALSE)] = rep(BrowseValue, c(1130000, 6790000))
+
+#Combine Values for each for each combination of herbivore variables 
+ProbBase$MH = ProbBase$M1 + ProbBase$H1
+
+ProbBase$MP = paste(ProbBase$M1, ProbBase$P1)
+
+ProbBase$HP = paste(ProbBase$H1, ProbBase$P1)
+
+#Count the # of times a value occurs
+plyr::count(ProbBase$MH) 
+
+#1 0 5203424
+#2 1 2433152
+#3 2  283424
+
+283424/10000 # 28.3424
+
+prop.test(x = 283424, n = 7920000, conf.level=0.95, correct = FALSE)
+
+binconf(x = 283424, n = 7920000)
+
+# PointEst      Lower      Upper
+# 0.03578586 0.03565672 0.03591545
+
+# Moose and hare overlap
+
+plyr::count(ProbBase$MP) 
+
+#x    freq
+#1     5581154
+#2 P   928846
+#3 M   1208846
+#4 MP  201154
+
+201154/10000 # 20.1154
+
+plyr::count(ProbBase$HP) 
+
+#x    freq
+#1     5426435
+#2 P   903565
+#3 H   1363565
+#4 HP  226435
+
+226435/10000 #22.6435
 
 # 8. TEMPORAL HERBIVORE DATA VALIDATION ####
 # The objective is to see if our spatial browsing intensity and feces trasect data jives with the spatial trend in temporal data 
@@ -337,55 +404,68 @@ plot(HerbiPlot$PropMoose ~ HerbiPlot$`2015MooseDensity`)
 plot(HerbiPlot$MooseFeces ~ HerbiPlot$`2015MooseDensity`)
 
 # 9. PLOT ENVIRONEMNTAL VARIABLES ALONG Y-CORD #### 
-par(mfrow=c(6,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) #, bg=NA) 
+par(mfrow=c(4,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) #, bg=NA) 
 
 #par(mfrow=c(1,1))
 
 plot(Section_Data$PropMoose ~ Section_Data$Y_Cord,
-     type = "b", pch = 1, col = "green", lty = 1, lwd = 1.5, 
+     type = "b", pch = 1, col = "chartreuse3", lty = 1, lwd = 1.5, 
      xaxt='n', frame.plot = FALSE,
-     ylab = "% Twigs Browsed", xlab = "", cex.lab = 1.5)
+     ylab = "% Twigs Browsed", xlab = "", cex.lab = 1.5, cex.axis = 1.25)
 
-lines(Section_Data$Y_Cord, Section_Data$PropHare, type = "b", pch = 1, col = "red", lty = 2, lwd = 1.5 )
-lines(Section_Data$Y_Cord, Section_Data$PropPtarmagin, type = "b", pch = 1, col = "blue", lty = 3, lwd = 1.5)
+lines(Section_Data$Y_Cord, Section_Data$PropHare, type = "b", pch = 1, col = "firebrick3", lty = 2, lwd = 1.5 )
+lines(Section_Data$Y_Cord, Section_Data$PropPtarmagin, type = "b", pch = 1, col = "dodgerblue4", lty = 3, lwd = 1.5)
 
 legend("topleft", legend=c("Moose", "Hare", "Ptarmagin"),
-       col=c("green", "red", "blue"), lty=1:3, cex=1.45, bty = "n", text.width=0)
+       col=c("chartreuse3", "firebrick3", "dodgerblue4"), lty=1:3, cex=1.45, bty = "n", text.width=0)
 
 mtext("Browsing Pressure", side= 3, line = -1, adj = 1, padj = 0, cex=1.25)
+
+plot(Section_Data$PropBENA ~ Section_Data$Y_Cord,
+     type = "b", pch = 1, col = "darkolivegreen2", lty = 4, lwd = 1.5, 
+     xaxt='n', frame.plot = FALSE, ylim = c(-.15,0.85),
+     ylab = "% of Shrubs", xlab = "", cex.lab = 1.5, cex.axis = 1.25)
+
+lines(Section_Data$Y_Cord, Section_Data$PropALVI, type = "b", pch = 5, col = "darkolivegreen3", lty = 2, lwd = 1.5 )
+lines(Section_Data$Y_Cord, Section_Data$PropSALIX, type = "b", pch = 6, col = "darkolivegreen4", lty = 3, lwd = 1.5)
+
+legend("bottom", "groups", legend=c("Betula nana", "Alnus viridus", "Salix spp."), ncol=3, inset=c(-0.2,-.02),
+       col=c("darkolivegreen2", "darkolivegreen3", "darkolivegreen4"), lty=4:36, cex=1.45, bty = "n", text.width=.4)
+
+mtext("Dominant Shrub Species", side= 3, line = -1, adj = 1, padj = 0, cex=1.25)
     
 plot(Section_Data$CanopyCover ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "forest green", 
      xaxt='n', frame.plot = FALSE, lwd = 1.5, 
-     ylab = "%", xlab = "", cex.lab = 1.5)
+     ylab = "%", xlab = "", cex.lab = 1.5, cex.axis = 1.25)
 
 mtext("Canopy Cover", side= 3, line = -3, adj = 1, cex=1.25)
 
 plot(Section_Data$StemHeight ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "forest green", 
-     xaxt='n', frame.plot = FALSE, lwd = 1.5, 
-     ylab = "cm", xlab = "", cex.lab = 1.5)
+    frame.plot = FALSE, lwd = 1.5, #xaxt='n',
+     ylab = "cm", xlab = "", cex.lab = 1.5, cex.axis = 1.25)
 
 mtext("Canopy Height", side= 3, line = -2.5, adj = 1, padj = 0, cex=1.25)
 
 plot(Section_Data$iem.summ.rain ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "dark blue", 
      xaxt='n', frame.plot = FALSE, lwd = 1.5, 
-     ylab = "mm", xlab = "", cex.lab = 1.5)
+     ylab = "mm", xlab = "", cex.lab = 1.5, cex.axis = 1.25)
 
 mtext("Mean Summer Precipitation", side= 3, line = -1.25, adj = 1, padj = 0, cex=1.25)
 
 plot(Section_Data$iem.summ.temp ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "red", 
      xaxt='n', frame.plot = FALSE, lwd = 1.5, 
-     ylab = "°C", xlab = "", cex.lab = 1.5)
+     ylab = "°C", xlab = "", cex.lab = 1.5, cex.axis = 1.25)
 
 mtext("Mean Summer Temperature", side= 3, line = -2, adj = 1, padj = 0, cex=1.25)
 
 plot(Section_Data$Elevation ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "black", 
      frame.plot = FALSE, lwd = 1.5, 
-     ylab = "m", xlab = "Latitude", cex.lab = 1.5)
+     ylab = "m", xlab = "Latitude", cex.lab = 1.5, cex.axis = 1.25)
 
 mtext("Elevation", side= 3, line = -.5, adj = 1, padj = 0, cex=1.25)
 mtext("Latitude", side= 1, line = 3, cex=1.25)
@@ -624,19 +704,20 @@ par(oma=c(0,.5,0,0))
 
 par(mar=c(5, 5, 2, 2))
 
-plot(log(BAI) ~ Age, data = sd_all_bena_cch,
+plot(resid ~ Age, data = sd_all_bena_cch,
      col = "black", pch = 1, cex.lab = 2, cex.axis = 1.25,
      ylab = "ln Basal Area Increment", xlab = "Ring Age (years)")
 
-#par(new=TRUE)
+abline(lmResid_b, col = "red", lwd = 2)
 
-#plot(BAI ~ Age, data = sd_all_bena_cch,
-     #col = "blue", pch = 4, cex.lab = 1.75,
-     #xlab = "", ylab = "", axes=FALSE)
+par(new=TRUE)
 
-abline(lmBena, col = "red", lwd = 2)
+plot(resid ~ Age, data = sd_all_salix_cch,
+     col = "blue", pch = 4, cex.lab = 1.75,
+     xlab = "", ylab = "", axes=FALSE)
 
-summary(lmBena)
+abline(lmResid_s, col = "green", lwd = 2)
+
 
 
 # 12. PLOT AGE DISTRIBUTION OVER TIME ####
@@ -1037,30 +1118,38 @@ ggplot(sd_bena_cch) +
 
 # 16. PLOT CHRONOLOGIES FOR POSTER GRAPH ####
 
-graph_rw = as.data.frame(graph_rw)
+col1 = rgb(77, 175, 74, max = 255, alpha = 255)
+col2 = rgb(55, 125, 184, max = 255, alpha = 255)
+col3 = rgb(152, 78, 163, max = 255, alpha = 255)
+col4 = rgb(255, 127, 0, max = 255, alpha = 255)
 
-graph_rwl = graph_rw
+par(mfrow=c(2,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.9))
 
-rownames(graph_rwl) = graph_rwl$Year
+plot(R2 ~ Year, data= graph_rw,
+     xlab = "", ylab = "",
+     ylim = c(0,.5), type = "l",
+     cex.axis = 1, cex.lab = 1.25, lwd = 1.5,
+     col = rgb(55, 125, 184, max = 255, alpha = 255),
+     axes = TRUE, xaxt='n')
 
-graph_rwl$Year = NULL
+lines(graph_rw$Year, graph_rw$R1, type = "l", pch = 1, lty = 1, lwd = 1.5, col = rgb(77, 175, 74, max = 255, alpha = 255))
+lines(graph_rw$Year, graph_rw$R3, type = "l", pch = 1, lty = 1, lwd = 1.5, col = rgb(152, 78, 163, max = 255, alpha = 255))
+lines(graph_rw$Year, graph_rw$R4, type = "l", pch = 1, lty = 1, lwd = 1.5, col = rgb(255, 127, 0, max = 255, alpha = 255))
+#lines(graph_rw$Year, graph_rw$Avg, type = "l", pch = 1, col = "red", lty = 1, lwd = 3 )
 
-#graph_rwl = graph_rwl[rowSums(is.na(graph_rwl)) != ncol(graph_rwl), ]
-
-graph_rwl = as.data.frame(graph_rwl)
-
-graph_rwl$MAT.2.EXCTLF.1.SAPU = as.factor(graph_rwl$MAT.2.EXCTLF.1.SAPU)
-
-tmpName = tempfile()
-
-write.csv(graph_rwl,file = tmpName)
-
-graph_rwl2 = csv2rwl(tmpName)
+legend("topleft", legend=c("R1", "R2", "R3", "R4"),
+       col=c(col1, col2, col3, col4), lty=1, cex=1.05, bty = "n", text.width=0)
 
 
-plot(MAT.2.EXCTLF.1.SAPU ~ Year, data= graph_rw,
-     xlab = "Year", ylab = "Ring Width (mm)",
-     ylim = c(0,.45), type = "o",
+plot(Avg ~ Year, data= graph_rw,
+     xlab = "Year", ylab = "",
+     ylim = c(0,.5), type = "o",
      cex.axis = 1, cex.lab = 1.25, lwd = 2,
-     col = rgb(0, 80, 158, max = 255))
+     col = rgb(55, 125, 184, max = 255, alpha = 255))
+
+mtext("Mean Chronology ", side= , line = -.75, adj = .02, padj = 1, cex=1.25)
+
+mtext("Year ", side= 1, outer = TRUE, line = 1.75, adj = .5, padj = 1, cex=1.3)
+
+mtext("Ring Width (mm) ", side= 2, outer = TRUE, line = -0.9, adj = .5, padj = 1, cex=1.3)
 

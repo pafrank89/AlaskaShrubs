@@ -19,6 +19,7 @@ install.packages("globaltest")
 install.packages("coefplot")
 install.packages("glmmTMB")
 install.packages("forestplot")
+install.packages("plotrix")
 
 library(lme4)
 library(nlme)
@@ -54,6 +55,7 @@ library(coefplot)
 library(piecewiseSEM)
 library(glmmTMB)
 library(forestplot)
+library(plotrix)
 
 sessionInfo()
 old.packages()
@@ -384,6 +386,8 @@ anova.lme(lme_global_b)
 
 summary(lme_global_b)
 
+intervals(lme_global_b)
+
 r.squaredLR(lme_global_b)
 
 plot(lme_global_b)
@@ -391,13 +395,6 @@ plot(lme_global_b)
 qqnorm(resid(lme_global_b))
 
 qqline(resid(lme_global_b))
-
-lme_global_b = lme(resid ~ iem.summ.temp + iem.summ.rain +
-                  iem.summ.temp * iem.summ.rain +
-                  iem.summ.temp * HareIndex +
-                  iem.summ.temp * MooseDensity +
-                  MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S,
-                  data = sd_bena_cch, random = ~ 1|Section/ShrubID, method = "ML")
 
 dredge_b = dredge(lme_global_b)
 
@@ -427,8 +424,6 @@ lme_global_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
                      MooseDensity + HareIndex,
                      data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
-
-
 summary(lme_global_s)
 
 r.squaredLR(lme_global_s)
@@ -438,14 +433,6 @@ plot(lme_global_s)
 qqnorm(resid(lme_global_s))
 
 qqline(resid(lme_global_s))
-
-# Salix Model Averaging
-lme_global_s = lme(resid ~ iem.summ.temp + iem.summ.rain +
-                     iem.summ.temp * iem.summ.rain +
-                     iem.summ.temp * MooseDensity +
-                     iem.summ.rain * HareIndex +
-                     MooseDensity + HareIndex + PropMoose_S + PropHare_S + PropPtarmagin_S,
-                     data = sd_salix_cch, random = ~ 1|Section/ShrubID, method = "ML")
 
 dredge_s = dredge(lme_global_s)
 
