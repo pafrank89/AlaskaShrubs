@@ -85,20 +85,16 @@ corrplot(sd_final_cchCorr , type="upper", order="hclust",
 
 # 2. CORRELATION MATRICIES BY SPECIES ####
 
-sd_bena_cch = subset(sd_final_cch, Species == "BENA")
+cor(sd_bena_cch$resid, sd_bena_cch$Year)
 
-sd_salix_cch = subset(sd_final_cch, grepl("^SA", sd_final_cch$Species)) 
+cor(sd_salix_cch$resid, sd_salix_cch$Year)
 
-# Check for correlations between variables
-CorPlot_bena = subset (sd_bena_cch, select = c("BAI", "resid", "iem.summ.temp", "iem.temp", "iem.summ.rain", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "PropPtarmagin", "Elevation", "Slope", "Y_Cord", "DistToRoad"))
+dt <- data.table(sd_bena_cch)
+dtCor <- dt[, .(mCor = cor(dt$resid, dt$Year)), by=dt$Section]
 
-CorPlot_salix = subset (sd_salix_cch, select = c("BAI", "resid", "iem.summ.temp", "iem.temp", "iem.summ.rain", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "PropPtarmagin", "Elevation", "Slope", "Y_Cord", "DistToRoad"))
+dtCor = by(sd_bena_cch, sd_bena_cch$Section, FUN = function(X) cor(dt$resid, dt$resid, method = "pearson"))
 
-#Creates a correlation matrix using the variables specified above
-chart.Correlation(CorPlot_bena, histogram = TRUE, method = c("spearman"))
-
-chart.Correlation(CorPlot_salix, histogram = TRUE, method = c("spearman"))
-
+dtCor
 
 # 3. BOX PLOTS ####
 #Plot BAI as a function of soil texture
@@ -404,7 +400,7 @@ plot(HerbiPlot$PropMoose ~ HerbiPlot$`2015MooseDensity`)
 plot(HerbiPlot$MooseFeces ~ HerbiPlot$`2015MooseDensity`)
 
 # 9. PLOT ENVIRONEMNTAL VARIABLES ALONG Y-CORD #### 
-par(mfrow=c(4,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) #, bg=NA) 
+par(mfrow=c(7,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) #, bg=NA) 
 
 #par(mfrow=c(1,1))
 
@@ -417,20 +413,20 @@ lines(Section_Data$Y_Cord, Section_Data$PropHare, type = "b", pch = 1, col = "fi
 lines(Section_Data$Y_Cord, Section_Data$PropPtarmagin, type = "b", pch = 1, col = "dodgerblue4", lty = 3, lwd = 1.5)
 
 legend("topleft", legend=c("Moose", "Hare", "Ptarmagin"),
-       col=c("chartreuse3", "firebrick3", "dodgerblue4"), lty=1:3, cex=1.45, bty = "n", text.width=0)
+       col=c("chartreuse3", "firebrick3", "dodgerblue4"), lty=1:3, cex=1.2, bty = "n", text.width=0)
 
-mtext("Browsing Pressure", side= 3, line = -1, adj = 1, padj = 0, cex=1.25)
+mtext("Browsing Intensity", side= 3, line = -1, adj = 1, padj = 0, cex=1.25)
 
 plot(Section_Data$PropBENA ~ Section_Data$Y_Cord,
-     type = "b", pch = 1, col = "darkolivegreen2", lty = 4, lwd = 1.5, 
+     type = "b", pch = 0, col = "darkolivegreen2", lty = 4, lwd = 1.5, 
      xaxt='n', frame.plot = FALSE, ylim = c(-.15,0.85),
      ylab = "% of Shrubs", xlab = "", cex.lab = 1.5, cex.axis = 1.25)
 
-lines(Section_Data$Y_Cord, Section_Data$PropALVI, type = "b", pch = 5, col = "darkolivegreen3", lty = 2, lwd = 1.5 )
-lines(Section_Data$Y_Cord, Section_Data$PropSALIX, type = "b", pch = 6, col = "darkolivegreen4", lty = 3, lwd = 1.5)
+lines(Section_Data$Y_Cord, Section_Data$PropALVI, type = "b", pch = 5, col = "darkolivegreen3", lty = 5, lwd = 1.5 )
+lines(Section_Data$Y_Cord, Section_Data$PropSALIX, type = "b", pch = 6, col = "darkolivegreen4", lty = 6, lwd = 1.5)
 
-legend("bottom", "groups", legend=c("Betula nana", "Alnus viridus", "Salix spp."), ncol=3, inset=c(-0.2,-.02),
-       col=c("darkolivegreen2", "darkolivegreen3", "darkolivegreen4"), lty=4:36, cex=1.45, bty = "n", text.width=.4)
+legend("bottom", "groups", legend=c("Betula nana", "Alnus viridus", "Salix spp."), ncol=3, inset=c(-0.2,-.08),
+       col=c("darkolivegreen2", "darkolivegreen3", "darkolivegreen4"), lty=4:6, pch = c(0,5,6), cex=1.2, bty = "n", text.width=.4)
 
 mtext("Dominant Shrub Species", side= 3, line = -1, adj = 1, padj = 0, cex=1.25)
     
@@ -442,8 +438,8 @@ plot(Section_Data$CanopyCover ~ Section_Data$Y_Cord,
 mtext("Canopy Cover", side= 3, line = -3, adj = 1, cex=1.25)
 
 plot(Section_Data$StemHeight ~ Section_Data$Y_Cord,
-     type = "b", pch = 1, col = "forest green", 
-    frame.plot = FALSE, lwd = 1.5, #xaxt='n',
+     type = "b", pch = 1, col = "darkslategray", 
+    frame.plot = FALSE, lwd = 1.5, xaxt='n',
      ylab = "cm", xlab = "", cex.lab = 1.5, cex.axis = 1.25)
 
 mtext("Canopy Height", side= 3, line = -2.5, adj = 1, padj = 0, cex=1.25)
@@ -1044,24 +1040,24 @@ mtext("Year",side=1, col="black", line=2.5)
 # 15. PLOT MIXED EFFECTS ACROSS SITES ####
 
 
-ggplot(sd_bena_cch, aes(x = Year, y = resid, colour = Genus)) +
+ggplot(sd_bena_cch_S, aes(x = Year, y = resid, colour = Genus)) +
   facet_wrap(~Section, nrow=4) +   # a panel for each sites
   geom_point(alpha = 0.5) +
   theme_classic() +
-  geom_line(data = cbind(sd_bena_cch, pred = predict(Optimal_model_b)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
+  geom_line(data = cbind(sd_bena_cch_S, pred = predict(Optimal_model_b)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
 
-  facet_wrap(~Section, nrow=4) +   # a panel for each mountain range
+  #facet_wrap(~Section, nrow=4) +   # a panel for each mountain range
   geom_point(alpha = 0.5) +
   theme_classic() +
-  geom_line(data = cbind(sd_bena_cch, pred = predict(CH1H2_model_b)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
+  geom_line(data = cbind(sd_bena_cch_S, pred = predict(CH1H2_model_b)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
   theme(legend.position = "none",
         panel.spacing = unit(2, "lines"))  # adding space between panels)
 
-ggplot(sd_salix_cch, aes(x = iem.summ.temp, y = resid, colour = ShrubID)) +
+ggplot(sd_salix_cch_S, aes(x = iem.summ.temp, y = resid, colour = ShrubID)) +
   facet_wrap(~Section, nrow=4) +   # a panel for each mountain range
   geom_point(alpha = 0.5) +
   theme_classic() +
-  geom_line(data = cbind(sd_salix_cch, pred = predict(CH1_model_s)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
+  geom_line(data = cbind(sd_salix_cch_S, pred = predict(CH1_model_s)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
   theme(legend.position = "none",
         panel.spacing = unit(2, "lines"))  # adding space between panels)
 
