@@ -266,6 +266,9 @@ mtext("Latitude", side= 1, line = 3, cex=1.25)
 # APPENDIX 2: Model Selection via Backwards Elimination ####
 
 #Betula
+#rownames(ModelSelection_Betula) = ModelSelection_Betula$Parameter
+
+#ModelSelection_Betula$Parameter = NULL
 
 par(mar = c(5,12,5,2) + 0.1)
 
@@ -276,14 +279,18 @@ color2D.matplot(ModelSelection_Betula,
                 show.legend=TRUE, show.values=4,
                 axes=FALSE, xlab="",ylab="")
 
-axis(3,at=0.5:5,las=1,labels=c("Full\n Model", "Step 1", "Step 2", "Step 3", "Minimal\nAdequate\nModel"))
-axis(2,at=0.5:9,las=2,labels=c("Snowshow Hare :\nMean SummerTemperature\nInteraction",
+axis(3,at=0.5:2,las=1,labels=c("Full\n Model", "Minimal\nAdequate\nModel"))
+axis(2,at=0.5:6,las=2,labels=c("Snowshow Hare :\nMean SummerTemperature\nInteraction",
                                "Moose :\nMean Summer Temperature\nInteraction",
-                               "Ptarmagin\n Browsing Intensity", "Snowshoe Hare\nBrowsing Intensity", "Moose\nBrowsingIntensity",
                                "Snowshoe Hare\nIndex", "Moose Density", 
                                "Mean Summer\nTemperature", "Mean Summer\nPrecipitation"))
 
+mtext('Betula nana Model Selection', side=3, line=3, padj = 2, at = -.35, cex = 1.25)
+
 #Salix
+#rownames(ModelSelection_Salix) = ModelSelection_Salix$Parameter
+
+#ModelSelection_Salix$Parameter = NULL
 
 par(mar = c(5,12,5,2) + 0.1)
 
@@ -294,9 +301,37 @@ color2D.matplot(ModelSelection_Salix,
                 show.legend=TRUE, show.values=4,
                 axes=FALSE, xlab="",ylab="")
 
-axis(3,at=0.5:7,las=1,labels=c("Full\n Model", "Step 1", "Step 2", "Step 3", "Step 4", "Step 5", "Minimal\nAdequate\nModel"))
-axis(2,at=0.5:9,las=2,labels=c("Snowshow Hare :\nMean SummerTemperature\nInteraction",
+axis(3,at=0.5:4,las=1,labels=c("Full\n Model", "Step 1", "Step 2", "Minimal\nAdequate\nModel"))
+axis(2,at=0.5:6,las=2,labels=c("Snowshow Hare :\nMean SummerTemperature\nInteraction",
                                "Moose :\nMean Summer Temperature\nInteraction",
-                               "Ptarmagin\n Browsing Intensity", "Snowshoe Hare\nBrowsing Intensity", "Moose\nBrowsingIntensity",
                                "Snowshoe Hare\nIndex", "Moose Density", 
                                "Mean Summer\nTemperature", "Mean Summer\nPrecipitation"))
+
+mtext('Salix spp. Model Selection', side=3, line=3, padj = 2, at = -.8, cex = 1.25)
+
+
+#Salix: Spatial
+#rownames(ModelSelection_Salix_S) = ModelSelection_Salix_S$Parameter
+
+#ModelSelection_Salix_S$Parameter = NULL
+
+par(mar = c(5,12,5,2) + 0.1)
+
+color2D.matplot(ModelSelection_Salix_S, 
+                vcol = "White", na.color = "White",
+                extremes = c("Blue","Red"),
+                nslices = 50,
+                show.legend=TRUE, show.values=4,
+                axes=FALSE, xlab="",ylab="")
+
+axis(3,at=0.5:3,las=1,labels=c("Full\n Model", "Step 1", "Minimal\nAdequate\nModel"))
+axis(2,at=0.5:8,las=2,labels=c("Ptarmagin :\nMean SummerTemperature\nInteraction",
+                               "Snowshow Hare :\nMean Summer Temperature\nInteraction",
+                               "Moose :\nMean Summer Temperature\nInteraction",
+                               "Ptarmagin\n Browsing Intensity", "Snowshoe Hare\nBrowsing Intensity", "Moose\nBrowsingIntensity",
+                               "Mean Summer\nPrecipitation", "Mean Summer\nTemperature"))
+
+mtext('Salix spp. Model Selection', side=3, line=3, padj = 2, at = -.6, cex = 1.25)
+
+
+

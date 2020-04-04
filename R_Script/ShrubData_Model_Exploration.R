@@ -22,6 +22,7 @@ install.packages("forestplot")
 install.packages("plotrix")
 install.packages("Rmisc")
 install.packages("broom")
+install.packages("qualityTools")
 
 library(lme4)
 library(nlme)
@@ -61,6 +62,8 @@ library(plotrix)
 library(Rmisc)
 library(broom)
 library(gmodels)
+library(qualityTools)
+
 
 sessionInfo()
 old.packages()
