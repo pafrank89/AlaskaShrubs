@@ -148,7 +148,7 @@ anova.lme(step5_b_s)
 summary(step5_b_s)
 
 # Create the Optimal Model for Betula after backward selection 
-Optimal_model_b_s = lme(resid ~ iem.summ.rain.10 + 
+Optimal_model_b_s = lme(resid ~ iem.summ.rain.10, 
                           data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
 
 #Check the model assumptions, R2 and VIF for the global model
@@ -251,7 +251,7 @@ anova.lme(step3_s_s)
 summary(step3_s_s)
 
 # Create the Optimal Model for Betula after backward selection 
-Optimal_model_s_s = lme(resid ~ iem.summ.temp +
+Optimal_model_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
                           iem.summ.temp * PropPtarmagin_S +
                           PropPtarmagin_S,
                         data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
@@ -419,6 +419,8 @@ summary(Optimal_model_b)
 VarCorr(Optimal_model_b)
 
 intervals(Optimal_model_b)
+
+OMB_coef = coef(Optimal_model_b)
 
 #Plot the effect size of the Optimal Model for Betula
 fp = sjPlot :: plot_model(Optimal_model_b, axis.labels=c("Temperature:Hare Interaction", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),

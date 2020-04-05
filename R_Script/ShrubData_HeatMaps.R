@@ -6,11 +6,6 @@
 # Develop heat maps to vizualize interactions between continious model parameters 
 
 # DEVELOP HEAT MAPS FOR BETULA MODEL WITH INTERACTION MST:HI STANDARDIZED DATA####
-HM_B_MST_HD = lme(resid ~ iem.summ.temp + HareIndex + 
-                   iem.summ.temp * HareIndex,
-                   data = sd_bena_cch_S, random = ~ 1|Section/ShrubID,
-                   method = "REML")
-
 range(sd_bena_cch_S$resid)
 
 #Used in the predict grid 
@@ -136,7 +131,7 @@ pM = contourplot(Pred ~ iem.summ.temp + MooseDensity,
                  labels=list(cex=1),
                  col.regions=col.l,
                  region=TRUE,
-                 main=list("", cex=1))
+                 main=list("", cex=1.5))
 
 pM
 
@@ -347,7 +342,7 @@ range(sd_salix_cch_S$resid)
 #Used in the predict grid 
 HIs = mean(sd_salix_cch_S$HareIndex)
 MDs = mean(sd_salix_cch_S$MooseDensity)
-SRs = mean(sd_salix_cch_S$iem.summ.rain)
+SRs = mean(sd_salix_cch_S$iem.summ.rain.10)
 STs = mean(sd_salix_cch_S$iem.summ.temp)
 
 range(sd_salix_cch_S$iem.summ.temp)
@@ -358,6 +353,7 @@ range(sd_salix_cch_S$PropPtarmagin_S)
 
 # Predict Standardized Data
 MyData_sp<-expand.grid(iem.summ.temp = seq(-2, 2.5, length = 190),
+                       iem.summ.rain.10 = SRs,
                        PropPtarmagin_S = seq(-0.7, 2.3, length = 190))
 
 MyData_sp$Pred <- predict(Optimal_model_s_s, MyData_sp, level = 0) #Predicts the values based on model
@@ -424,6 +420,11 @@ lpoints(sd_salix_cch_S$iem.summ.temp, y = sd_salix_cch_S$PropPtarmagin_S,
 
 
 # DEVELOP HEAT MAPS FOR BETULA MODEL WITH INTERACTION MST:HI ####
+NS_Optimal_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                        iem.summ.temp * HareIndex +
+                        MooseDensity + HareIndex,
+                      data = sd_bena_cch, random = ~ 1|Section/ShrubID, method = "REML")
+
 range(sd_bena_cch$resid)
 
 #Used in the predict grid 
@@ -443,11 +444,11 @@ MyData_bh<-expand.grid(iem.summ.temp = seq(6, 18, length = 190),
                        MooseDensity = MD, 
                        HareIndex = seq(.75, 3.25, length = 190))
 
-MyData_bh$Pred <- predict(Optimal_model_b, MyData_bh, level = 0) #Predicts the values based on model
+MyData_bh$Pred <- predict(NS_Optimal_model_b, MyData_bh, level = 0) #Predicts the values based on model
 
 # Calculate SEs
-Designmat_b1 <- model.matrix(formula(Optimal_model_b)[-2], MyData_bh) ## [-2] drops response from formula
-predvar_b1 <- diag(Designmat_b1 %*% vcov(Optimal_model_b) %*% t(Designmat_b1)) 
+Designmat_b1 <- model.matrix(formula(NS_Optimal_model_b)[-2], MyData_bh) ## [-2] drops response from formula
+predvar_b1 <- diag(Designmat_b1 %*% vcov(NS_Optimal_model_b) %*% t(Designmat_b1)) 
 MyData_bh$SE <- sqrt(predvar_b1)
 MyData_bh$SEup<-MyData_bh$SE+MyData_bh$Pred
 MyData_bh$SEdown<-MyData_bh$Pred-MyData_bh$SE
@@ -755,12 +756,17 @@ lpoints(sd_salix_cch$iem.summ.temp, y = sd_salix_cch$MooseDensity,
 
 
 # DEVELOP HEAT MAPS FOR SALIX MODEL WITH INTERACTION MST:PB ####
+NS_Optimal_model_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
+                          iem.summ.temp * PropPtarmagin_S +
+                          PropPtarmagin_S,
+                        data = sd_salix_cch, random = ~ 1|Section/ShrubID, method = "REML")
+
 range(sd_salix_cch$resid)
 
 #Used in the predict grid 
 HIs = mean(sd_salix_cch$HareIndex)
 MDs = mean(sd_salix_cch$MooseDensity)
-SRs = mean(sd_salix_cch$iem.summ.rain)
+SRs = mean(sd_salix_cch$iem.summ.rain.10)
 STs = mean(sd_salix_cch$iem.summ.temp)
 
 range(sd_salix_cch$iem.summ.temp)
@@ -771,13 +777,14 @@ range(sd_salix_cch$PropPtarmagin_S)
 
 # Predict Standardized Data
 MyData_sp<-expand.grid(iem.summ.temp = seq(6, 18, length = 190),
+                       iem.summ.rain.10 = SRs,
                        PropPtarmagin_S = seq(0, 0.22, length = 190))
 
-MyData_sp$Pred <- predict(Optimal_model_s_s, MyData_sp, level = 0) #Predicts the values based on model
+MyData_sp$Pred <- predict(NS_Optimal_model_s_s, MyData_sp, level = 0) #Predicts the values based on model
 
 # Calculate SEs
-Designmat_s3 <- model.matrix(formula(Optimal_model_s_s)[-2], MyData_sp) ## [-2] drops response from formula
-predvar_s3 <- diag(Designmat_s3 %*% vcov(Optimal_model_s_s) %*% t(Designmat_s3)) 
+Designmat_s3 <- model.matrix(formula(NS_Optimal_model_s_s)[-2], MyData_sp) ## [-2] drops response from formula
+predvar_s3 <- diag(Designmat_s3 %*% vcov(NS_Optimal_model_s_s) %*% t(Designmat_s3)) 
 MyData_sp$SE <- sqrt(predvar_s3)
 MyData_sp$SEup<-MyData_sp$SE+MyData_sp$Pred
 MyData_sp$SEdown<-MyData_sp$Pred-MyData_sp$SE
@@ -804,7 +811,7 @@ pPs
 pPs = pPs + contourplot(SEup ~ iem.summ.temp * PropPtarmagin_S, 
                         data = MyData_sp,
                         cuts=10,
-                        at = c(7.5), #change these when you see the plot
+                        at = c(.25), #change these when you see the plot
                         pretty=TRUE,
                         lty=2,
                         zlim = range(z, finite = TRUE),

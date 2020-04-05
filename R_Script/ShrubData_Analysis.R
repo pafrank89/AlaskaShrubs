@@ -523,8 +523,8 @@ plot(RWI_NegExp ~ Year, data = sd_all_bena_agg,
 
 par(new=TRUE)
 
-plot(log(BAI) ~ Year, data = sd_all_bena_agg,
-     col = "orange", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.7, 2), xlim=c(1955, 2020))
+plot(BAI ~ Year, data = sd_all_bena_agg,
+     col = "orange", type = "l", xlab = "", ylab = "")#, axes=FALSE, ylim=c(-1.7, 2), xlim=c(1955, 2020))
 
 par(new=TRUE)
 
@@ -558,8 +558,8 @@ plot(RWI_NegExp ~ Year, data = sd_all_salix_agg,
 
 par(new=TRUE)
 
-plot(log(BAI) ~ Year, data = sd_all_salix_agg,
-     col = "orange", type = "l", xlab = "", ylab = "", axes=FALSE, ylim=c(-1.5,2.5), xlim=c(1975, 2020))
+plot(BAI ~ Year, data = sd_all_salix_agg,
+     col = "orange", type = "l", xlab = "", ylab = "") #, axes=FALSE, ylim=c(-1.5,2.5), xlim=c(1975, 2020))
 
 par(new=TRUE)
 

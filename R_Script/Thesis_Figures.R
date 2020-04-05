@@ -38,7 +38,7 @@ P + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()
           axis.text=element_text(size=14), axis.title=element_text(size=16),
           legend.position = c(0.8, 0.8), legend.title = element_text( size=16), legend.text = element_text( size=14))
 
-# FIGURE 6: Age Standardized BAI Plot ####
+# FIGURE 6: Age Standardized BAI & Temporal Fixed Effects Plot ####
 ## Plot standardized BAI residuals against mean summer temperature
 
 range(sd_BAI_bena_agg$resid)
@@ -198,6 +198,93 @@ axis(1,pretty(range(sd_BAI_bena_agg$Year),20))
 mtext("Year", side=1, col="black", line=2.7, cex = 1) 
 
 
+# FIGURE 8: Age Standardized BAI ploted agaisnst Significant Response Variables ####
+    
+ggplot(sd_all_cch, aes(resid, iem.summ.temp, group=interaction(ShrubID, Section), col=Genus, shape=Genus )) + 
+  facet_grid(~Section) +
+  #geom_line(aes(y=iem.summ.temp, lty=Genus), size=0.8) +
+  geom_smooth(method= "lm") +
+  geom_point(alpha = 0.3) + 
+  #geom_hline(yintercept=0, linetype="dashed") +
+  theme_bw()
+
+
+#Plot climatic variables 
+p8.1 = ggplot(data = sd_bena_cch, 
+       aes(x = resid,
+           y = iem.summ.temp)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("") +
+  ylab("Mean Summer Temperature") +
+  ggtitle("Betula nana")
+
+p8.2 = ggplot(data = sd_bena_cch, 
+       aes(x = resid,
+           y = iem.summ.rain.10)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("Age Standardized BAI") +
+  ylab("Mean Summer Precipitation")
+
+p8.3 = ggplot(data = sd_salix_cch, 
+       aes(x = resid,
+           y = iem.summ.temp)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("") +
+  ylab("") +
+  ggtitle("Salix spp.")
+
+p8.4 = ggplot(data = sd_salix_cch, 
+       aes(x = resid,
+           y = iem.summ.rain.10)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("Age Standardized BAI") +
+  ylab("")
+
+multiplot(p8.1, p8.2, p8.3, p8.4,  cols = 2)
+
+#Plot Herbivore variables 
+
+p8.5 = ggplot(data = sd_bena_cch_S, 
+              aes(x = resid,
+                  y = MooseDensity)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("") +
+  ylab("Moose Density (moose/km²)") +
+  ggtitle("Betula nana")
+
+p8.6 = ggplot(data = sd_bena_cch_S, 
+              aes(x = resid,
+                  y = HareIndex)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("Age Standardized BAI") +
+  ylab("Snowshoe Hare Index")
+
+p8.7 = ggplot(data = sd_salix_cch_S, 
+              aes(x = resid,
+                  y = MooseDensity)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("") +
+  ylab("") +
+  ggtitle("Salix spp.")
+
+p8.8 = ggplot(data = sd_salix_cch_S, 
+              aes(x = resid,
+                  y = HareIndex)) + 
+  geom_point(size = 2) +
+  geom_smooth(method= "lm") +
+  xlab("Age Standardized BAI") +
+  ylab("")
+
+multiplot(p8.5, p8.6, p8.7, p8.8,  cols = 2)
+
+
 # APPENDIX 1: Variation in Site Covariates with Latitude ####
 par(mfrow=c(7,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8))
 
@@ -283,7 +370,7 @@ axis(3,at=0.5:2,las=1,labels=c("Full\n Model", "Minimal\nAdequate\nModel"))
 axis(2,at=0.5:6,las=2,labels=c("Snowshow Hare :\nMean SummerTemperature\nInteraction",
                                "Moose :\nMean Summer Temperature\nInteraction",
                                "Snowshoe Hare\nIndex", "Moose Density", 
-                               "Mean Summer\nTemperature", "Mean Summer\nPrecipitation"))
+                               "Mean Summer\nPrecipitation", "Mean Summer\nTemperature"))
 
 mtext('Betula nana Model Selection', side=3, line=3, padj = 2, at = -.35, cex = 1.25)
 
@@ -305,7 +392,7 @@ axis(3,at=0.5:4,las=1,labels=c("Full\n Model", "Step 1", "Step 2", "Minimal\nAde
 axis(2,at=0.5:6,las=2,labels=c("Snowshow Hare :\nMean SummerTemperature\nInteraction",
                                "Moose :\nMean Summer Temperature\nInteraction",
                                "Snowshoe Hare\nIndex", "Moose Density", 
-                               "Mean Summer\nTemperature", "Mean Summer\nPrecipitation"))
+                               "Mean Summer\nPrecipitation", "Mean Summer\nTemperature"))
 
 mtext('Salix spp. Model Selection', side=3, line=3, padj = 2, at = -.8, cex = 1.25)
 
