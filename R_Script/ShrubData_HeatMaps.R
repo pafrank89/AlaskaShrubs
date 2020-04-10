@@ -458,8 +458,8 @@ col.l = colorRampPalette(c('white', rgb(0, 80, 158, max = 255)))
 z = c(0:10)
 pH = contourplot(Pred ~ iem.summ.temp + HareIndex,
                  data=MyData_bh,
-                 xlab="Mean Summer Temperature",
-                 ylab="Snowshoe Hare Population Index",
+                 xlab=list("Mean Summer Temperature", cex = 1.25),
+                 ylab=list("Snowshoe Hare Population Index", cex = 1.25),
                  pretty=TRUE,
                  lty=1,
                  zlim=range(z, finite=TRUE),
@@ -467,7 +467,7 @@ pH = contourplot(Pred ~ iem.summ.temp + HareIndex,
                  labels=list(cex=1),
                  col.regions=col.l,
                  region=TRUE,
-                 main=list("", cex=1))
+                 main=list("", cex=1.25))
 
 pH
 
@@ -475,7 +475,7 @@ pH
 pH = pH + contourplot(SEup ~ iem.summ.temp * HareIndex, 
                       data = MyData_bh,
                       cuts=10,
-                      at = c(7.5), #change these when you see the plot
+                      at = c(1), #change these when you see the plot
                       pretty=TRUE,
                       lty=2,
                       zlim = range(z, finite = TRUE),
@@ -489,7 +489,7 @@ pH
 pH = pH + contourplot(SEdown ~ iem.summ.temp * HareIndex, 
                       data=MyData_bh,
                       cuts=10,
-                      at = c(6.5), #change these when you see the plot
+                      at = c(1), #change these when you see the plot
                       pretty=TRUE,
                       lty=2,
                       zlim = range(z, finite = TRUE),
@@ -504,7 +504,7 @@ trellis.focus("panel", 1, 1, highlight=F)
 
 lpoints(sd_bena_cch$iem.summ.temp, y = sd_bena_cch$HareIndex, 
         col = rgb(red = 0, green = 0, blue = 0, alpha = 0.1), 
-        pch = 4, cex = 0.65)
+        pch = 4, cex = 0.75)
 
 # DEVELOP HEAT MAPS FOR BETULA MODEL WITH INTERACTION MST:MD ####
 
@@ -587,7 +587,7 @@ trellis.focus("panel", 1, 1, highlight=F)
 
 lpoints(sd_bena_cch$iem.summ.temp, y = sd_bena_cch$MooseDensity, 
         col = rgb(red = 0, green = 0, blue = 0, alpha = 0.1), 
-        pch = 4, cex = 0.65)
+        pch = 4, cex = 0.75)
 
 # DEVELOP HEAT MAPS FOR SALIX MODEL WITH INTERACTION MST:HI ####
 
@@ -792,10 +792,12 @@ MyData_sp$SEdown<-MyData_sp$Pred-MyData_sp$SE
 # Plot
 col.l = colorRampPalette(c('white', rgb(0, 80, 158, max = 255)))
 z = c(0:10)
+
+
 pPs = contourplot(Pred ~ iem.summ.temp + PropPtarmagin_S,
                   data=MyData_sp,
-                  xlab="Mean Summer Temperature",
-                  ylab="Ptarmagin Broesing Intensity",
+                  xlab=list("Mean Summer Temperature", cex = 1.15),
+                  ylab=list("Ptarmagin Browsing Intensity", cex = 1.15),
                   pretty=TRUE,
                   lty=1,
                   zlim=range(z, finite=TRUE),
@@ -803,7 +805,7 @@ pPs = contourplot(Pred ~ iem.summ.temp + PropPtarmagin_S,
                   labels=list(cex=1),
                   col.regions=col.l,
                   region=TRUE,
-                  main=list("", cex=1))
+                  main=list("", cex=1.25))
 
 pPs
 
@@ -811,7 +813,7 @@ pPs
 pPs = pPs + contourplot(SEup ~ iem.summ.temp * PropPtarmagin_S, 
                         data = MyData_sp,
                         cuts=10,
-                        at = c(.25), #change these when you see the plot
+                        at = c(0), #change these when you see the plot
                         pretty=TRUE,
                         lty=2,
                         zlim = range(z, finite = TRUE),
@@ -825,7 +827,7 @@ pPs
 pPs = pPs + contourplot(SEdown ~ iem.summ.temp * PropPtarmagin_S, 
                         data=MyData_sp,
                         cuts=10,
-                        at = c(6.5), #change these when you see the plot
+                        at = c(0), #change these when you see the plot
                         pretty=TRUE,
                         lty=2,
                         zlim = range(z, finite = TRUE),

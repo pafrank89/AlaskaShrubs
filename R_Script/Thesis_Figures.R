@@ -199,90 +199,483 @@ mtext("Year", side=1, col="black", line=2.7, cex = 1)
 
 
 # FIGURE 8: Age Standardized BAI ploted agaisnst Significant Response Variables ####
-    
-ggplot(sd_all_cch, aes(resid, iem.summ.temp, group=interaction(ShrubID, Section), col=Genus, shape=Genus )) + 
-  facet_grid(~Section) +
-  #geom_line(aes(y=iem.summ.temp, lty=Genus), size=0.8) +
-  geom_smooth(method= "lm") +
-  geom_point(alpha = 0.3) + 
-  #geom_hline(yintercept=0, linetype="dashed") +
-  theme_bw()
+
+# BETULA PLOTS
+#Create a model with non-standardized values
+NS_Optimal_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                           iem.summ.temp * HareIndex +
+                           MooseDensity + HareIndex,
+                         data = sd_bena_cch, random = ~ 1|Section/ShrubID, method = "REML")
+
+#Establish a dataframe with variables from the model. Add values for growth and the variable of interest
+TrendLine_ST_b<-data.frame(resid = sd_bena_cch$resid,
+                       iem.summ.temp = sd_bena_cch$iem.summ.temp,
+                       iem.summ.rain.10 = mean(sd_bena_cch$iem.summ.rain.10),
+                       MooseDensity = mean(sd_bena_cch$MooseDensity),
+                       HareIndex = mean(sd_bena_cch$HareIndex))
+
+#Predict values of age standardized BAI 
+TrendLine_ST_b$Pred <- predict(NS_Optimal_model_b, TrendLine_ST_b, level = 0)
+
+#Establish standard errors for the predicted values
+TL_des_ST_b = model.matrix(formula(NS_Optimal_model_b)[-2], TrendLine_ST_b)
+
+TL_predvar_ST_b = diag( TL_des_ST_b %*% vcov(NS_Optimal_model_b) %*% t(TL_des_ST_b) )
+
+TrendLine_ST_b$lower = with(TrendLine_ST_b, Pred - 2*sqrt(TL_predvar_ST_b) )
+TrendLine_ST_b$upper = with(TrendLine_ST_b, Pred + 2*sqrt(TL_predvar_ST_b) )
+
+# Plot the significant effect against age standardized BAI
+p8.1 = ggplot(sd_bena_cch, aes(x = iem.summ.temp, y = resid)) +
+         geom_point(size = 2) +
+         geom_line(data = TrendLine_ST_b, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+         geom_ribbon(data = TrendLine_ST_b, aes(y = NULL, ymin = lower, ymax = upper), 
+         fill = "steelblue", alpha = .25) +
+         xlab("Mean Summer Temperature (°C)") +
+         ylab("Age Standardized BAI") +
+         ggtitle("Betula nana")
+  
 
 
-#Plot climatic variables 
-p8.1 = ggplot(data = sd_bena_cch, 
-       aes(x = resid,
-           y = iem.summ.temp)) + 
+TrendLine_SP_b<-data.frame(resid = sd_bena_cch$resid,
+                           iem.summ.temp = mean(sd_bena_cch$iem.summ.temp),
+                           iem.summ.rain.10 = sd_bena_cch$iem.summ.rain.10,
+                           MooseDensity = mean(sd_bena_cch$MooseDensity),
+                           HareIndex = mean(sd_bena_cch$HareIndex))
+
+TrendLine_SP_b$Pred <- predict(NS_Optimal_model_b, TrendLine_SP_b, level = 0)
+
+TL_des_SP_b = model.matrix(formula(NS_Optimal_model_b)[-2], TrendLine_SP_b)
+
+TL_predvar_SP_b = diag( TL_des_SP_b %*% vcov(NS_Optimal_model_b) %*% t(TL_des_SP_b) )
+
+TrendLine_SP_b$lower = with(TrendLine_SP_b, Pred - 2*sqrt(TL_predvar_SP_b) )
+TrendLine_SP_b$upper = with(TrendLine_SP_b, Pred + 2*sqrt(TL_predvar_SP_b) )
+
+p8.2 = ggplot(sd_bena_cch, aes(x = iem.summ.rain.10, y = resid)) +
+        geom_point(size = 2) +
+        geom_line(data = TrendLine_SP_b, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+        geom_ribbon(data = TrendLine_SP_b, aes(y = NULL, ymin = lower, ymax = upper), 
+        fill = "steelblue", alpha = .25) +
+        xlab("Mean Summer Precipitation (cm)") +
+        ylab("Age Standardized BAI")
+        
+# SALIX PLOTS
+
+NS_Optimal_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                        MooseDensity + HareIndex,
+                      data = sd_salix_cch, random = ~ 1|Section/ShrubID, method = "REML")
+
+
+TrendLine_ST_s<-data.frame(resid = sd_salix_cch$resid,
+                           iem.summ.temp = sd_salix_cch$iem.summ.temp,
+                           iem.summ.rain.10 = mean(sd_salix_cch$iem.summ.rain.10),
+                           MooseDensity = mean(sd_salix_cch$MooseDensity),
+                           HareIndex = mean(sd_salix_cch$HareIndex))
+
+TrendLine_ST_s$Pred <- predict(NS_Optimal_model_s, TrendLine_ST_s, level = 0)
+
+TL_des_ST_s = model.matrix(formula(NS_Optimal_model_s)[-2], TrendLine_ST_s)
+
+TL_predvar_ST_s = diag( TL_des_ST_s %*% vcov(NS_Optimal_model_s) %*% t(TL_des_ST_s) )
+
+TrendLine_ST_s$lower = with(TrendLine_ST_s, Pred - 2*sqrt(TL_predvar_ST_s) )
+TrendLine_ST_s$upper = with(TrendLine_ST_s, Pred + 2*sqrt(TL_predvar_ST_s) )
+
+p8.3 = ggplot(sd_salix_cch, aes(x = iem.summ.temp, y = resid)) +
   geom_point(size = 2) +
-  geom_smooth(method= "lm") +
-  xlab("") +
-  ylab("Mean Summer Temperature") +
-  ggtitle("Betula nana")
-
-p8.2 = ggplot(data = sd_bena_cch, 
-       aes(x = resid,
-           y = iem.summ.rain.10)) + 
-  geom_point(size = 2) +
-  geom_smooth(method= "lm") +
-  xlab("Age Standardized BAI") +
-  ylab("Mean Summer Precipitation")
-
-p8.3 = ggplot(data = sd_salix_cch, 
-       aes(x = resid,
-           y = iem.summ.temp)) + 
-  geom_point(size = 2) +
-  geom_smooth(method= "lm") +
-  xlab("") +
+  geom_line(data = TrendLine_ST_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_ST_s, aes(y = NULL, ymin = lower, ymax = upper), 
+  fill = "steelblue", alpha = .25) +
+  xlab("Mean Summer Temperature (°C)") +
   ylab("") +
-  ggtitle("Salix spp.")
+  ggtitle("Salix spp")
 
-p8.4 = ggplot(data = sd_salix_cch, 
-       aes(x = resid,
-           y = iem.summ.rain.10)) + 
+
+TrendLine_SP_s<-data.frame(resid = sd_salix_cch$resid,
+                           iem.summ.temp = mean(sd_salix_cch$iem.summ.temp),
+                           iem.summ.rain.10 = sd_salix_cch$iem.summ.rain.10,
+                           MooseDensity = mean(sd_salix_cch$MooseDensity),
+                           HareIndex = mean(sd_salix_cch$HareIndex))
+
+TrendLine_SP_s$Pred <- predict(NS_Optimal_model_s, TrendLine_SP_s, level = 0)
+
+TL_des_SP_s = model.matrix(formula(NS_Optimal_model_s)[-2], TrendLine_SP_s)
+
+TL_predvar_SP_s = diag( TL_des_SP_s %*% vcov(NS_Optimal_model_s) %*% t(TL_des_SP_s) )
+
+TrendLine_SP_s$lower = with(TrendLine_SP_s, Pred - 2*sqrt(TL_predvar_SP_s) )
+TrendLine_SP_s$upper = with(TrendLine_SP_s, Pred + 2*sqrt(TL_predvar_SP_s) )
+
+p8.4 = ggplot(sd_salix_cch, aes(x = iem.summ.rain.10, y = resid)) +
   geom_point(size = 2) +
-  geom_smooth(method= "lm") +
-  xlab("Age Standardized BAI") +
+  geom_line(data = TrendLine_SP_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_SP_s, aes(y = NULL, ymin = lower, ymax = upper), 
+              fill = "steelblue", alpha = .25) +
+  xlab("Mean Summer Precipitation (cm)") +
   ylab("")
 
 multiplot(p8.1, p8.2, p8.3, p8.4,  cols = 2)
 
+#--------------------------------------------------------------------------#
 #Plot Herbivore variables 
 
-p8.5 = ggplot(data = sd_bena_cch_S, 
-              aes(x = resid,
-                  y = MooseDensity)) + 
+# BETULA PLOTS
+NS_Optimal_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                           iem.summ.temp * HareIndex +
+                           MooseDensity + HareIndex,
+                         data = sd_bena_cch, random = ~ 1|Section/ShrubID, method = "REML")
+
+TrendLine_MD_b<-data.frame(resid = sd_bena_cch$resid,
+                           iem.summ.temp = mean(sd_bena_cch$iem.summ.temp),
+                           iem.summ.rain.10 = mean(sd_bena_cch$iem.summ.rain.10),
+                           MooseDensity = sd_bena_cch$MooseDensity,
+                           HareIndex = mean(sd_bena_cch$HareIndex))
+
+TrendLine_MD_b$Pred <- predict(NS_Optimal_model_b, TrendLine_MD_b, level = 0)
+
+TL_des_MD_b = model.matrix(formula(NS_Optimal_model_b)[-2], TrendLine_MD_b)
+
+TL_predvar_MD_b = diag( TL_des_MD_b %*% vcov(NS_Optimal_model_b) %*% t(TL_des_MD_b) )
+
+TrendLine_MD_b$lower = with(TrendLine_MD_b, Pred - 2*sqrt(TL_predvar_MD_b) )
+TrendLine_MD_b$upper = with(TrendLine_MD_b, Pred + 2*sqrt(TL_predvar_MD_b) )
+
+p8.5 = ggplot(sd_bena_cch, aes(x = MooseDensity, y = resid)) +
   geom_point(size = 2) +
-  geom_smooth(method= "lm") +
-  xlab("") +
-  ylab("Moose Density (moose/km²)") +
+  geom_line(data = TrendLine_MD_b, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_MD_b, aes(y = NULL, ymin = lower, ymax = upper), 
+              fill = "steelblue", alpha = .25) +
+  xlab("Moose Density (moose/km²)") +
+  ylab("Age Standardized BAI") +
   ggtitle("Betula nana")
 
-p8.6 = ggplot(data = sd_bena_cch_S, 
-              aes(x = resid,
-                  y = HareIndex)) + 
-  geom_point(size = 2) +
-  geom_smooth(method= "lm") +
-  xlab("Age Standardized BAI") +
-  ylab("Snowshoe Hare Index")
 
-p8.7 = ggplot(data = sd_salix_cch_S, 
-              aes(x = resid,
-                  y = MooseDensity)) + 
+TrendLine_HI_b<-data.frame(resid = sd_bena_cch$resid,
+                           iem.summ.temp = mean(sd_bena_cch$iem.summ.temp),
+                           iem.summ.rain.10 = mean(sd_bena_cch$iem.summ.rain.10),
+                           MooseDensity = mean(sd_bena_cch$MooseDensity),
+                           HareIndex = sd_bena_cch$HareIndex)
+
+TrendLine_HI_b$Pred <- predict(NS_Optimal_model_b, TrendLine_HI_b, level = 0)
+
+TL_des_HI_b = model.matrix(formula(NS_Optimal_model_b)[-2], TrendLine_HI_b)
+
+TL_predvar_HI_b = diag( TL_des_HI_b %*% vcov(NS_Optimal_model_b) %*% t(TL_des_HI_b) )
+
+TrendLine_HI_b$lower = with(TrendLine_HI_b, Pred - 2*sqrt(TL_predvar_HI_b) )
+TrendLine_HI_b$upper = with(TrendLine_HI_b, Pred + 2*sqrt(TL_predvar_HI_b) )
+
+p8.6 = ggplot(sd_bena_cch, aes(x = HareIndex, y = resid)) +
   geom_point(size = 2) +
-  geom_smooth(method= "lm") +
-  xlab("") +
+  geom_line(data = TrendLine_HI_b, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_HI_b, aes(y = NULL, ymin = lower, ymax = upper), 
+  fill = "steelblue", alpha = .25) +
+  xlab("Snowshoe Hare Index") +
+  ylab("Age Standardized BAI")
+
+# SALIX PLOTS
+
+NS_Optimal_model_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                           MooseDensity + HareIndex,
+                         data = sd_salix_cch, random = ~ 1|Section/ShrubID, method = "REML")
+
+
+TrendLine_MD_s<-data.frame(resid = sd_salix_cch$resid,
+                           iem.summ.temp = mean(sd_salix_cch$iem.summ.temp),
+                           iem.summ.rain.10 = mean(sd_salix_cch$iem.summ.rain.10),
+                           MooseDensity = sd_salix_cch$MooseDensity,
+                           HareIndex = mean(sd_salix_cch$HareIndex))
+
+TrendLine_MD_s$Pred <- predict(NS_Optimal_model_s, TrendLine_MD_s, level = 0)
+
+TL_des_MD_s = model.matrix(formula(NS_Optimal_model_s)[-2], TrendLine_MD_s)
+
+TL_predvar_MD_s = diag( TL_des_MD_s %*% vcov(NS_Optimal_model_s) %*% t(TL_des_MD_s) )
+
+TrendLine_MD_s$lower = with(TrendLine_MD_s, Pred - 2*sqrt(TL_predvar_MD_s) )
+TrendLine_MD_s$upper = with(TrendLine_MD_s, Pred + 2*sqrt(TL_predvar_MD_s) )
+
+p8.7 = ggplot(sd_salix_cch, aes(x = MooseDensity, y = resid)) +
+  geom_point(size = 2) +
+  geom_line(data = TrendLine_MD_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_MD_s, aes(y = NULL, ymin = lower, ymax = upper), 
+  fill = "steelblue", alpha = .25) +
+  xlab("Moose Density (moose/km²)") +
   ylab("") +
-  ggtitle("Salix spp.")
+  ggtitle("Salix spp")
 
-p8.8 = ggplot(data = sd_salix_cch_S, 
-              aes(x = resid,
-                  y = HareIndex)) + 
+
+TrendLine_HI_s<-data.frame(resid = sd_salix_cch$resid,
+                           iem.summ.temp = mean(sd_salix_cch$iem.summ.temp),
+                           iem.summ.rain.10 = mean(sd_salix_cch$iem.summ.rain.10),
+                           MooseDensity = mean(sd_salix_cch$MooseDensity),
+                           HareIndex = sd_salix_cch$HareIndex)
+
+TrendLine_HI_s$Pred <- predict(NS_Optimal_model_s, TrendLine_HI_s, level = 0)
+
+TL_des_HI_s = model.matrix(formula(NS_Optimal_model_s)[-2], TrendLine_HI_s)
+
+TL_predvar_HI_s = diag( TL_des_HI_s %*% vcov(NS_Optimal_model_s) %*% t(TL_des_HI_s) )
+
+TrendLine_HI_s$lower = with(TrendLine_HI_s, Pred - 2*sqrt(TL_predvar_HI_s) )
+TrendLine_HI_s$upper = with(TrendLine_HI_s, Pred + 2*sqrt(TL_predvar_HI_s) )
+
+p8.8 = ggplot(sd_salix_cch, aes(x = HareIndex, y = resid)) +
   geom_point(size = 2) +
-  geom_smooth(method= "lm") +
-  xlab("Age Standardized BAI") +
+  geom_line(data = TrendLine_HI_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_HI_s, aes(y = NULL, ymin = lower, ymax = upper), 
+              fill = "steelblue", alpha = .25) +
+  xlab("Snowshoe Hare Index") +
   ylab("")
 
 multiplot(p8.5, p8.6, p8.7, p8.8,  cols = 2)
+
+#-----------------------------------------------------------------------#
+# SALIX SPATIAL PLOTS
+
+NS_Optimal_model_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
+                          iem.summ.temp * PropPtarmagin_S +
+                          PropPtarmagin_S,
+                        data = sd_salix_cch, random = ~ 1|Section/ShrubID, method = "REML")
+
+
+TrendLine_PB_s<-data.frame(resid = sd_salix_cch$resid,
+                           iem.summ.temp = mean(sd_salix_cch$iem.summ.temp),
+                           iem.summ.rain.10 = mean(sd_salix_cch$iem.summ.rain.10),
+                           PropPtarmagin_S = sd_salix_cch$PropPtarmagin_S)
+
+TrendLine_PB_s$Pred <- predict(NS_Optimal_model_s_s, TrendLine_PB_s, level = 0)
+
+TL_des_PB_s = model.matrix(formula(NS_Optimal_model_s_s)[-2], TrendLine_PB_s)
+
+TL_predvar_PB_s = diag( TL_des_PB_s %*% vcov(NS_Optimal_model_s_s) %*% t(TL_des_PB_s) )
+
+TrendLine_PB_s$lower = with(TrendLine_PB_s, Pred - 2*sqrt(TL_predvar_PB_s) )
+TrendLine_PB_s$upper = with(TrendLine_PB_s, Pred + 2*sqrt(TL_predvar_PB_s) )
+
+p8.9 = ggplot(sd_salix_cch, aes(x = PropPtarmagin_S, y = resid)) +
+  geom_point(size = 2) +
+  geom_line(data = TrendLine_PB_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_PB_s, aes(y = NULL, ymin = lower, ymax = upper), 
+  fill = "steelblue", alpha = .25) +
+  xlab("Ptarmigan Browsing Intensity\n(% Twigs Browsed)") +
+  ylab("Age Standardized BAI") +
+  ggtitle("Salix spp")
+
+p8.9
+
+
+TrendLine_SP_s<-data.frame(resid = sd_salix_cch$resid,
+                           iem.summ.temp = mean(sd_salix_cch$iem.summ.temp),
+                           iem.summ.rain.10 = sd_salix_cch$iem.summ.rain.10,
+                           PropPtarmagin_S = mean(sd_salix_cch$PropPtarmagin_S))
+
+TrendLine_SP_s$Pred <- predict(NS_Optimal_model_s_s, TrendLine_SP_s, level = 0)
+
+TL_des_SP_s = model.matrix(formula(NS_Optimal_model_s_s)[-2], TrendLine_SP_s)
+
+TL_predvar_SP_s = diag( TL_des_SP_s %*% vcov(NS_Optimal_model_s_s) %*% t(TL_des_SP_s) )
+
+TrendLine_SP_s$lower = with(TrendLine_SP_s, Pred - 2*sqrt(TL_predvar_SP_s) )
+TrendLine_SP_s$upper = with(TrendLine_SP_s, Pred + 2*sqrt(TL_predvar_SP_s) )
+
+p8.10 = ggplot(sd_salix_cch, aes(x = iem.summ.rain.10, y = resid)) +
+  geom_point(size = 2) +
+  geom_line(data = TrendLine_SP_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_SP_s, aes(y = NULL, ymin = lower, ymax = upper), 
+              fill = "steelblue", alpha = .25) +
+  xlab("Mean Summer Precipitation (cm)") +
+  ylab("Age Standardized BAI") +
+  ggtitle("")
+
+
+#__________________________________________________________________________#
+# FINAL PLOTS 
+
+#Betula w/ Temporal 
+p8.2 = ggplot(sd_bena_cch, aes(x = iem.summ.rain.10, y = resid)) +
+  geom_point(size = 2) +
+  geom_line(data = TrendLine_SP_b, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_SP_b, aes(y = NULL, ymin = lower, ymax = upper), 
+              fill = "steelblue", alpha = .25) +
+  xlab("Mean Summer Precipitation (cm)") +
+  ylab("Age Standardized BAI") +
+  ggtitle("")
+
+
+p8.5 = ggplot(sd_bena_cch, aes(x = MooseDensity, y = resid)) +
+  geom_point(size = 2) +
+  geom_line(data = TrendLine_MD_b, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_MD_b, aes(y = NULL, ymin = lower, ymax = upper), 
+              fill = "steelblue", alpha = .25) +
+  xlab("Moose Density (moose/km²)") +
+  ylab("Age Standardized BAI") +
+  ggtitle("")
+
+p8.2 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+             panel.background = element_blank(), axis.text=element_text(size=10), axis.title = element_text(size=13),
+             panel.border = element_rect(colour = "black", fill=NA, size=1))
+
+#Salix w/ Temporal 
+p8.3 = ggplot(sd_salix_cch, aes(x = iem.summ.temp, y = resid)) +
+  geom_point(size = 2) +
+  geom_line(data = TrendLine_ST_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_ST_s, aes(y = NULL, ymin = lower, ymax = upper), 
+              fill = "steelblue", alpha = .25) +
+  xlab("Mean Summer Temperature (°C)") +
+  ylab("Age Standardized BAI") +
+  ggtitle("")
+
+
+p8.7 = ggplot(sd_salix_cch, aes(x = MooseDensity, y = resid)) +
+  geom_point(size = 2) +
+  geom_line(data = TrendLine_MD_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_MD_s, aes(y = NULL, ymin = lower, ymax = upper), 
+              fill = "steelblue", alpha = .25) +
+  xlab("Moose Density (moose/km²)") +
+  ylab("Age Standardized BAI") +
+  ggtitle("")
+
+p8.8 = ggplot(sd_salix_cch, aes(x = HareIndex, y = resid)) +
+  geom_point(size = 2) +
+  geom_line(data = TrendLine_HI_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_HI_s, aes(y = NULL, ymin = lower, ymax = upper), 
+              fill = "steelblue", alpha = .25) +
+  xlab("Snowshoe Hare Index") +
+  ylab("Age Standardized BAI") +
+  ggtitle("")
+
+p8.8 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+              panel.background = element_blank(), axis.text=element_text(size=10), axis.title = element_text(size=13),
+              panel.border = element_rect(colour = "black", fill=NA, size=1))
+
+#Salix w/ Spatial  
+p8.10 = ggplot(sd_salix_cch, aes(x = iem.summ.rain.10, y = resid)) +
+  geom_point(size = 2) +
+  geom_line(data = TrendLine_SP_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
+  geom_ribbon(data = TrendLine_SP_s, aes(y = NULL, ymin = lower, ymax = upper), 
+              fill = "steelblue", alpha = .25) +
+  xlab("Mean Summer Precipitation (cm)") +
+  ylab("Age Standardized BAI") +
+  ggtitle("")
+
+
+p8.10 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+              panel.background = element_blank(), axis.text=element_text(size=10), axis.title = element_text(size=13),
+              panel.border = element_rect(colour = "black", fill=NA, size=1))
+
+# FIGURE 9: Contour Plots for Interacting Effects ####
+
+#Plot for Hare:MST
+col.l = colorRampPalette(c('white', rgb(0, 80, 158, max = 255)))
+z = c(0:10)
+pH = contourplot(Pred ~ iem.summ.temp * HareIndex,
+                 data=MyData_bh,
+                 xlab=list("Mean Summer Temperature (°C)  Age Standardized BAI", cex = 1.15),
+                 ylab=list("Snowshoe Hare Population Index", cex = 1.15),
+                 pretty=TRUE,
+                 lty=1,
+                 zlim=range(z, finite=TRUE),
+                 lwd=0.5,
+                 labels=list(cex=1),
+                 col.regions=col.l,
+                 region=TRUE,
+                 main=list("", cex=1.15))
+
+pH
+
+# Plot Standard error lines 
+pH = pH + contourplot(SEup ~ iem.summ.temp * HareIndex, 
+                      data = MyData_bh,
+                      cuts=10,
+                      at = c(1), #change these when you see the plot
+                      pretty=TRUE,
+                      lty=2,
+                      zlim = range(z, finite = TRUE),
+                      lwd=0.5,
+                      labels = list(cex=0),
+                      region=FALSE,
+                      main = list("", cex = 1))
+
+pH
+
+pH = pH + contourplot(SEdown ~ iem.summ.temp * HareIndex, 
+                      data=MyData_bh,
+                      cuts=10,
+                      at = c(1), #change these when you see the plot
+                      pretty=TRUE,
+                      lty=2,
+                      zlim = range(z, finite = TRUE),
+                      lwd=0.5,
+                      labels=list(cex=0),
+                      region=FALSE,
+                      main = list("", cex = 1, font=1))
+
+pH
+
+trellis.focus("panel", 1, 1, highlight=F)
+
+lpoints(sd_bena_cch$iem.summ.temp, y = sd_bena_cch$HareIndex, 
+        col = rgb(red = 0, green = 0, blue = 0, alpha = 0.1), 
+        pch = 4, cex = 0.75)
+
+#____________________________________________________________________#
+#Plot for Ptarmigan: MST
+
+col.l = colorRampPalette(c('white', rgb(0, 80, 158, max = 255)))
+z = c(0:10)
+
+
+pPs = contourplot(Pred ~ iem.summ.temp * PropPtarmagin_S,
+                  data=MyData_sp,
+                  xlab=list("Mean Summer Temperature (°C)  Age Standardized BAI", cex = 1.15),
+                  ylab=list("Ptarmagin Browsing Intensity", cex = 1.15),
+                  pretty=TRUE,
+                  lty=1,
+                  zlim=range(z, finite=TRUE),
+                  lwd=0.5,
+                  labels=list(cex=1),
+                  col.regions=col.l,
+                  region=TRUE,
+                  main=list("", cex=1.25))
+
+pPs
+
+# Plot Standard error lines 
+pPs = pPs + contourplot(SEup ~ iem.summ.temp * PropPtarmagin_S, 
+                        data = MyData_sp,
+                        cuts=10,
+                        at = c(0), #change these when you see the plot
+                        pretty=TRUE,
+                        lty=2,
+                        zlim = range(z, finite = TRUE),
+                        lwd=0.5,
+                        labels = list(cex=0),
+                        region=FALSE,
+                        main = list("", cex = 1))
+
+pPs
+
+pPs = pPs + contourplot(SEdown ~ iem.summ.temp * PropPtarmagin_S, 
+                        data=MyData_sp,
+                        cuts=10,
+                        at = c(0), #change these when you see the plot
+                        pretty=TRUE,
+                        lty=2,
+                        zlim = range(z, finite = TRUE),
+                        lwd=0.5,
+                        labels=list(cex=0),
+                        region=FALSE,
+                        main = list("", cex = 1, font=1))
+
+pPs
+
+trellis.focus("panel", 1, 1, highlight=F)
+
+lpoints(sd_salix_cch$iem.summ.temp, y = sd_bena_cch$PropPtarmagin_S, 
+        col = rgb(red = 0, green = 0, blue = 0, alpha = 0.1), 
+        pch = 4, cex = 0.65)
 
 
 # APPENDIX 1: Variation in Site Covariates with Latitude ####
