@@ -3,41 +3,6 @@
 # peterfr@stud.ntnu.no
 # 2020-04-01
 
-# FIGURE 5: Height distributions of shrubs browseing ####
-
-#This section of code will create a density plot showing Shrub Vertical Height on the X-axis and the frequency of 
-#browsing at that height for each of the three study species. 
-
-#Select only pertinent columns from the larger ShrubData file 
-SD_BiBrowse = subset(ShrubData, select = c("ShrubID", "StemLength", "StemHeight", "BMoose", "BHare", "BPtarmagin"))
-
-#Specify the data frame as a table prior to the melt function
-SD_BiBrowseTable= as.data.table(SD_BiBrowse)
-
-#Melt the data retaining the ShrubID, StemLength & VertHeight variables while melting out the browsing varibales
-SD_BiBrowseMelt = melt.data.table(SD_BiBrowseTable, id.vars = c("ShrubID", "StemLength", "StemHeight"), 
-                                  measure.vars = c("BMoose", "BHare", "BPtarmagin"))
-
-#Rename the melt output values field to Species
-names(SD_BiBrowseMelt)[5]<-"Species"
-
-#Subsets the output data from the melt to retain only the necessary fields 
-DP_Data = subset(SD_BiBrowseMelt, select = c("ShrubID", "StemLength", "StemHeight", "Species"))
-
-#Plot the density plot using ggplot2
-P = DP_Data %>% 
-  filter(Species == c("Hare", "Moose", "Ptarmagin")) %>% 
-  ggplot(aes(x=StemHeight, group=Species, colour=Species, fill= Species, xtitle = "Shrub Height (cm)")) +
-  geom_density(alpha = 0.2) +
-  scale_x_continuous (name = "Shrub Height (cm)") +
-  scale_y_continuous (name = "Frequency") +
-  theme_bw()
-
-P + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-          panel.background = element_blank(), axis.line = element_line(colour = "black"),
-          axis.text=element_text(size=14), axis.title=element_text(size=16),
-          legend.position = c(0.8, 0.8), legend.title = element_text( size=16), legend.text = element_text( size=14))
-
 # FIGURE 6: Age Standardized BAI & Temporal Fixed Effects Plot ####
 ## Plot standardized BAI residuals against mean summer temperature
 
@@ -45,25 +10,25 @@ range(sd_BAI_bena_agg$resid)
 range(sd_BAI_salix_agg$resid)
 
 # Start by adding extra space to right margin of plot within frame
-par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.1, 0.6, 0.1, 0.1), mfrow=c(3,2)) #bottom, left, top and right
+par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1), mfrow=c(3,2)) #bottom, left, top and right
 
-layout(matrix(c(1,1,2,3,4,5), 3, 2, byrow = TRUE))
+#layout(matrix(c(1,2,3,4,5,6), 3, 2, byrow = TRUE))
 
 # 1. Plot Betula & Salix BAI Over Time 
 
 plot(sd_BAI_bena_agg$resid ~ sd_BAI_bena_agg$Year, 
-     axes=FALSE, ylim=c(-1.5, .7),
+     axes=FALSE, ylim=c(-1.6, .8), xlim=c(1986, 2016),
      type = "l", xlab = "", ylab = "", 
      col = "black", lwd = 1.5, lty = 1, cex.lab = 1)
 
-axis(1,pretty(range(sd_BAI_bena_agg$Year),20), cex = 1.5)
+#axis(1,pretty(range(sd_BAI_bena_agg$Year),20), cex = 1.5)
 
 # Allow for a third plot using the second accis
 par(new=TRUE)
 
 # Plot the second plot and put axis scale on right
 plot(sd_BAI_salix_agg$resid ~ sd_BAI_salix_agg$Year, 
-     axes=FALSE, ylim=c(-1.5, .7),
+     axes=FALSE, ylim=c(-1.6, .8), xlim=c(1986, 2016),
      type = "l", xlab = "", ylab = "", 
      col = "grey 52", lwd = 1.5, lty = 1, cex.lab = 1)
 
@@ -77,9 +42,14 @@ plot(sd_BAI_salix_agg$resid ~ sd_BAI_salix_agg$Year,
     #CI_BetulaBAI$SE_LOW = CI_BetulaBAI$resid -  0.06925253
     #CI_BetulaBAI$LowerCI = CI_BetulaBAI$resid - 0.2460921
 
-lines(CI_BetulaBAI$Year, CI_BetulaBAI$SE_UP, type = "l", pch = 1, col = alpha("black", 0.25), lty = 2, lwd = 1.5 )
+lines(CI_BetulaBAI$Year, CI_BetulaBAI$SE_UP, type = "l", pch = 1, col = alpha("black", 0.35), lty = 2, lwd = 1 )
 
-lines(CI_BetulaBAI$Year, CI_BetulaBAI$SE_LOW, type = "l", pch = 1, col = alpha("black", 0.25), lty = 2, lwd = 1.5 )
+lines(CI_BetulaBAI$Year, CI_BetulaBAI$SE_LOW, type = "l", pch = 1, col = alpha("black", 0.35), lty = 2, lwd = 1 )
+
+polygon(x = c(CI_BetulaBAI$Year, rev(CI_BetulaBAI$Year)),
+        y = c(CI_BetulaBAI$SE_UP, 
+              rev(CI_BetulaBAI$SE_LOW)),
+        col =  adjustcolor("black", alpha.f = 0.2), border = NA)
 
 #CI_SalixBAI = subset (sd_BAI_salix_agg, select = c("Year", "resid"))
     #CI(CI_SalixBAI$resid)
@@ -89,9 +59,14 @@ lines(CI_BetulaBAI$Year, CI_BetulaBAI$SE_LOW, type = "l", pch = 1, col = alpha("
     #CI_SalixBAI$SE_LOW = CI_SalixBAI$resid -  0.08283985
     #CI_SalixBAI$LowerCI = CI_SalixBAI$resid - 0.5495125
 
-lines(CI_SalixBAI$Year, CI_SalixBAI$SE_UP, type = "l", pch = 1, col = alpha("grey 52", 0.25), lty = 2, lwd = 1.5 )
+lines(CI_SalixBAI$Year, CI_SalixBAI$SE_UP, type = "l", pch = 1, col = alpha("grey 52", 0.4), lty = 2, lwd = 1.5 )
 
-lines(CI_SalixBAI$Year, CI_SalixBAI$SE_LOW, type = "l", pch = 1, col = alpha("grey 52", 0.25), lty = 2, lwd = 1.5 )
+lines(CI_SalixBAI$Year, CI_SalixBAI$SE_LOW, type = "l", pch = 1, col = alpha("grey 52", 0.4), lty = 2, lwd = 1.5 )
+
+polygon(x = c(CI_SalixBAI$Year, rev(CI_SalixBAI$Year)),
+        y = c(CI_SalixBAI$SE_UP, 
+              rev(CI_SalixBAI$SE_LOW)),
+        col =  adjustcolor("grey 52", alpha.f = 0.10), border = NA)
 
 # Add text
 mtext("Age Standardized BAI", side=2, col="black", line=2.75, cex = 1) 
@@ -100,31 +75,31 @@ axis(2, ylim=c(-1.5, .7), col="black", col.axis="black", las=1, cex = 1.5)
 
 box()
 
-legend(1985.5, 0.8, legend=c("A."), bty = "n", cex = 1.5)
+legend(1983.25, 0.925, legend=c("A."), bty = "n", cex = 1.25)
 
 # Add Legend
 legend("bottomright",legend=c("Betula nana", "Salix spp."),
-       text.col=c("black", "grey 52"), lty = c(1, 1), col=c("black", "dark grey"), bty = "n", cex = 1.5)
+       text.col=c("black", "grey 52"), lty = c(1, 1), col=c("black", "dark grey"), bty = "n", cex = 1.35)
 
 #Insert blank plot 
-#plot(0,type='n',axes=FALSE,ann=FALSE)
+plot(0,type='n',axes=FALSE,ann=FALSE)
 
 # 2. Plot Moose Density
-par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.1, 0.6, 0.3, 0.1)) 
+par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1)) 
 
 plot(GMU_24A ~ Year, data = GMU_MooseDensity_Graph,
-     col = "darkorchid4", type = "l", axes=FALSE, #ylim=c(0,.65), xlim=c(1985, 2020)
+     col = "darkorchid4", type = "l", axes=FALSE, ylim=c(0,.65), xlim=c(1986, 2016),
      ylab = "", xlab = "", cex.lab = 1.5, lwd = 1.5)
 
 par(new=TRUE)
 
 plot(GMU_20F ~ Year, data = GMU_MooseDensity_Graph, 
-     col = "chocolate1", type = "l", lwd = 1.5, xlab = "", ylab = "", axes=FALSE, ylim=c(0,.65), xlim=c(1985, 2020))
+     col = "chocolate1", type = "l", lwd = 1.5, xlab = "", ylab = "", axes=FALSE, ylim=c(0,.65), xlim=c(1986, 2016))
 
 par(new=TRUE)
 
 plot(GMU_26B ~ Year, data = GMU_MooseDensity_Graph, 
-     col = "seagreen4", type = "l", lwd = 1.5, xlab = "", ylab = "", axes=FALSE, ylim=c(0,.65), xlim=c(1985, 2020))
+     col = "seagreen4", type = "l", lwd = 1.5, xlab = "", ylab = "", axes=FALSE, ylim=c(0,.65), xlim=c(1986, 2016))
 
 
 legend("topright", legend=c("24A","20F", "26B"), title="GMU", #"24A (4,146 km²)","20F (6,267 km²)", "26B (16,332 km²)"
@@ -137,14 +112,16 @@ axis(2, ylim=c(0,.65), col="black", col.axis="black", las=1, cex = 1.25)
 
 box()
 
-legend(1982.5, 0.08, legend=c("B."), bty = "n", cex = 1.25)
+legend(1983.25, 0.08, legend=c("B."), bty = "n", cex = 1.25)
+
+#mtext("Year", side=1, col="black", line=2.7, cex = 1) 
 
 # 3. Plot Snowshoe Hare Density 
 
 plot(sd_BAI_bena_agg$HareIndex ~ sd_BAI_bena_agg$Year, 
-     axes=FALSE, ylim=c(0.75,3.25), main="",
+    ylim=c(0.75,3.25), main="", axes=FALSE,
      type = "l", xlab = "", ylab = "", 
-     col = "darkslateblue", lwd = 1.5, cex.lab = 1)
+     col = "darkslateblue", lwd = 1.5, cex.lab = 1, xlim=c(1986, 2016))
 
 axis(2, at = c(1,2,3), col="black",las=1)
 
@@ -152,14 +129,22 @@ mtext("Snowshoe Hare Cycle Index",side=2,line=2.5, cex = 1)
 
 box()
 
-legend(1984.5, 1.05, legend=c("C."), bty = "n", cex = 1.25)
+#axis(1,pretty(range(sd_BAI_bena_agg$Year),20))
+
+# Add A central Yea Text 
+#mtext("Year", side=1, col="black", line=2.7, cex = 1) 
+
+legend(1983.25, 1.05, legend=c("C."), bty = "n", cex = 1.25)
 
 # 4. Plot MST Over Time 
 
 par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.5, 0.6, 0.1, 0.1)) 
 
+#par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.1, 0.6, 0.1, 0.1))
+
+
 plot(sd_BAI_bena_agg$iem.summ.temp ~ sd_BAI_bena_agg$Year, 
-     axes=FALSE, 
+     axes=FALSE, xlim=c(1986, 2016),
      type = "l", xlab = "", ylab = "", 
      col=alpha(rgb(1,0,0), 0.75), lwd = 1.75, lty = 3, cex.lab = 1)
 
@@ -169,7 +154,7 @@ mtext("Mean Summer Temperature (°C)", side=2, line=2.75, cex = 1)
 
 box()
 
-legend(1984.5, 10.9, legend=c("D."), bty = "n", cex = 1.25)
+legend(1983.25, 10.85, legend=c("D."), bty = "n", cex = 1.25)
 
 # Add the Years axis
 axis(1, pretty(range(sd_BAI_bena_agg$Year), 20))
@@ -179,7 +164,7 @@ mtext("Year", side=1, col="black", line=2.7, cex = 1)
 # 5. Plot MSP Over Time
 
 plot(sd_BAI_bena_agg$iem.summ.rain.10 ~ sd_BAI_bena_agg$Year, 
-     axes=FALSE, 
+     axes=FALSE, xlim=c(1986, 2016),
      type = "l", xlab = "", ylab = "", 
      col=alpha(rgb(0,0,1), 0.75), lwd = 1.75, lty = 3, cex.lab = 1)
 
@@ -189,7 +174,7 @@ mtext("Mean Summer Precipitation (cm)", side=2, line=2.75, cex = 1)
 
 box()
 
-legend(1984.5, 10.9, legend=c("E."), bty = "n", cex = 1.25)
+legend(1983.25, 10.4, legend=c("E."), bty = "n", cex = 1.25)
 
 # Add the Years axis
 axis(1,pretty(range(sd_BAI_bena_agg$Year),20))
@@ -199,6 +184,16 @@ mtext("Year", side=1, col="black", line=2.7, cex = 1)
 
 
 # FIGURE 8: Age Standardized BAI ploted agaisnst Significant Response Variables ####
+
+min(sd_bena_cch$resid) #-3.265767
+max(sd_bena_cch$resid) # 3.201705
+mean(sd_bena_cch$resid) # 0.06317319
+
+min(sd_salix_cch$resid) # -3.678445
+max(sd_salix_cch$resid) # 3.044755
+mean(sd_salix_cch$resid) # -0.06495939
+median(sd_salix_cch$resid) # -0.06495939
+
 
 # BETULA PLOTS
 #Create a model with non-standardized values
@@ -513,8 +508,8 @@ p8.5 = ggplot(sd_bena_cch, aes(x = MooseDensity, y = resid)) +
   ylab("Age Standardized BAI") +
   ggtitle("")
 
-p8.2 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-             panel.background = element_blank(), axis.text=element_text(size=10), axis.title = element_text(size=13),
+p8.5 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+             panel.background = element_blank(), axis.text=element_text(size=14), axis.title = element_text(size=16),
              panel.border = element_rect(colour = "black", fill=NA, size=1))
 
 #Salix w/ Temporal 
@@ -547,8 +542,8 @@ p8.8 = ggplot(sd_salix_cch, aes(x = HareIndex, y = resid)) +
   ggtitle("")
 
 p8.8 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-              panel.background = element_blank(), axis.text=element_text(size=10), axis.title = element_text(size=13),
-              panel.border = element_rect(colour = "black", fill=NA, size=1))
+             panel.background = element_blank(), axis.text=element_text(size=14), axis.title = element_text(size=16),
+             panel.border = element_rect(colour = "black", fill=NA, size=1))
 
 #Salix w/ Spatial  
 p8.10 = ggplot(sd_salix_cch, aes(x = iem.summ.rain.10, y = resid)) +
@@ -562,7 +557,7 @@ p8.10 = ggplot(sd_salix_cch, aes(x = iem.summ.rain.10, y = resid)) +
 
 
 p8.10 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-              panel.background = element_blank(), axis.text=element_text(size=10), axis.title = element_text(size=13),
+              panel.background = element_blank(), axis.text=element_text(size=14), axis.title = element_text(size=16),
               panel.border = element_rect(colour = "black", fill=NA, size=1))
 
 # FIGURE 9: Contour Plots for Interacting Effects ####
@@ -572,16 +567,18 @@ col.l = colorRampPalette(c('white', rgb(0, 80, 158, max = 255)))
 z = c(0:10)
 pH = contourplot(Pred ~ iem.summ.temp * HareIndex,
                  data=MyData_bh,
-                 xlab=list("Mean Summer Temperature (°C)  Age Standardized BAI", cex = 1.15),
-                 ylab=list("Snowshoe Hare Population Index", cex = 1.15),
+                 xlab=list("Mean Summer Temperature (°C)  Age Standardized BAI", cex = 1.35),
+                 ylab=list("Snowshoe Hare Population Index", cex = 1.35),
                  pretty=TRUE,
                  lty=1,
                  zlim=range(z, finite=TRUE),
                  lwd=0.5,
-                 labels=list(cex=1),
+                 labels=list(cex=1.15),
+                 scales=list(cex=1.15),
+                 colorkey = list(axis.text=list(cex=1.15)),
                  col.regions=col.l,
                  region=TRUE,
-                 main=list("", cex=1.15))
+                 main=list("", cex=1.45))
 
 pH
 
@@ -629,16 +626,18 @@ z = c(0:10)
 
 pPs = contourplot(Pred ~ iem.summ.temp * PropPtarmagin_S,
                   data=MyData_sp,
-                  xlab=list("Mean Summer Temperature (°C)  Age Standardized BAI", cex = 1.15),
-                  ylab=list("Ptarmagin Browsing Intensity", cex = 1.15),
+                  xlab=list("Mean Summer Temperature (°C)  Age Standardized BAI", cex = 1.35),
+                  ylab=list("Ptarmagin Browsing Intensity", cex = 1.35),
                   pretty=TRUE,
                   lty=1,
                   zlim=range(z, finite=TRUE),
                   lwd=0.5,
-                  labels=list(cex=1),
+                  labels=list(cex=1.15),
+                  scales=list(cex=1.15),
+                  colorkey = list(axis.text=list(cex=1.15)),
                   col.regions=col.l,
                   region=TRUE,
-                  main=list("", cex=1.25))
+                  main=list("", cex=1.45))
 
 pPs
 
@@ -678,18 +677,20 @@ lpoints(sd_salix_cch$iem.summ.temp, y = sd_bena_cch$PropPtarmagin_S,
         pch = 4, cex = 0.65)
 
 
+
+
 # APPENDIX 1: Variation in Site Covariates with Latitude ####
 par(mfrow=c(7,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8))
 
 plot(Section_Data$PropMoose ~ Section_Data$Y_Cord,
      type = "b", pch = 1, col = "chartreuse3", lty = 1, lwd = 1.5, 
-     xaxt='n', frame.plot = FALSE,
-     ylab = "% Twigs Browsed", xlab = "", cex.lab = 1.5, cex.axis = 1.25)
+     #xaxt='n', frame.plot = FALSE,
+     ylab = "% Twigs Browsed", xlab = "Latitude", cex.lab = 1.5, cex.axis = 1.25)
 
 lines(Section_Data$Y_Cord, Section_Data$PropHare, type = "b", pch = 1, col = "firebrick3", lty = 2, lwd = 1.5 )
 lines(Section_Data$Y_Cord, Section_Data$PropPtarmagin, type = "b", pch = 1, col = "dodgerblue4", lty = 3, lwd = 1.5)
 
-legend("topleft", legend=c("Moose", "Hare", "Ptarmagin"),
+legend("topleft", legend=c("Moose", "Snowshoe Hare", "Ptarmagin"),
        col=c("chartreuse3", "firebrick3", "dodgerblue4"), lty=1:3, cex=1.2, bty = "n", text.width=0)
 
 mtext("Browsing Intensity", side= 3, line = -1, adj = 1, padj = 0, cex=1.25)
@@ -743,7 +744,136 @@ plot(Section_Data$Elevation ~ Section_Data$Y_Cord,
 mtext("Elevation", side= 3, line = -.5, adj = 1, padj = 0, cex=1.25)
 mtext("Latitude", side= 1, line = 3, cex=1.25)
 
-# APPENDIX 2: Model Selection via Backwards Elimination ####
+# APPENDIX 2: Height distributions of shrubs browseing ####
+
+#This section of code will create a density plot showing Shrub Vertical Height on the X-axis and the frequency of 
+#browsing at that height for each of the three study species. 
+
+#Select only pertinent columns from the larger ShrubData file 
+SD_BiBrowse = subset(ShrubData, select = c("ShrubID", "StemLength", "StemHeight", "BMoose", "BHare", "BPtarmagin"))
+
+#Specify the data frame as a table prior to the melt function
+SD_BiBrowseTable= as.data.table(SD_BiBrowse)
+
+#Melt the data retaining the ShrubID, StemLength & VertHeight variables while melting out the browsing varibales
+SD_BiBrowseMelt = melt.data.table(SD_BiBrowseTable, id.vars = c("ShrubID", "StemLength", "StemHeight"), 
+                                  measure.vars = c("BMoose", "BHare", "BPtarmagin"))
+
+#Rename the melt output values field to Species
+names(SD_BiBrowseMelt)[5]<-"Species"
+
+#Subsets the output data from the melt to retain only the necessary fields 
+DP_Data = subset(SD_BiBrowseMelt, select = c("ShrubID", "StemLength", "StemHeight", "Species"))
+
+#Plot the density plot using ggplot2
+P = DP_Data %>% 
+  filter(Species == c("Hare", "Moose", "Ptarmagin")) %>% 
+  ggplot(aes(x=StemHeight, group=Species, colour=Species, fill= Species, xtitle = "Shrub Height (cm)")) +
+  geom_density(alpha = 0.2) +
+  scale_x_continuous (name = "Shrub Height (cm)") +
+  scale_y_continuous (name = "Frequency") +
+  theme_bw()
+
+P + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black"),
+          axis.text=element_text(size=14), axis.title=element_text(size=16),
+          legend.position = c(0.8, 0.8), legend.title = element_text( size=16), legend.text = element_text( size=14))
+
+#Create browsing overlap plot for all shrubs
+
+#rownames(BrowsingOverlap) = BrowsingOverlap$ShrubID
+
+#BrowsingOverlap$ShrubID = NULL
+
+#par(mar = c(5,12,5,2) + 0.1)
+
+color2D.matplot(BrowsingOverlap, 
+                vcol = "White", na.color = "White",
+                extremes = c("White","darkgreen"), #chartreuse3 = Moose, dodgerblue4 = Ptarmigan, firebrick3 = Hare
+                #cellcolors = "ForestGreen",
+                nslices = 50,
+                show.legend=TRUE, show.values=FALSE,
+                border= NA,
+                #Hinton = TRUE,
+                axes=FALSE, xlab="",ylab="")
+
+axis(3,at=0.5:3,las=1,labels=c("Moose", "Snowshoe\nHare", "Ptarmigan"), cex.axis=0.95)
+
+axis(2,at=1,las=2,labels=c(""))
+axis(2,at=15.5,las=2,labels=c("23"), tick = FALSE, cex.axis=0.65)
+axis(2,at=30,las=2,labels=c(""))
+
+axis(2,at=42,las=2,labels=c("22"), tick = FALSE, cex.axis=0.65)
+axis(2,at=53,las=2,labels=c(""))
+
+axis(2,at=69.5,las=2,labels=c("21"), tick = FALSE, cex.axis=0.65)
+axis(2,at=89,las=2,labels=c(""))
+
+axis(2,at=101.5,las=2,labels=c("20"), tick = FALSE, cex.axis=0.65)
+axis(2,at=117,las=2,labels=c(""))
+
+axis(2,at=132.5,las=2,labels=c("19"), tick = FALSE, cex.axis=0.65)
+axis(2,at=147,las=2,labels=c(""))
+
+axis(2,at=171.5,las=2,labels=c("18"), tick = FALSE, cex.axis=0.65)
+axis(2,at=195,las=2,labels=c(""))
+
+axis(2,at=218,las=2,labels=c("17"), tick = FALSE, cex.axis=0.65)
+axis(2,at=240,las=2,labels=c(""))
+
+axis(2,at=262.5,las=2,labels=c("16"), tick = FALSE, cex.axis=0.65)
+axis(2,at=284,las=2,labels=c(""))
+
+axis(2,at=304,las=2,labels=c("15"), tick = FALSE, cex.axis=0.65)
+axis(2,at=323,las=2,labels=c(""))
+
+axis(2,at=345,las=2,labels=c("14"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=366,las=2,labels=c(""))
+
+axis(2,at=382,las=2,labels=c("13"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=397,las=2,labels=c(""))
+
+axis(2,at=415.5,las=2,labels=c("12"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=433,las=2,labels=c(""))
+
+axis(2,at=449.5,las=2,labels=c("11"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=465,las=2,labels=c(""))
+
+axis(2,at=482,las=2,labels=c("10"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=498,las=2,labels=c(""))
+
+axis(2,at=514,las=2,labels=c("9"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=529,las=2,labels=c(""))
+
+axis(2,at=543.5,las=2,labels=c("8"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=557,las=2,labels=c(""))
+
+axis(2,at=570.5,las=2,labels=c("7"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=583,las=2,labels=c(""))
+
+axis(2,at=600,las=2,labels=c("6"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=616,las=2,labels=c(""))
+
+axis(2,at=636,las=2,labels=c("5"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=655,las=2,labels=c(""))
+
+axis(2,at=673,las=2,labels=c("4"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=690,las=2,labels=c(""))
+
+axis(2,at=711.5,las=2,labels=c("3"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=732,las=2,labels=c(""))
+
+axis(2,at=748,las=2,labels=c("2"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=763,las=2,labels=c(""))
+
+axis(2,at=778,las=2,labels=c("1"), tick = FALSE, cex.axis = 0.65)
+axis(2,at=792,las=2,labels=c(""))
+
+
+mtext('Site', side=3, line=3, padj = 5.5, at = -0.13, cex = 0.9)
+
+
+# APPENDIX 3: Model Selection via Backwards Elimination ####
 
 #Betula
 #rownames(ModelSelection_Betula) = ModelSelection_Betula$Parameter
@@ -815,3 +945,73 @@ mtext('Salix spp. Model Selection', side=3, line=3, padj = 2, at = -.6, cex = 1.
 
 
 
+
+# PRESENTATION PLOTS: ####
+plot(sd_BAI_bena_agg$resid ~ sd_BAI_bena_agg$Year, 
+     axes=FALSE, ylim=c(-1.5, .7),
+     type = "l", xlab = "", ylab = "", 
+     col = "black", lwd = 1.5, lty = 1, cex.lab = 1)
+
+axis(1,pretty(range(sd_BAI_bena_agg$Year),20), cex = 1.5)
+
+# Allow for a third plot using the second accis
+par(new=TRUE)
+
+# Plot the second plot and put axis scale on right
+plot(sd_BAI_salix_agg$resid ~ sd_BAI_salix_agg$Year, 
+     axes=FALSE, ylim=c(-1.5, .7),
+     type = "l", xlab = "", ylab = "", 
+     col = "grey 52", lwd = 1.5, lty = 1, cex.lab = 1)
+
+# Calculate and Plot Confidence Intervals
+
+lines(CI_BetulaBAI$Year, CI_BetulaBAI$SE_UP, type = "l", pch = 1, col = alpha("black", 0.35), lty = 2, lwd = 1 )
+
+lines(CI_BetulaBAI$Year, CI_BetulaBAI$SE_LOW, type = "l", pch = 1, col = alpha("black", 0.35), lty = 2, lwd = 1 )
+
+polygon(x = c(CI_BetulaBAI$Year, rev(CI_BetulaBAI$Year)),
+        y = c(CI_BetulaBAI$SE_UP, 
+              rev(CI_BetulaBAI$SE_LOW)),
+        col =  adjustcolor("black", alpha.f = 0.2), border = NA)
+
+lines(CI_SalixBAI$Year, CI_SalixBAI$SE_UP, type = "l", pch = 1, col = alpha("grey 52", 0.4), lty = 2, lwd = 1.5 )
+
+lines(CI_SalixBAI$Year, CI_SalixBAI$SE_LOW, type = "l", pch = 1, col = alpha("grey 52", 0.4), lty = 2, lwd = 1.5 )
+
+polygon(x = c(CI_SalixBAI$Year, rev(CI_SalixBAI$Year)),
+        y = c(CI_SalixBAI$SE_UP, 
+              rev(CI_SalixBAI$SE_LOW)),
+        col =  adjustcolor("grey 52", alpha.f = 0.10), border = NA)
+
+# Add text
+mtext("Age Standardized BAI", side=2, col="black", line=2.75, cex = 1.25) 
+
+axis(2, ylim=c(-1.5, .7), col="black", col.axis="black", las=1, cex = 1.5)
+
+box()
+
+mtext("Year", side=1, col="black", line=2.7, cex = 1.25) 
+
+# Add Legend
+legend("bottomright",legend=c("Betula nana", "Salix spp."),
+       text.col=c("black", "grey 52"), lty = c(1, 1), col=c("black", "dark grey"), bty = "n", cex = 1)
+
+# Plot Age Trends over time by section
+ps = ggplot() + 
+      #geom_line(data = sd_BAI_bena_agg, aes(x = Year, y = resid), color="steelblue", size = 1.5) +
+      #geom_line(data = sd_BAI_bena_agg_s, aes(x = Year, y = resid, group = Section), color="steelblue", alpha = 0.4) +
+      geom_line(data = sd_BAI_salix_agg, aes(x = Year, y = resid), color="red", size = 1.5) +
+      geom_line(data = sd_BAI_salix_agg_s, aes(x = Year, y = resid, group = Section), color="red", alpha = 0.4)
+   
+ps
+
+
+pa = ggplot() + 
+  geom_line(data = sd_BAI_bena_agg, aes(x = Year, y = RingWidth), color="steelblue") +
+  geom_line(data = sd_bena_cch, aes(x = Year, y = RingWidth, group = ShrubID), color="steelblue", alpha = 0.4) 
+  geom_line(data = sd_BAI_salix_agg, aes(x = Year, y = RingWidth), color="red") +
+  geom_line(data = sd_salix_cch, aes(x = Year, y = RingWidth, group = ShrubID), color="red", alpha = 0.4)
+
+     
+pa
+ 

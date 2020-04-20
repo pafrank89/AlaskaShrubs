@@ -499,8 +499,8 @@ sd_all_bena_agg_s = aggregate((x = sd_all_bena_cch),
                             FUN = mean,
                             na.rm = TRUE)
 
-sd_all_salix_agg_s = aggregate((x = sd_all_salix_cch),
-                             by = list(sd_all_salix_cch$Year, sd_all_salix_cch$Section),
+sd_BAI_salix_agg_s = aggregate((x = sd_salix_cch),
+                             by = list(sd_salix_cch$Year, sd_salix_cch$Section),
                              FUN = mean,
                              na.rm = TRUE)
 

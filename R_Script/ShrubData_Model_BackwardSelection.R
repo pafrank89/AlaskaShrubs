@@ -176,7 +176,8 @@ intervals(Optimal_model_b_s)
 
 #Plot the effect size of the Optimal Model for Betula
 sjPlot :: plot_model(Optimal_model_b_s, axis.labels=c("Temperature:Hare Interaction", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),
-                     show.values=TRUE, show.p=TRUE, show.intercept = FALSE, show.data = TRUE, type = "est", p.shape = TRUE,
+                     show.values=TRUE, show.p=TRUE, 
+                     vline.color = "grey", value.size = 5, dot.size = 3, line.size = 1, wrap.labels = 14,
                      title="")
 
 
@@ -280,11 +281,10 @@ VarCorr(Optimal_model_s_s)
 intervals(Optimal_model_s_s)
 
 #Plot the effect size of the Optimal Model for Betula
-sjPlot :: plot_model(Optimal_model_s_s, axis.labels=c("Hare Index", "Moose Density", "Mean Summer Temp"),
+sjPlot :: plot_model(Optimal_model_s_s, axis.labels=c("Temperature:Ptagmigan Browsing", "Ptagmigan Browsing", "Mean Summer Pecip", "Mean Summer Temp"),
                      show.values=TRUE, show.p=TRUE, 
                      vline.color = "grey", value.size = 5, dot.size = 3, line.size = 1, wrap.labels = 14,
                      title="")
-
 
 sjPlot::tab_model(Optimal_model_s_s, show.re.var= TRUE, 
                   pred.labels =c("(Intercept)", "Mean Summer Temperature", "Snowshoe Hare Index", "Moose Density"),
@@ -321,7 +321,7 @@ lme_global_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
                      iem.summ.temp * MooseDensity +
                      iem.summ.temp * HareIndex +
                      MooseDensity + HareIndex,
-                   data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+                   data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
 
 
 # Compare NULL and FULL model with ANOVA to establish significance of the full model
@@ -424,8 +424,10 @@ OMB_coef = coef(Optimal_model_b)
 
 #Plot the effect size of the Optimal Model for Betula
 fp = sjPlot :: plot_model(Optimal_model_b, axis.labels=c("Temperature:Hare Interaction", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),
-                          show.values=TRUE, show.p=TRUE, show.intercept = FALSE, show.data = TRUE, type = "est", p.shape = TRUE,
+                          show.values=TRUE, show.p=TRUE, 
+                          vline.color = "grey", value.size = 5, dot.size = 3, line.size = 1, wrap.labels = 14,
                           title="")
+
 fp
 
 fp + theme_sjplot2()
