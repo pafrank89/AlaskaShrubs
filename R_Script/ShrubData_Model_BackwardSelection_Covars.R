@@ -24,8 +24,9 @@ lme_global_b_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
                        iem.summ.temp * PropMoose_S +
                        iem.summ.temp * PropHare_S +
                        iem.summ.temp * PropPtarmagin_S +
-                       PropMoose_S + PropHare_S + PropPtarmagin_S,
-                     data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
+                       PropMoose_S + PropHare_S + PropPtarmagin_S +
+                       CanopyCover + Slope + Aspect,
+                     data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 # Compare NULL and FULL model with ANOVA to establish significance of the full model
 anova(null_model_b, lme_global_b_s)
@@ -43,8 +44,9 @@ lme_global_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
                        iem.summ.temp * PropMoose_S +
                        iem.summ.temp * PropHare_S +
                        iem.summ.temp * PropPtarmagin_S +
-                       PropMoose_S + PropHare_S + PropPtarmagin_S,
-                     data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
+                       PropMoose_S + PropHare_S + PropPtarmagin_S +
+                       CanopyCover + Slope + Aspect,
+                     data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 
 # Compare NULL and FULL model with ANOVA to establish significance of the full model
@@ -59,11 +61,11 @@ summary(lme_global_s_s)
 #"Temperature:Moose Interaction", "Temperature:Hare Interaction", "Ptarmigan Browsing", "Hare Browsing", "Moose Browsing", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"
 #"Moose:Hare Interaction", "Temperature:Moose Interaction", "Temperature:Hare Interaction", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"
 
-sjPlot :: plot_model(lme_global_b, axis.labels=c("Moose:Hare Interaction", "Temperature:Moose Interaction", "Temperature:Hare Interaction", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),
+sjPlot :: plot_model(lme_global_b_s, axis.labels=c("Moose:Hare Interaction", "Temperature:Moose Interaction", "Temperature:Hare Interaction", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),
                      show.values=TRUE, show.p=TRUE, show.intercept = FALSE, show.data = TRUE, type = "est", p.shape = TRUE,
                      title="")
 
-sjPlot :: plot_model(lme_global_s, axis.labels=c("Moose:Hare Interaction", "Temperature:Moose Interaction", "Temperature:Hare Interaction", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),
+sjPlot :: plot_model(lme_global_s_s, axis.labels=c("Moose:Hare Interaction", "Temperature:Moose Interaction", "Temperature:Hare Interaction", "Moose Density", "Hare Index", "Mean Summer Pecip", "Mean Summer Temp"),
                      show.values=TRUE, show.p=TRUE, show.intercept = FALSE, show.data = TRUE, type = "est", p.shape = TRUE,
                      title="")
 
@@ -103,7 +105,8 @@ step1_b_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
                   iem.summ.temp * PropMoose_S +
                   iem.summ.temp * PropHare_S +
                   iem.summ.temp * PropPtarmagin_S +
-                  PropMoose_S + PropHare_S + PropPtarmagin_S, 
+                  PropMoose_S + PropHare_S + PropPtarmagin_S +
+                  CanopyCover + Slope + Aspect,
                 data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 anova.lme(step1_b_s)
@@ -223,7 +226,8 @@ step1_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
                   iem.summ.temp * PropMoose_S +
                   iem.summ.temp * PropHare_S +
                   iem.summ.temp * PropPtarmagin_S +
-                  PropMoose_S + PropHare_S + PropPtarmagin_S,
+                  PropMoose_S + PropHare_S + PropPtarmagin_S +
+                  CanopyCover + Slope + Aspect,
                 data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 anova.lme(step1_s_s)
@@ -234,27 +238,53 @@ summary(step1_s_s)
 step2_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
                   iem.summ.temp * PropHare_S +
                   iem.summ.temp * PropPtarmagin_S +
-                  PropHare_S + PropPtarmagin_S,
+                  PropHare_S + PropPtarmagin_S +
+                  CanopyCover + Slope + Aspect,
                 data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 anova.lme(step2_s_s)
 
 summary(step2_s_s)
 
-# Step 3 of backward selection 
-step3_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
+# Step 4 of backward selection 
+step3_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                  iem.summ.temp * PropHare_S +
                   iem.summ.temp * PropPtarmagin_S +
-                  PropPtarmagin_S,
+                  PropHare_S + PropPtarmagin_S +
+                  CanopyCover + Aspect,
                 data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 anova.lme(step3_s_s)
 
 summary(step3_s_s)
 
+# Step 4 of backward selection 
+step4_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                  iem.summ.temp * PropPtarmagin_S +
+                  PropPtarmagin_S +
+                  CanopyCover + Aspect,
+                data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step4_s_s)
+
+summary(step4_s_s)
+
+# Step 5 of backward selection 
+step5_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                  iem.summ.temp * PropPtarmagin_S +
+                  PropPtarmagin_S +
+                  CanopyCover,
+                data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step5_s_s)
+
+summary(step5_s_s)
+
 # Create the Optimal Model for Betula after backward selection 
-Optimal_model_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
-                          iem.summ.temp : PropPtarmagin_S +
-                          PropPtarmagin_S,
+Optimal_model_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                          iem.summ.temp * PropPtarmagin_S +
+                          PropPtarmagin_S +
+                          CanopyCover,
                         data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
 
 #Check the model assumptions, R2 and VIF for the global model
@@ -302,7 +332,8 @@ null_model_b = lme(resid ~ 1, data = sd_bena_cch_S, random = ~ 1|Section/ShrubID
 lme_global_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
                      iem.summ.temp * MooseDensity +
                      iem.summ.temp * HareIndex +
-                     MooseDensity + HareIndex,
+                     MooseDensity + HareIndex+
+                     CanopyCover + Slope + Aspect,
                    data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 # Compare NULL and FULL model with ANOVA to establish significance of the full model
@@ -320,8 +351,9 @@ null_model_s = lme(resid ~ 1, data = sd_salix_cch_S, random = ~ 1|Section/ShrubI
 lme_global_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
                      iem.summ.temp * MooseDensity +
                      iem.summ.temp * HareIndex +
-                     MooseDensity + HareIndex,
-                   data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
+                     MooseDensity + HareIndex+
+                     CanopyCover + Slope + Aspect,
+                   data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 
 # Compare NULL and FULL model with ANOVA to establish significance of the full model
@@ -374,7 +406,8 @@ summary(lme_global_b)
 step1_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
                 iem.summ.temp * MooseDensity +
                 iem.summ.temp * HareIndex +
-                MooseDensity + HareIndex,
+                MooseDensity + HareIndex+
+                CanopyCover + Slope + Aspect,
               data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 anova.lme(step1_b)
@@ -382,14 +415,50 @@ anova.lme(step1_b)
 summary(step1_b)
 
 # Step 2 of backward selection 
-step2_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
+step2_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                iem.summ.temp * MooseDensity +
                 iem.summ.temp * HareIndex +
-                MooseDensity + HareIndex,
+                MooseDensity + HareIndex+
+                CanopyCover + Aspect,
               data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 anova.lme(step2_b)
 
 summary(step2_b)
+
+# Step 3 of backward selection 
+step3_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                iem.summ.temp * MooseDensity +
+                iem.summ.temp * HareIndex +
+                MooseDensity + HareIndex+
+                Aspect,
+              data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step3_b)
+
+summary(step3_b)
+
+# Step 4 of backward selection 
+step4_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                iem.summ.temp * HareIndex +
+                MooseDensity + HareIndex+
+                Aspect,
+              data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step4_b)
+
+summary(step4_b)
+
+
+# Step 5 of backward selection 
+step5_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                iem.summ.temp * HareIndex +
+                MooseDensity + HareIndex,
+              data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step5_b)
+
+summary(step5_b)
 
 # Create the Optimal Model for Betula after backward selection 
 Optimal_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
@@ -471,9 +540,10 @@ summary(lme_global_s)
 
 # Step 1 of backward selection using global model
 step1_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
-                iem.summ.temp * HareIndex +
                 iem.summ.temp * MooseDensity +
-                MooseDensity + HareIndex,
+                iem.summ.temp * HareIndex +
+                MooseDensity + HareIndex+
+                CanopyCover + Slope + Aspect,
               data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 anova.lme(step1_s)
@@ -482,8 +552,10 @@ summary(step2_s)
 
 # Step 2 of backward selection 
 step2_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                iem.summ.temp * MooseDensity +
                 iem.summ.temp * HareIndex +
-                MooseDensity + HareIndex,
+                MooseDensity + HareIndex+
+                CanopyCover + Aspect,
               data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 anova.lme(step2_s)
@@ -492,7 +564,9 @@ summary(step2_s)
 
 # Step 3 of backward selection 
 step3_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
-                MooseDensity + HareIndex,
+                iem.summ.temp * HareIndex +
+                MooseDensity + HareIndex+
+                CanopyCover + Aspect,
               data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 anova.lme(step3_s)
@@ -500,13 +574,42 @@ anova.lme(step3_s)
 summary(step3_s)
 
 # Step 4 of backward selection 
-step4_s = lme(resid ~ iem.summ.temp + 
-                MooseDensity + HareIndex,
+step4_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
+                MooseDensity + HareIndex+
+                CanopyCover + Aspect,
               data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
 
 anova.lme(step4_s)
 
 summary(step4_s)
+
+# Step 5 of backward selection 
+step5_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
+                MooseDensity + HareIndex+
+                CanopyCover,
+              data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step5_s)
+
+summary(step5_s)
+
+# Step 6 of backward selection 
+step6_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
+                MooseDensity + HareIndex,
+              data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step6_s)
+
+summary(step6_s)
+
+# Step 7 of backward selection 
+step7_s = lme(resid ~ iem.summ.temp + 
+                MooseDensity + HareIndex,
+              data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step7_s)
+
+summary(step7_s)
 
 # Create the Optimal Model for Betula after backward selection 
 Optimal_model_s = lme(resid ~ iem.summ.temp + 
@@ -550,6 +653,102 @@ forest_plot_s + theme_sjplot2(base_size = 15, base_family = "")
 sjPlot::tab_model(Optimal_model_s, show.re.var= TRUE, 
                   pred.labels =c("(Intercept)", "Mean Summer Temperature", "Snowshoe Hare Index", "Moose Density"),
                   dv.labels= "Effects of Summer Temperature & Precipitation on Shrub Growth")
+
+
+# 3.1  BACKWARD SELECTION FOR BETULA ALL VARIABLES ####
+
+# Step 1 of backward selection 
+step1_bALL = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                  iem.summ.temp * PropMoose_S +
+                  iem.summ.temp * PropHare_S +
+                  iem.summ.temp * PropPtarmagin_S +
+                  iem.summ.temp * MooseDensity +
+                  iem.summ.temp * HareIndex +
+                  PropMoose_S + PropHare_S + PropPtarmagin_S +
+                  MooseDensity + HareIndex+
+                  CanopyCover + Slope + Aspect,
+                  data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step1_bALL)
+
+summary(step1_bALL)
+
+# Step 2 of backward selection 
+
+step2_bALL = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                   iem.summ.temp * PropHare_S +
+                   iem.summ.temp * PropPtarmagin_S +
+                   iem.summ.temp * MooseDensity +
+                   iem.summ.temp * HareIndex +
+                   PropMoose_S + PropHare_S + PropPtarmagin_S +
+                   MooseDensity + HareIndex+
+                   CanopyCover + Slope + Aspect,
+                 data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step2_bALL)
+
+summary(step2_bALL)
+
+# Step 3 of backward selection 
+
+step3_bALL = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                   iem.summ.temp * PropPtarmagin_S +
+                   iem.summ.temp * MooseDensity +
+                   iem.summ.temp * HareIndex +
+                   PropMoose_S  + PropPtarmagin_S +
+                   MooseDensity + HareIndex+
+                   CanopyCover + Slope + Aspect,
+                 data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step3_bALL)
+
+summary(step3_bALL)
+
+# Step 4 of backward selection 
+
+step4_bALL = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                   iem.summ.temp * PropHare_S +
+                   iem.summ.temp * MooseDensity +
+                   iem.summ.temp * HareIndex +
+                   PropMoose_S  + 
+                   MooseDensity + HareIndex+
+                   CanopyCover + Slope + Aspect,
+                 data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step4_bALL)
+
+summary(step4_bALL)
+
+# Step 5 of backward selection 
+
+step5_bALL = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                   iem.summ.temp * PropHare_S +
+                   iem.summ.temp * MooseDensity +
+                   iem.summ.temp * HareIndex +
+                   PropMoose_S  + 
+                   MooseDensity + HareIndex+
+                   CanopyCover + Aspect,
+                 data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step5_bALL)
+
+summary(step5_bALL)
+
+# Step 6 of backward selection 
+
+step6_bALL = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+                   iem.summ.temp * MooseDensity +
+                   iem.summ.temp * HareIndex +
+                   MooseDensity + HareIndex+
+                   CanopyCover + Aspect,
+                 data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+
+anova.lme(step6_bALL)
+
+summary(step6_bALL)
+
+
+# 3.2  BACKWARD SELECTION FOR SALIX ALL VARIABLES ####
 
 
 # 3. PLOT MODEL SELECTION PROCESS ####

@@ -541,16 +541,18 @@ col.l = colorRampPalette(c('white', rgb(0, 80, 158, max = 255)))
 z = c(0:10)
 pM = contourplot(Pred ~ iem.summ.temp + MooseDensity,
                  data=MyData_bm,
-                 xlab="Mean Summer Temperature",
-                 ylab="Moose Density",
+                 xlab=list("Mean Summer Temperature (°C)  Age Standardized BAI", cex = 1.35),
+                 ylab=list("Moose Density (moose/km²)", cex = 1.35),
                  pretty=TRUE,
                  lty=1,
                  zlim=range(z, finite=TRUE),
                  lwd=0.5,
-                 labels=list(cex=1),
+                 labels=list(cex=1.15),
+                 scales=list(cex=1.15),
+                 colorkey = list(axis.text=list(cex=1.15)),
                  col.regions=col.l,
                  region=TRUE,
-                 main=list("", cex=1))
+                 main=list("", cex=1.45))
 
 pM
 
@@ -558,7 +560,7 @@ pM
 pM = pM + contourplot(SEup ~ iem.summ.temp * MooseDensity, 
                       data = MyData_bm,
                       cuts=10,
-                      at = c(7.5), #change these when you see the plot
+                      at = c(9), #change these when you see the plot
                       pretty=TRUE,
                       lty=2,
                       zlim = range(z, finite = TRUE),
@@ -572,7 +574,7 @@ pM
 pM = pM + contourplot(SEdown ~ iem.summ.temp * MooseDensity, 
                       data=MyData_bm,
                       cuts=10,
-                      at = c(6.5), #change these when you see the plot
+                      at = c(9), #change these when you see the plot
                       pretty=TRUE,
                       lty=2,
                       zlim = range(z, finite = TRUE),
@@ -622,18 +624,20 @@ MyData_sh$SEdown<-MyData_sh$Pred-MyData_sh$SE
 # Plot
 col.l = colorRampPalette(c('white', rgb(0, 80, 158, max = 255)))
 z = c(0:10)
-pHs = contourplot(Pred ~ iem.summ.temp + HareIndex,
+pHs = contourplot(Pred ~ iem.summ.temp * HareIndex,
                   data=MyData_sh,
-                  xlab="Mean Summer Temperature",
-                  ylab="Snowshoe Hare Population Index",
+                  xlab=list("Mean Summer Temperature (°C)  Age Standardized BAI", cex = 1.35),
+                  ylab=list("Snowshoe Hare Population Index", cex = 1.35),
                   pretty=TRUE,
                   lty=1,
                   zlim=range(z, finite=TRUE),
                   lwd=0.5,
-                  labels=list(cex=1),
+                  labels=list(cex=1.15),
+                  scales=list(cex=1.15),
+                  colorkey = list(axis.text=list(cex=1.15)),
                   col.regions=col.l,
                   region=TRUE,
-                  main=list("", cex=1))
+                  main=list("", cex=1.45))
 
 pHs
 
@@ -641,7 +645,7 @@ pHs
 pHs = pHs + contourplot(SEup ~ iem.summ.temp * HareIndex, 
                         data = MyData_sh,
                         cuts=10,
-                        at = c(7.5), #change these when you see the plot
+                        at = c(2.5), #change these when you see the plot
                         pretty=TRUE,
                         lty=2,
                         zlim = range(z, finite = TRUE),
@@ -655,7 +659,7 @@ pHs
 pHs = pHs + contourplot(SEdown ~ iem.summ.temp * HareIndex, 
                         data=MyData_sh,
                         cuts=10,
-                        at = c(6.5), #change these when you see the plot
+                        at = c(2.5), #change these when you see the plot
                         pretty=TRUE,
                         lty=2,
                         zlim = range(z, finite = TRUE),
@@ -704,26 +708,27 @@ MyData_sm$SEdown<-MyData_sm$Pred-MyData_sm$SE
 # Plot
 col.l = colorRampPalette(c('white', rgb(0, 80, 158, max = 255)))
 z = c(0:10)
-pMs = contourplot(Pred ~ iem.summ.temp + MooseDensity,
+pMs = contourplot(Pred ~ iem.summ.temp * MooseDensity,
                   data=MyData_sm,
-                  xlab="Mean Summer Temperature",
-                  ylab="Moose Density",
+                  xlab=list("Mean Summer Temperature (°C)  Age Standardized BAI", cex = 1.35),
+                  ylab=list("Moose Density (moose/km²)", cex = 1.35),
                   pretty=TRUE,
                   lty=1,
                   zlim=range(z, finite=TRUE),
                   lwd=0.5,
-                  labels=list(cex=1),
+                  labels=list(cex=1.15),
+                  scales=list(cex=1.15),
+                  colorkey = list(axis.text=list(cex=1.15)),
                   col.regions=col.l,
                   region=TRUE,
-                  main=list("", cex=1))
-
+                  main=list("", cex=1.45))
 pMs
 
 # Plot Standard error lines 
 pMs = pMs + contourplot(SEup ~ iem.summ.temp * MooseDensity, 
                         data = MyData_sm,
                         cuts=10,
-                        at = c(7.5), #change these when you see the plot
+                        at = c(2.5), #change these when you see the plot
                         pretty=TRUE,
                         lty=2,
                         zlim = range(z, finite = TRUE),
@@ -737,7 +742,7 @@ pMs
 pMs = pMs + contourplot(SEdown ~ iem.summ.temp * MooseDensity, 
                         data=MyData_sm,
                         cuts=10,
-                        at = c(6.5), #change these when you see the plot
+                        at = c(2.5), #change these when you see the plot
                         pretty=TRUE,
                         lty=2,
                         zlim = range(z, finite = TRUE),
@@ -845,75 +850,4 @@ lpoints(sd_salix_cch$iem.summ.temp, y = sd_bena_cch$PropPtarmagin_S,
         pch = 4, cex = 0.65)
 
 
-# DEVELOP A PLOT GRID FOR BAI:MST RELATIONSHIP ACROSS MOOSE VALUES####
-
-#Subset the large dataset to only include relevent variables of moose density, MST and BAI
-str(sd_bena_cch)
-
-moose_plot = subset(sd_bena_cch, select = c("ShrubID", "Section", "resid", "iem.summ.temp", "MooseDensity"))  
-
-moose_plot$moose_bin = cut(moose_plot$MooseDensity, 3)
-
-lme_temp_b = lmer(resid ~ iem.summ.temp + (1 + iem.summ.temp|Section/ShrubID), data = moose_plot)
-
-ggplot(moose_plot, aes(x = iem.summ.temp, y = resid, colour = ShrubID)) +
-  facet_wrap(~moose_bin, nrow=1) +   # a panel for each sites
-  geom_point(alpha = 0.5) +
-  theme_classic() +
-  geom_line(data = cbind(sd_bena_cch, pred = predict(lme_temp_b)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
-  theme(legend.position = "none",
-        panel.spacing = unit(2, "lines"))  # adding space between panels)
-
-
-
-
-
-
-# Plot Points #####
-
-growth = tapply(sd_salix_cch$resid, list(sd_salix_cch$SectionYear), FUN = "mean")
-names <- rownames(growth)
-rownames(growth) <- NULL
-growth <- cbind(names,growth)
-colnames(growth)[colnames(growth)=="names"] <- "SectionYear"
-
-temp<-tapply(sd_salix_cch$iem.summ.temp,list(sd_salix_cch$SectionYear), FUN = "mean")   
-names <- rownames(temp)
-rownames(temp) <- NULL
-temp <- cbind(names,temp)
-colnames(temp)[colnames(temp)=="names"] <- "SectionYear"
-
-precip<-tapply(sd_salix_cch$iem.summ.rain.10,list(sd_salix_cch$SectionYear), FUN = "mean")   
-names <- rownames(precip)
-rownames(precip) <- NULL
-precip <- cbind(names,precip)
-colnames(precip)[colnames(precip)=="names"] <- "SectionYear"
-
-s <- count(sd_salix_cch, c('SectionYear'))
-plotpoints<-cbind(growth, temp, precip, s, by="SectionYear")
-
-str(plotpoints)
-plotpoints$temp<-as.numeric(as.character(plotpoints$temp))
-plotpoints$precip<-as.numeric(as.character(plotpoints$precip))
-plotpoints$growth<-as.numeric(as.character(plotpoints$growth))
-
-#plotpoints$freq<-as.numeric(as.character(plotpoints$freq))
-#plotpoints$freq<-(plotpoints$freq)/10
-
-ps
-
-trellis.focus("panel", 1, 1, highlight=F)
-
-
-###**** Can't plot this by growth becasue residual values can be ngative
-points(plotpoints$temp, y = plotpoints$precip,
-       #cex=c(plotpoints$freq),
-       # outline color
-       #col=c(col.l(10), by=plotpoints$growth),
-       pch=19)
-
-
-lpoints(sd_salix_cch$iem.summ.temp, y = sd_salix_cch$iem.summ.rain.10, 
-        col = rgb(red = 0, green = 0, blue = 0, alpha = 0.3), 
-        pch = 4, cex = 0.5)
 

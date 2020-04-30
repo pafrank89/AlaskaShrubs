@@ -6,8 +6,10 @@
 # FIGURE 6: Age Standardized BAI & Temporal Fixed Effects Plot ####
 ## Plot standardized BAI residuals against mean summer temperature
 
-range(sd_BAI_bena_agg$resid)
-range(sd_BAI_salix_agg$resid)
+range(sd_BAI_bena_agg$iem.summ.temp)
+range(sd_BAI_salix_agg$iem.summ.temp)
+range(sd_BAI_bena_agg$iem.summ.rain.10)
+range(sd_BAI_salix_agg$iem.summ.rain.10)
 
 # Start by adding extra space to right margin of plot within frame
 par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1), mfrow=c(3,2)) #bottom, left, top and right
@@ -21,7 +23,7 @@ plot(sd_BAI_bena_agg$resid ~ sd_BAI_bena_agg$Year,
      type = "l", xlab = "", ylab = "", 
      col = "black", lwd = 1.5, lty = 1, cex.lab = 1)
 
-#axis(1,pretty(range(sd_BAI_bena_agg$Year),20), cex = 1.5)
+#axis(1,pretty(range(sd_BAI_bena_agg$Year),20), labels = FALSE)
 
 # Allow for a third plot using the second accis
 par(new=TRUE)
@@ -85,7 +87,7 @@ legend("bottomright",legend=c("Betula nana", "Salix spp."),
 plot(0,type='n',axes=FALSE,ann=FALSE)
 
 # 2. Plot Moose Density
-par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1)) 
+#par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1)) 
 
 plot(GMU_24A ~ Year, data = GMU_MooseDensity_Graph,
      col = "darkorchid4", type = "l", axes=FALSE, ylim=c(0,.65), xlim=c(1986, 2016),
@@ -110,6 +112,8 @@ mtext("Moose Density (moose/km²)", side=2, col="black", line=2.75, cex = 1)
 
 axis(2, ylim=c(0,.65), col="black", col.axis="black", las=1, cex = 1.25)
 
+#axis(1,pretty(range(sd_BAI_bena_agg$Year),20), labels = FALSE)
+
 box()
 
 legend(1983.25, 0.08, legend=c("B."), bty = "n", cex = 1.25)
@@ -124,6 +128,8 @@ plot(sd_BAI_bena_agg$HareIndex ~ sd_BAI_bena_agg$Year,
      col = "darkslateblue", lwd = 1.5, cex.lab = 1, xlim=c(1986, 2016))
 
 axis(2, at = c(1,2,3), col="black",las=1)
+
+#axis(1,pretty(range(sd_BAI_bena_agg$Year),20), labels = FALSE)
 
 mtext("Snowshoe Hare Cycle Index",side=2,line=2.5, cex = 1)
 
@@ -140,7 +146,7 @@ legend(1983.25, 1.05, legend=c("C."), bty = "n", cex = 1.25)
 
 par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.5, 0.6, 0.1, 0.1)) 
 
-#par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.1, 0.6, 0.1, 0.1))
+#par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1)) 
 
 
 plot(sd_BAI_bena_agg$iem.summ.temp ~ sd_BAI_bena_agg$Year, 
@@ -189,10 +195,15 @@ min(sd_bena_cch$resid) #-3.265767
 max(sd_bena_cch$resid) # 3.201705
 mean(sd_bena_cch$resid) # 0.06317319
 
+min(sd_bena_cch_S$MooseDensity) #-1.511401
+max(sd_bena_cch_S$MooseDensity) # 2.685446
+
+
 min(sd_salix_cch$resid) # -3.678445
 max(sd_salix_cch$resid) # 3.044755
 mean(sd_salix_cch$resid) # -0.06495939
 median(sd_salix_cch$resid) # -0.06495939
+
 
 
 # BETULA PLOTS
@@ -226,9 +237,13 @@ p8.1 = ggplot(sd_bena_cch, aes(x = iem.summ.temp, y = resid)) +
          geom_line(data = TrendLine_ST_b, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
          geom_ribbon(data = TrendLine_ST_b, aes(y = NULL, ymin = lower, ymax = upper), 
          fill = "steelblue", alpha = .25) +
-         xlab("Mean Summer Temperature (°C)") +
+         xlab("") +  #Mean Summer Temperature (°C)
          ylab("Age Standardized BAI") +
-         ggtitle("Betula nana")
+         ggtitle("Betula nana") +
+        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.text=element_text(size=14), axis.title = element_text(size=16),
+        plot.title = element_text(size=20),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))
   
 
 
@@ -252,8 +267,14 @@ p8.2 = ggplot(sd_bena_cch, aes(x = iem.summ.rain.10, y = resid)) +
         geom_line(data = TrendLine_SP_b, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
         geom_ribbon(data = TrendLine_SP_b, aes(y = NULL, ymin = lower, ymax = upper), 
         fill = "steelblue", alpha = .25) +
-        xlab("Mean Summer Precipitation (cm)") +
-        ylab("Age Standardized BAI")
+        xlab("") +  #Mean Summer Precipitation (cm)
+        ylab("") + #Age Standardized BAI
+        ggtitle("") +
+        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.text=element_text(size=14), axis.title = element_text(size=16),
+        plot.title = element_text(size=20),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))
+
         
 # SALIX PLOTS
 
@@ -282,9 +303,13 @@ p8.3 = ggplot(sd_salix_cch, aes(x = iem.summ.temp, y = resid)) +
   geom_line(data = TrendLine_ST_s, aes(y = Pred), size = 1, color='steelblue', alpha=0.9) +
   geom_ribbon(data = TrendLine_ST_s, aes(y = NULL, ymin = lower, ymax = upper), 
   fill = "steelblue", alpha = .25) +
-  xlab("Mean Summer Temperature (°C)") +
-  ylab("") +
-  ggtitle("Salix spp")
+  xlab("Mean Summer Temperature (°C)") +  #
+  ylab("Age Standardized BAI") +
+  ggtitle("Salix spp") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.text=element_text(size=14), axis.title = element_text(size=16), 
+        plot.title = element_text(size=20),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))
 
 
 TrendLine_SP_s<-data.frame(resid = sd_salix_cch$resid,
@@ -308,9 +333,15 @@ p8.4 = ggplot(sd_salix_cch, aes(x = iem.summ.rain.10, y = resid)) +
   geom_ribbon(data = TrendLine_SP_s, aes(y = NULL, ymin = lower, ymax = upper), 
               fill = "steelblue", alpha = .25) +
   xlab("Mean Summer Precipitation (cm)") +
-  ylab("")
+  ylab("") +
+  ggtitle("") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.text=element_text(size=14), axis.title = element_text(size=16),
+          plot.title = element_text(size=20),
+          panel.border = element_rect(colour = "black", fill=NA, size=1))
 
-multiplot(p8.1, p8.2, p8.3, p8.4,  cols = 2)
+multiplot(p8.1, p8.3, p8.2, p8.4,  cols = 2) 
+
 
 #--------------------------------------------------------------------------#
 #Plot Herbivore variables 
@@ -884,7 +915,7 @@ par(mar = c(5,12,5,2) + 0.1)
 
 color2D.matplot(ModelSelection_Betula, 
                 vcol = "White", na.color = "White",
-                extremes = c("Blue","Red"),
+                extremes = c("dodgerblue4","firebrick3"),
                 nslices = 50,
                 show.legend=TRUE, show.values=4,
                 axes=FALSE, xlab="",ylab="")
@@ -946,6 +977,39 @@ mtext('Salix spp. Model Selection', side=3, line=3, padj = 2, at = -.6, cex = 1.
 
 
 
+# APPENDIX 4: Correlation Marticies ####
+CorPlot_b = subset (sd_bena_cch_S, select = c("iem.summ.temp", "iem.summ.rain.10", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "PropPtarmagin"))
+
+CorPlot_s = subset (sd_salix_cch_S, select = c("iem.summ.temp", "iem.summ.rain.10", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "PropPtarmagin"))
+
+CorPlot_all = subset (sd_final_cch, select = c("iem.summ.temp", "iem.summ.rain.10", "MooseDensity", "HareIndex", "PropMoose", "PropHare", "PropPtarmagin"))
+
+#Creates a color coded correlation matrix using the variables specified above
+cchCorrb = cor(CorPlot_b, method = c("spearman"))
+
+colnames(cchCorrb) <- c("Mean Summer\nTemperature", "Mean Summer\nPrecipitation", "Moose Density", "Snowshoe Hare\nIndex", "Moose Browsing\nIntenisty", "Snowshoe Hare\nBrowsing Intenisty", "Ptarmigan\nBrowsing\nIntenisty")
+rownames(cchCorrb) <- c("Mean Summer\nTemperature", "Mean Summer\nPrecipitation", "Moose Density", "Snowshoe Hare\nIndex", "Moose Browsing\nIntenisty", "Snowshoe Hare\nBrowsing Intenisty", "Ptarmigan\nBrowsing\nIntenisty")
+
+cchCorrs = cor(CorPlot_s, method = c("spearman"))
+
+colnames(cchCorrs) <- c("Mean Summer\nTemperature", "Mean Summer\nPrecipitation", "Moose Density", "Snowshoe Hare\nIndex", "Moose Browsing\nIntenisty", "Snowshoe Hare\nBrowsing Intenisty", "Ptarmigan\nBrowsing\nIntenisty")
+rownames(cchCorrs) <- c("Mean Summer\nTemperature", "Mean Summer\nPrecipitation", "Moose Density", "Snowshoe Hare\nIndex", "Moose Browsing\nIntenisty", "Snowshoe Hare\nBrowsing Intenisty", "Ptarmigan\nBrowsing\nIntenisty")
+
+
+cchCorrALL = cor(CorPlot_all, method = c("spearman"))
+
+colnames(cchCorrALL) <- c("Mean Summer\nTemperature", "Mean Summer\nPrecipitation", "Moose Density", "Snowshoe Hare\nIndex", "Moose Browsing\nIntenisty", "Snowshoe Hare\nBrowsing Intenisty", "Ptarmigan\nBrowsing\nIntenisty")
+rownames(cchCorrALL) <- c("Mean Summer\nTemperature", "Mean Summer\nPrecipitation", "Moose Density", "Snowshoe Hare\nIndex", "Moose Browsing\nIntenisty", "Snowshoe Hare\nBrowsing Intenisty", "Ptarmigan\nBrowsing\nIntenisty")
+
+
+corrplot.mixed(cchCorrb, lower.col = "black", number.cex = 1, tl.cex = 1, upper.col=brewer.pal(n=10, name="RdBu"))
+
+corrplot.mixed(cchCorrs, lower.col = "black", number.cex = 1, tl.cex = 1, upper.col=brewer.pal(n=10, name="RdBu"))
+
+corrplot.mixed(cchCorrALL, lower.col = "black", number.cex = 1.15, tl.cex = 1, upper.col=brewer.pal(n=10, name="RdBu"))
+
+chart.Correlation(CorPlot_all, histogram = TRUE, method = c("spearman"))
+
 # PRESENTATION PLOTS: ####
 plot(sd_BAI_bena_agg$resid ~ sd_BAI_bena_agg$Year, 
      axes=FALSE, ylim=c(-1.5, .7),
@@ -998,8 +1062,8 @@ legend("bottomright",legend=c("Betula nana", "Salix spp."),
 
 # Plot Age Trends over time by section
 ps = ggplot() + 
-      #geom_line(data = sd_BAI_bena_agg, aes(x = Year, y = resid), color="steelblue", size = 1.5) +
-      #geom_line(data = sd_BAI_bena_agg_s, aes(x = Year, y = resid, group = Section), color="steelblue", alpha = 0.4) +
+      geom_line(data = sd_BAI_bena_agg, aes(x = Year, y = resid), color="steelblue", size = 1.5) +
+      geom_line(data = sd_BAI_bena_agg_s, aes(x = Year, y = resid, group = Section), color="steelblue", alpha = 0.4) +
       geom_line(data = sd_BAI_salix_agg, aes(x = Year, y = resid), color="red", size = 1.5) +
       geom_line(data = sd_BAI_salix_agg_s, aes(x = Year, y = resid, group = Section), color="red", alpha = 0.4)
    
@@ -1008,10 +1072,13 @@ ps
 
 pa = ggplot() + 
   geom_line(data = sd_BAI_bena_agg, aes(x = Year, y = RingWidth), color="steelblue") +
-  geom_line(data = sd_bena_cch, aes(x = Year, y = RingWidth, group = ShrubID), color="steelblue", alpha = 0.4) 
+  geom_line(data = sd_bena_cch, aes(x = Year, y = RingWidth, group = ShrubID), color="steelblue", alpha = 0.4) +
   geom_line(data = sd_BAI_salix_agg, aes(x = Year, y = RingWidth), color="red") +
   geom_line(data = sd_salix_cch, aes(x = Year, y = RingWidth, group = ShrubID), color="red", alpha = 0.4)
 
      
 pa
- 
+
+
+
+

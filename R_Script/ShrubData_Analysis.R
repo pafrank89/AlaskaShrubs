@@ -314,11 +314,16 @@ str(Section_Data)
 
 CorPlot_browse = subset (Section_Data, select = c("PropMoose", "PropHare", "PropPtarmagin", "StemHeight", "CanopyCover", "Y_Cord", "Slope", "PropALVI", "PropBENA", "PropSALIX"))
 
+CorPlot_browse_Shrub = subset (Shrub_Data2, select = c("PropMoose", "PropHare", "PropPtarmagin", "StemHeight", "CanopyCover", "Y_Cord", "Slope", "PropALVI", "PropBENA", "PropSALIX"))
+
+
 #"MooseFeces", "HareFeces", "PtarmaginFeces"
 
-chart.Correlation(CorPlot_browse, histogram = TRUE, method = c("pearson"))
+chart.Correlation(CorPlot_browse_Shrub, histogram = TRUE, method = c("spearman"))
 
-cor.test(Section_Data$PropPtarmagin, Section_Data$Y_Cord, method = "pearson")
+chart.Correlation(CorPlot_browse, histogram = TRUE, method = c("spearman"))
+
+cor.test(Section_Data$PropPtarmagin, Section_Data$Y_Cord, method = "spearman")
 
 kruskal.test(Section_Data$PropMoose, Section_Data$Y_Cord)
 
@@ -392,12 +397,26 @@ str(Section_Data)
 # Check for correlations between variables
 HerbiPlot = subset (Section_Data, select = c("PropMoose", "MooseFeces", "AvgMooseDensity", "2015MooseDensity", "PropHare", "HareFeces", "PropPtarmagin", "PtarmaginFeces"))
 
-#Creates a correlation matrix using the variables specified above
-chart.Correlation(HerbiPlot, histogram = TRUE, method = c("spearman"))
-
 plot(HerbiPlot$PropMoose ~ HerbiPlot$`2015MooseDensity`)
 
 plot(HerbiPlot$MooseFeces ~ HerbiPlot$`2015MooseDensity`)
+
+hist(sd_all_cch$PropMoose_S)
+hist(sd_all_cch$MooseFeces_S)
+
+cor.test(sd_all_cch$PropMoose_S, sd_all_cch$MooseFeces_S, method=c("spearman"))
+
+hist(sd_all_cch$PropHare_S)
+hist(sd_all_cch$`HareFeces _S`)
+
+cor.test(sd_all_cch$PropHare_S, sd_all_cch$`HareFeces _S`, method=c("spearman"))
+
+hist(sd_all_cch$PropPtarmagin_S)
+hist(sd_all_cch$PtarmaginFeces_S)
+
+cor.test(sd_all_cch$PropPtarmagin_S, sd_all_cch$PtarmaginFeces_S, method=c("spearman"))
+
+
 
 # 9. PLOT ENVIRONEMNTAL VARIABLES ALONG Y-CORD #### 
 par(mfrow=c(7,1), omi=c(1,0,0,0), plt=c(0.1,0.9,0,0.8)) #, bg=NA) 
@@ -543,7 +562,7 @@ legend("bottomright",legend=c("Ring Width","RWI_Spline", "RWI_NegExp", "lnBAI", 
 # For Salix
 
 plot(RingWidth ~ Year, data = sd_all_salix_agg, main = "Salix",
-     col = "blue", type = "l", ylim=c(-1.5,2.5), xlim=c(1975, 2020),
+     col = "blue", type = "l", #ylim=c(-1.5,2.5), xlim=c(1975, 2020),
      ylab = "Ring Width", xlab = "Year")
 
 par(new=TRUE)
