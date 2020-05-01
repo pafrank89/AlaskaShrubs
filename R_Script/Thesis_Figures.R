@@ -122,7 +122,7 @@ legend(1983.25, 0.08, legend=c("B."), bty = "n", cex = 1.25)
 
 # 3. Plot Snowshoe Hare Density 
 
-plot(sd_BAI_bena_agg$HareIndex ~ sd_BAI_bena_agg$Year, 
+plot(sd_BAI_all_agg$HareIndex ~ sd_BAI_bena_agg$Year, 
     ylim=c(0.75,3.25), main="", axes=FALSE,
      type = "l", xlab = "", ylab = "", 
      col = "darkslateblue", lwd = 1.5, cex.lab = 1, xlim=c(1986, 2016))
@@ -148,11 +148,12 @@ par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.5, 0.6, 0.1, 0.1))
 
 #par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1)) 
 
-
-plot(sd_BAI_bena_agg$iem.summ.temp ~ sd_BAI_bena_agg$Year, 
+plot(sd_BAI_all_agg$iem.summ.temp ~ sd_BAI_all_agg$Year, 
      axes=FALSE, xlim=c(1986, 2016),
      type = "l", xlab = "", ylab = "", 
      col=alpha(rgb(1,0,0), 0.75), lwd = 1.75, lty = 3, cex.lab = 1)
+
+#abline(lmTemp)
 
 axis(2, ylim=c(9,15),col="black",las=1)
 
@@ -169,10 +170,12 @@ mtext("Year", side=1, col="black", line=2.7, cex = 1)
 
 # 5. Plot MSP Over Time
 
-plot(sd_BAI_bena_agg$iem.summ.rain.10 ~ sd_BAI_bena_agg$Year, 
+plot(sd_BAI_all_agg$iem.summ.rain.10 ~ sd_BAI_all_agg$Year, 
      axes=FALSE, xlim=c(1986, 2016),
      type = "l", xlab = "", ylab = "", 
      col=alpha(rgb(0,0,1), 0.75), lwd = 1.75, lty = 3, cex.lab = 1)
+
+#abline(lmPrecip)
 
 axis(2, ylim=c(9,15),col="black",las=1)
 
@@ -1062,18 +1065,22 @@ legend("bottomright",legend=c("Betula nana", "Salix spp."),
 
 # Plot Age Trends over time by section
 ps = ggplot() + 
-      geom_line(data = sd_BAI_bena_agg, aes(x = Year, y = resid), color="steelblue", size = 1.5) +
-      geom_line(data = sd_BAI_bena_agg_s, aes(x = Year, y = resid, group = Section), color="steelblue", alpha = 0.4) +
+      geom_line(data = sd_BAI_bena_agg_s, aes(x = Year, y = resid, group = Section), color="steelblue", alpha = 0.4) + ylab("Age Standardized BAI") +
+      geom_line(data = sd_BAI_salix_agg_s, aes(x = Year, y = resid, group = Section), color="red", alpha = 0.4) + ylab("Age Standardized BAI") +
       geom_line(data = sd_BAI_salix_agg, aes(x = Year, y = resid), color="red", size = 1.5) +
-      geom_line(data = sd_BAI_salix_agg_s, aes(x = Year, y = resid, group = Section), color="red", alpha = 0.4)
+      geom_line(data = sd_BAI_bena_agg, aes(x = Year, y = resid), color="steelblue", size = 1.5) + 
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.text=element_text(size=14), axis.title = element_text(size=16),
+        plot.title = element_text(size=20), 
+        panel.border = element_rect(colour = "black", fill=NA, size=1))
    
 ps
 
 
 pa = ggplot() + 
-  geom_line(data = sd_BAI_bena_agg, aes(x = Year, y = RingWidth), color="steelblue") +
+  geom_line(data = sd_BAI_bena_agg, aes(x = Year, y = RingWidth), color="steelblue", size = 1.5) +
   geom_line(data = sd_bena_cch, aes(x = Year, y = RingWidth, group = ShrubID), color="steelblue", alpha = 0.4) +
-  geom_line(data = sd_BAI_salix_agg, aes(x = Year, y = RingWidth), color="red") +
+  geom_line(data = sd_BAI_salix_agg, aes(x = Year, y = RingWidth), color="red", size = 1.5) +
   geom_line(data = sd_salix_cch, aes(x = Year, y = RingWidth, group = ShrubID), color="red", alpha = 0.4)
 
      

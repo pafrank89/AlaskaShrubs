@@ -499,6 +499,11 @@ sd_BAI_salix_agg = aggregate((x = sd_salix_cch),
                              FUN = mean,
                              na.rm = TRUE)
 
+sd_BAI_all_agg = aggregate((x = sd_final_cch),
+                         by = list(sd_final_cch$Year),
+                         FUN = mean,
+                         na.rm = TRUE)
+
 
 sd_all_bena_agg = aggregate((x = sd_all_bena_cch),
                             by = list(sd_all_bena_cch$Year),
@@ -652,6 +657,18 @@ plot(tmp ~ Year, data = sum_temp_agg, xlab="", ylab="", ylim=c(8,15), xlim=c(198
 mtext("Mean Summer Temperature (°C)",side=4, col="black",line=4) 
 
 axis(4, ylim=c(8,15), col="black",col.axis="black",las=1)
+
+# TEMPERATURE & PRECIP TREND THROUGH TIME ####
+
+str(sd_final_cch)
+
+lmTemp = lm(iem.summ.temp ~ Year, data = sd_BAI_all_agg)
+
+summary(lmTemp)
+  
+lmPrecip = lm(iem.summ.rain.10 ~ Year, data = sd_BAI_all_agg)
+  
+summary(lmPrecip)  
 
 # 11. PLOT GROWTH TREND BY AGE ####
 

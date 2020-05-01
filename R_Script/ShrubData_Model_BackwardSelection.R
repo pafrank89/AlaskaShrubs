@@ -303,7 +303,7 @@ lme_global_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
                      iem.summ.temp * MooseDensity +
                      iem.summ.temp * HareIndex +
                      MooseDensity + HareIndex,
-                   data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
+                   data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
 
 # Compare NULL and FULL model with ANOVA to establish significance of the full model
 anova(null_model_b, lme_global_b)
