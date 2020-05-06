@@ -539,7 +539,7 @@ MyData_bm$SEdown<-MyData_bm$Pred-MyData_bm$SE
 # Plot
 col.l = colorRampPalette(c('white', rgb(0, 80, 158, max = 255)))
 z = c(0:10)
-pM = contourplot(Pred ~ iem.summ.temp + MooseDensity,
+pM = contourplot(Pred ~ iem.summ.temp * MooseDensity,
                  data=MyData_bm,
                  xlab=list("Mean Summer Temperature (°C)  Age Standardized BAI", cex = 1.35),
                  ylab=list("Moose Density (moose/km²)", cex = 1.35),

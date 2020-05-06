@@ -219,7 +219,7 @@ anova.lme(null_model_s, lme_global_s_s)
 summary(lme_global_s_s)
 
 # Step 1 of backward selection using global model
-step1_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+step1_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + #I(iem.summ.temp^2) + iem.wint.rain +
                   iem.summ.temp * PropMoose_S +
                   iem.summ.temp * PropHare_S +
                   iem.summ.temp * PropPtarmagin_S +
@@ -242,7 +242,7 @@ anova.lme(step2_s_s)
 summary(step2_s_s)
 
 # Step 3 of backward selection 
-step3_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
+step3_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
                   iem.summ.temp * PropPtarmagin_S +
                   PropPtarmagin_S,
                 data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "ML")
@@ -252,7 +252,7 @@ anova.lme(step3_s_s)
 summary(step3_s_s)
 
 # Create the Optimal Model for Betula after backward selection 
-Optimal_model_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
+Optimal_model_s_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + # I(iem.summ.temp^2) +
                           iem.summ.temp : PropPtarmagin_S +
                           PropPtarmagin_S,
                         data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
@@ -371,7 +371,7 @@ parameters::standard_error(lme_global_b)
 summary(lme_global_b)
 
 # Step 1 of backward selection using global model
-step1_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+step1_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + I(iem.summ.temp^2) + iem.wint.rain +
                 iem.summ.temp * MooseDensity +
                 iem.summ.temp * HareIndex +
                 MooseDensity + HareIndex,
@@ -392,7 +392,7 @@ anova.lme(step2_b)
 summary(step2_b)
 
 # Create the Optimal Model for Betula after backward selection 
-Optimal_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+Optimal_model_b = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + #+ I(iem.summ.temp^2) +
                         iem.summ.temp * HareIndex +
                         MooseDensity + HareIndex,
                       data = sd_bena_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
@@ -470,7 +470,7 @@ anova.lme(null_model_s, lme_global_s)
 summary(lme_global_s)
 
 # Step 1 of backward selection using global model
-step1_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
+step1_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + # I(iem.summ.temp^2) + iem.wint.rain +
                 iem.summ.temp * HareIndex +
                 iem.summ.temp * MooseDensity +
                 MooseDensity + HareIndex,
@@ -478,7 +478,7 @@ step1_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 +
 
 anova.lme(step1_s)
 
-summary(step2_s)
+summary(step1_s)
 
 # Step 2 of backward selection 
 step2_s = lme(resid ~ iem.summ.temp + iem.summ.rain.10 + 
@@ -509,7 +509,7 @@ anova.lme(step4_s)
 summary(step4_s)
 
 # Create the Optimal Model for Betula after backward selection 
-Optimal_model_s = lme(resid ~ iem.summ.temp + 
+Optimal_model_s = lme(resid ~ iem.summ.temp + #I(iem.summ.temp^2) +
                         MooseDensity + HareIndex,
                       data = sd_salix_cch_S, random = ~ 1|Section/ShrubID, method = "REML")
 

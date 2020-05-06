@@ -12,7 +12,7 @@ range(sd_BAI_bena_agg$iem.summ.rain.10)
 range(sd_BAI_salix_agg$iem.summ.rain.10)
 
 # Start by adding extra space to right margin of plot within frame
-par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1), mfrow=c(3,2)) #bottom, left, top and right
+par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1), mfrow=c(5,1)) #bottom, left, top and right
 
 #layout(matrix(c(1,2,3,4,5,6), 3, 2, byrow = TRUE))
 
@@ -84,7 +84,7 @@ legend("bottomright",legend=c("Betula nana", "Salix spp."),
        text.col=c("black", "grey 52"), lty = c(1, 1), col=c("black", "dark grey"), bty = "n", cex = 1.35)
 
 #Insert blank plot 
-plot(0,type='n',axes=FALSE,ann=FALSE)
+#plot(0,type='n',axes=FALSE,ann=FALSE)
 
 # 2. Plot Moose Density
 #par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1)) 
@@ -148,7 +148,7 @@ par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.5, 0.6, 0.1, 0.1))
 
 #par(mar=c(5, 4, 4, 6) + 0.1, mai = c(0.2, 0.6, 0.2, 0.1)) 
 
-plot(sd_BAI_all_agg$iem.summ.temp ~ sd_BAI_all_agg$Year, 
+plot(sd_BAI_all_agg$iem.wint.rain ~ sd_BAI_all_agg$Year, 
      axes=FALSE, xlim=c(1986, 2016),
      type = "l", xlab = "", ylab = "", 
      col=alpha(rgb(1,0,0), 0.75), lwd = 1.75, lty = 3, cex.lab = 1)
@@ -778,7 +778,21 @@ plot(Section_Data$Elevation ~ Section_Data$Y_Cord,
 mtext("Elevation", side= 3, line = -.5, adj = 1, padj = 0, cex=1.25)
 mtext("Latitude", side= 1, line = 3, cex=1.25)
 
-# APPENDIX 2: Height distributions of shrubs browseing ####
+# APPENDIX 2: Browsing Intensity Bar Plot & Height distributions of shrubs browseing ####
+
+# Create Browsing Intensity Bar Plot
+
+rownames(BrowsingBarPlot) <- BrowsingBarPlot$Species
+BrowsingBarPlot$Species = NULL
+
+barplot(as.matrix(BrowsingBarPlot),
+        col = c("chartreuse3","firebrick3", "dodgerblue4"),
+        beside = TRUE,
+        ylim = c(0, 0.2))
+
+legend("topleft",
+       c("Moose","Snowshoe Hare", "Ptarmigan"),
+       fill = c("chartreuse3","firebrick3", "dodgerblue4"), bty = "n")
 
 #This section of code will create a density plot showing Shrub Vertical Height on the X-axis and the frequency of 
 #browsing at that height for each of the three study species. 
